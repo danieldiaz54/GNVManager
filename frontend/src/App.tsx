@@ -1,6 +1,9 @@
-import { StationConsole } from './components';
+import { useState } from 'react';
+import { StationConsole, ReconciliationLedgerPanel } from './components';
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState<'STATION_MANIFOLD' | 'RECONCILIATION_LEDGER'>('STATION_MANIFOLD');
+
   return (
     <div className="min-h-screen bg-industrial-950 text-slate-100 flex flex-col font-sans">
       {/* Header Institucional de Alto Impacto Industrial */}
@@ -16,8 +19,34 @@ export default function App() {
           </span>
         </div>
 
-        <div className="flex items-center space-x-6 text-xs font-mono">
-          <div className="hidden sm:flex items-center space-x-2 text-industrial-400">
+        {/* Selector de Vistas de Operación */}
+        <div className="flex bg-industrial-950 p-1 rounded border border-industrial-800 space-x-1">
+          <button
+            type="button"
+            onClick={() => setActiveTab('STATION_MANIFOLD')}
+            className={`px-3 py-1 text-xs font-mono rounded transition-colors ${
+              activeTab === 'STATION_MANIFOLD'
+                ? 'bg-industrial-800 text-slate-100 font-semibold shadow-inner'
+                : 'text-industrial-400 hover:text-slate-200'
+            }`}
+          >
+            Terminal de Manifold & Aforo
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('RECONCILIATION_LEDGER')}
+            className={`px-3 py-1 text-xs font-mono rounded transition-colors ${
+              activeTab === 'RECONCILIATION_LEDGER'
+                ? 'bg-industrial-800 text-slate-100 font-semibold shadow-inner'
+                : 'text-industrial-400 hover:text-slate-200'
+            }`}
+          >
+            Libro Mayor & Mermas (Ledger)
+          </button>
+        </div>
+
+        <div className="hidden sm:flex items-center space-x-6 text-xs font-mono">
+          <div className="flex items-center space-x-2 text-industrial-400">
             <span>MOTOR TERMODINÁMICO:</span>
             <span className="text-emerald-400 font-semibold">AGA-8 / DAK (NR)</span>
           </div>
@@ -30,13 +59,17 @@ export default function App() {
 
       {/* Contenido Principal */}
       <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
-        <StationConsole />
+        {activeTab === 'STATION_MANIFOLD' ? (
+          <StationConsole />
+        ) : (
+          <ReconciliationLedgerPanel />
+        )}
       </main>
 
       {/* Footer Técnico */}
       <footer className="border-t border-industrial-800 bg-industrial-950 px-6 py-3 text-[11px] font-mono text-industrial-500 flex flex-wrap justify-between items-center">
         <span>GNVManager Industrial Platform · Custodia de Gas Real a Alta Presión</span>
-        <span>Norma de Aforo: P_estabilizada ≥ 230.00 bar · ISO 6976 / AGA-8</span>
+        <span>Norma de Aforo: P_estabilizada ≥ 230.00 bar · ISO 6976 / AGA-8 · SHA-256 Ledger</span>
       </footer>
     </div>
   );

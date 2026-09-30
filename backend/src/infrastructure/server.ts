@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import { thermoRoutes, aforoRoutes, errorHandler } from '../interfaces';
+import { thermoRoutes, aforoRoutes, dispatchRoutes, ledgerRoutes, errorHandler } from '../interfaces';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -20,6 +20,8 @@ app.get('/health', (_req: Request, res: Response) => {
 // Rutas de API versionada v1
 app.use('/api/v1/thermo', thermoRoutes);
 app.use('/api/v1/aforo', aforoRoutes);
+app.use('/api/v1/dispatch', dispatchRoutes);
+app.use('/api/v1/ledger', ledgerRoutes);
 
 // Manejo centralizado de errores
 app.use(errorHandler);

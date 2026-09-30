@@ -1,0 +1,224 @@
+// Prisma Schema para GNVManager
+// Diseñado por: @data-architect
+// Estándar: Integridad ACID estricta y Libro Mayor Inmutable (ReconciliationLedger)
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// -------------------------------------------------------------
+// 1. TOPOLOGÍA DE ACTIVOS (Dominio 02)
+// -------------------------------------------------------------
+
+enum StationType {
+  COMPRESSION_BASE     // Ej: Sabanas
+  WELLHEAD_INJECTION   // Ej: Cusiana, Ballena
+  RECEIVING_STATION    // Ej: EDS Medellín
+  PIPELINE_GATE        // Válvula / City Gate
+}
+
+model FacilityNode {
+  id              String         @id @default(uuid())
+  code            String         @unique // Ej: "ST-SABANAS", "WH-CUSIANA"
+  name            String
+  type            StationType
+  latitude        Float?
+  longitude       Float?
+  elevationMeters Float?
+  dispatchOperations DispatchOperation[]
+  ledgerEntries   ReconciliationLedger[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@map("facility_nodes")
+}
+
+enum RackType {
+  ELEVEN_CYLINDER_13497L // Batería de 11 cilindros (13,497 L)
+  TWELVE_CYLINDER_26950L // Batería de 12 cilindros (26,950 L)
+  CUSTOM_MODULE
+}
+
+enum RackStatus {
+  OPERATIONAL
+  IN_TRANSIT
+  UNDER_MAINTENANCE
+  QUARANTINE
+  DECOMMISSIONED
+}
+
+model ModularRack {
+  id                    String              @id @default(uuid())
+  plateCode             String              @unique // Placa o código identificador del módulo
+  rackType              RackType
+  nominalVolumeLiters   Decimal             @db.Decimal(10, 3) // 13497.000 o 26950.000
+  cylinderCount         Int
+  maxWorkingPressureBar Decimal             @db.Decimal(6, 2)  @default(250.00)
+  testPressureBar       Decimal             @db.Decimal(6, 2)  @default(375.00)
+  status                RackStatus          @default(OPERATIONAL)
+  cylinders             Cylinder[]
+  dispatchOperations    DispatchOperation[]
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  @@map("modular_racks")
+}
+
+model Cylinder {
+  id                     String       @id @default(uuid())
+  rackId                 String
+  serialNumber           String       @unique
+  manufacturingDate      DateTime
+  hydrostaticTestDate    DateTime
+  nextHydrostaticDueDate DateTime
+  waterCapacityLiters    Decimal      @db.Decimal(8, 3)
+  tareWeightKg           Decimal      @db.Decimal(8, 2)
+  rack                   ModularRack  @relation(fields: [rackId], references: [id], onDelete: Cascade)
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+
+  @@map("cylinders")
+}
+
+// -------------------------------------------------------------
+// 2. CROMATOGRAFÍA Y CALIDAD DE GAS (Dominio 01)
+// -------------------------------------------------------------
+
+model ChromatographyProfile {
+  id                         String              @id @default(uuid())
+  name                       String              @unique // 'Bonga-Mamey', 'Candilejas', 'Gas Rico Llano'
+  description                String?
+  effectiveFrom              DateTime            @default(now())
+  effectiveTo                DateTime?
+  ch4Fraction                Decimal             @db.Decimal(8, 6) // Ej: 0.963666
+  c2h6Fraction               Decimal             @db.Decimal(8, 6)
+  c3h8Fraction               Decimal             @db.Decimal(8, 6)
+  iC4Fraction                Decimal             @db.Decimal(8, 6)
+  nC4Fraction                Decimal             @db.Decimal(8, 6)
+  iC5Fraction                Decimal             @db.Decimal(8, 6)
+  nC5Fraction                Decimal             @db.Decimal(8, 6)
+  c6PlusFraction             Decimal             @db.Decimal(8, 6)
+  n2Fraction                 Decimal             @db.Decimal(8, 6)
+  co2Fraction                Decimal             @db.Decimal(8, 6)
+  apparentMolecularWeight    Decimal             @db.Decimal(8, 4) // g/mol
+  pseudoCriticalPressureBar  Decimal             @db.Decimal(8, 4)
+  pseudoCriticalTemperatureK Decimal             @db.Decimal(8, 4)
+  higherHeatingValueBtuScf   Decimal?            @db.Decimal(10, 2)
+  dispatches                 DispatchOperation[]
+  createdAt                  DateTime            @default(now())
+
+  @@map("chromatography_profiles")
+}
+
+// -------------------------------------------------------------
+// 3. OPERACIONES DE DESPACHO Y AFORO (Dominio 02 / 01)
+// -------------------------------------------------------------
+
+enum OperationType {
+  LOADING_DISPATCH    // Cargue (Pf > Pi)
+  UNLOADING_RECEIPT   // Descargue (Pi > Pf)
+}
+
+enum AforoCertificationStatus {
+  CERTIFIED_AFT              // Aforo certificado (Pestabilizada >= 230 bar en Sabanas)
+  REJECTED_UNDERPRESSURE     // Rechazado por presión de reposo insuficiente (< 230 bar)
+  NON_COMPLIANT              // No conforme por delta de masa anómalo o falla de temperatura
+  PENDING_THERMAL_STABILITY  // En periodo de reposo isocórico
+}
+
+model DispatchOperation {
+  id                       String                   @id @default(uuid())
+  consecutiveNumber        String                   @unique // Ej: "DSP-2026-00001"
+  facilityNodeId           String
+  modularRackId            String
+  chromatographyProfileId  String
+  operationType            OperationType
+  
+  // Lecturas iniciales (pre-conexión)
+  initialPressureBar       Decimal                  @db.Decimal(6, 2)
+  initialTemperatureK      Decimal                  @db.Decimal(6, 2)
+  initialZFactor           Decimal                  @db.Decimal(7, 5)
+  initialMassKg            Decimal                  @db.Decimal(10, 3)
+  initialStandardVolumeSm3 Decimal                  @db.Decimal(10, 3)
+
+  // Lecturas al corte
+  cutoffPressureBar        Decimal                  @db.Decimal(6, 2)
+  cutoffTemperatureK       Decimal                  @db.Decimal(6, 2)
+  cutoffZFactor            Decimal                  @db.Decimal(7, 5)
+  cutoffMassKg             Decimal                  @db.Decimal(10, 3)
+  cutoffStandardVolumeSm3  Decimal                  @db.Decimal(10, 3)
+
+  // Pronóstico y verificación isocórica
+  coolingTimeSeconds       Int?                     @default(7200)
+  stabilizedPressureBar    Decimal                  @db.Decimal(6, 2)
+  stabilizedTemperatureK   Decimal                  @db.Decimal(6, 2)
+  stabilizedZFactor        Decimal                  @db.Decimal(7, 5)
+  
+  // Balance neto transferido
+  netMassTransferredKg     Decimal                  @db.Decimal(10, 3)
+  netStandardVolumeSm3     Decimal                  @db.Decimal(10, 3)
+  
+  // Certificación inviolable de Aforo (Sabanas >= 230 bar)
+  certificationStatus      AforoCertificationStatus @default(PENDING_THERMAL_STABILITY)
+  certificationNotes       String?
+  certifiedAt              DateTime?
+
+  facilityNode             FacilityNode             @relation(fields: [facilityNodeId], references: [id])
+  modularRack              ModularRack              @relation(fields: [modularRackId], references: [id])
+  chromatography           ChromatographyProfile    @relation(fields: [chromatographyProfileId], references: [id])
+  ledgerEntries            ReconciliationLedger[]
+
+  startedAt                DateTime
+  completedAt              DateTime?
+  createdAt                DateTime                 @default(now())
+
+  @@map("dispatch_operations")
+}
+
+// -------------------------------------------------------------
+// 4. LIBRO MAYOR INMUTABLE DE CONCILIACIÓN (Dominio 04 & 03)
+// -------------------------------------------------------------
+
+enum LedgerTransactionType {
+  WELLHEAD_INJECTION      // Inyección en pozo (MMBTU)
+  PIPELINE_TRANSPORT      // Transporte por gasoducto
+  STATION_DISPATCH        // Despacho a transporte vehicular
+  STATION_SALE_DISPENSED  // Venta en EDS
+  MERMA_APPARENT_SHRINK   // Merma aparente por descompresión térmica
+  MERMA_PHYSICAL_LOSS     // Merma física real (discrepancia)
+}
+
+model ReconciliationLedger {
+  id                    String                @id @default(uuid())
+  transactionIndex      BigInt                @unique @default(autoincrement())
+  transactionType       LedgerTransactionType
+  facilityNodeId        String
+  dispatchOperationId   String?
+  
+  // Cantidades energéticas y másicas
+  energyMmbtu           Decimal               @db.Decimal(12, 4)
+  standardVolumeSm3     Decimal               @db.Decimal(12, 3)
+  massKg                Decimal               @db.Decimal(12, 3)
+  
+  // Auditoría forense de mermas
+  apparentMermaSm3      Decimal?              @db.Decimal(10, 3) @default(0.000)
+  physicalMermaSm3      Decimal?              @db.Decimal(10, 3) @default(0.000)
+  mermaPercentage       Decimal?              @db.Decimal(5, 3)  @default(0.000)
+  
+  // Inmutabilidad criptográfica y auditoría
+  previousRecordHash    String?
+  recordHash            String                // Hash SHA-256 del registro inmutable
+  auditMetadata         Json?
+  
+  facilityNode          FacilityNode          @relation(fields: [facilityNodeId], references: [id])
+  dispatchOperation     DispatchOperation?    @relation(fields: [dispatchOperationId], references: [id])
+  
+  recordedAt            DateTime              @default(now())
+
+  @@map("reconciliation_ledger")
+}

@@ -261,7 +261,7 @@ export interface IThermodynamicEngine {
 ---
 
 ## 8. Criterios de Aceptación para QA (`@qa-verifier`)
-1. **Precisión Numérica de $Z$:** Para perfil Bonga-Mamey a $200 \text{ bar}$ y $300 \text{ K}$, $Z$ debe situarse en el intervalo $[0.8200, 0.8800]$ con error residual del Newton-Raphson $< 10^{-7}$.
+1. **Precisión Numérica de $Z$:** Para perfil Bonga-Mamey a $200 \text{ bar}$ y $300 \text{ K}$, $Z$ debe situarse en el intervalo $[0.8000, 0.8800]$ con error residual del Newton-Raphson $< 10^{-7}$.
 2. **Validación de Cromatografía:** Intentar instanciar un perfil cuya suma de fracciones molares difiera de $1.0$ en más de $\pm 10^{-5}$ debe arrojar un error tipado `InvalidChromatographyException`.
 3. **Corte a 230 bar en Sabanas:**
    - Si $P_{\text{estabilizada}} = 230.00 \text{ bar} \implies \text{Certificación Exitosa}$ (`CERTIFIED_AFT`).

@@ -1,9 +1,103 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Geist Sans', 'SF Pro Display', 'Helvetica Neue', 'Inter', sans-serif;
+  --font-mono: 'Geist Mono', 'SF Mono', 'JetBrains Mono', monospace;
+  --font-serif: 'Lyon Text', 'Newsreader', 'Playfair Display', serif;
+}
+
+/* Light Mode (Default) */
+:root {
+  /* Slate Clean Minimalist Palette */
+  --color-canvas: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f1f5f9;
+  --color-border: #cbd5e1;        /* Borde nítido para líneas divisoras claras */
+  --color-border-hover: #94a3b8;
+  
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
+  
+  /* Accent Colors */
+  --color-accent: #06b6d4; /* Cyan 500 */
+  --color-accent-hover: #0891b2; /* Cyan 600 */
+  --color-accent-glow: rgba(6, 182, 212, 0.12);
+  --color-accent-glow-strong: rgba(6, 182, 212, 0.35);
+  
+  /* Alerts */
+  --color-alert-red-bg: #fef2f2;
+  --color-alert-red-text: #dc2626;
+  --color-alert-red-border: #fecaca;
+  
+  --color-alert-green-bg: #f0fdf4;
+  --color-alert-green-text: #16a34a;
+  --color-alert-green-border: #bbf7d0;
+
+  /* Grid Blueprint - Presencia calibrada y nítida */
+  --grid-line: rgba(100, 116, 139, 0.08);
+}
+
+/* Dark Mode */
+.dark {
+  /* Zinc Dark Palette */
+  --color-canvas: #09090b;
+  --color-surface: #18181b;
+  --color-surface-hover: #27272a;
+  --color-border: #27272a;
+  --color-border-hover: #3f3f46;
+  
+  --color-text-primary: #fafafa;
+  --color-text-secondary: #a1a1aa;
+  
+  /* Tactical Alerts */
+  --color-alert-red-bg: rgba(153, 27, 27, 0.2);
+  --color-alert-red-text: #f87171;
+  --color-alert-red-border: rgba(153, 27, 27, 0.4);
+  
+  --color-alert-green-bg: rgba(22, 101, 52, 0.2);
+  --color-alert-green-text: #4ade80;
+  --color-alert-green-border: rgba(22, 101, 52, 0.4);
+
+  /* Grid Blueprint */
+  --grid-line: rgba(255, 255, 255, 0.05);
+}
 
 @layer base {
   body {
-    @apply bg-industrial-950 text-slate-100 font-sans;
+    @apply bg-[var(--color-canvas)] text-[var(--color-text-primary)] font-sans antialiased transition-colors duration-300;
+    line-height: 1.6;
+    background-image: 
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  
+  h1, h2, h3, h4 {
+    @apply font-serif tracking-tight leading-tight;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  .ui-card {
+    @apply bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-6 sm:p-8 shadow-sm transition-colors duration-300;
+  }
+  
+  .ui-input {
+    @apply bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md px-4 py-3 text-[var(--color-text-primary)] font-sans focus:outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] transition-all w-full;
+  }
+  
+  .ui-button {
+    @apply bg-[var(--color-accent)] text-white font-semibold py-3 px-6 rounded-md hover:bg-[var(--color-accent-hover)] hover:shadow-[0_0_20px_var(--color-accent-glow-strong)] active:scale-[0.98] transition-all cursor-pointer inline-flex items-center justify-center;
+  }
+  
+  .ui-button-secondary {
+    @apply bg-[var(--color-surface-hover)] text-[var(--color-text-primary)] font-semibold py-3 px-6 rounded-md border border-[var(--color-border)] hover:border-[var(--color-border-hover)] hover:bg-[var(--color-border)] active:scale-[0.98] transition-all cursor-pointer inline-flex items-center justify-center;
+  }
+
+  .ui-badge {
+    @apply rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider inline-flex items-center border border-transparent;
   }
 }

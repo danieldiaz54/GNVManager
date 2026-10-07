@@ -93,10 +93,10 @@ export default function SaaSLayout() {
           {/* Tarjeta de Usuario Compacta */}
           <div className="flex items-center gap-2.5 pl-1">
             <div className="w-7 h-7 rounded-full bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)] flex items-center justify-center font-bold text-xs uppercase">
-              {user?.username?.charAt(0) || 'G'}
+              {(user?.fullName || user?.username || 'U').charAt(0)}
             </div>
             <div className="hidden lg:block text-left">
-              <p className="text-xs font-semibold leading-tight text-[var(--color-text-primary)]">{user?.username}</p>
+              <p className="text-xs font-semibold leading-tight text-[var(--color-text-primary)]">{user?.fullName || user?.username}</p>
               <p className="text-[10px] text-[var(--color-text-secondary)] leading-tight">{user?.role === 'admin' ? 'Administrador' : 'Operador'}</p>
             </div>
             <button

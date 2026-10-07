@@ -27,9 +27,9 @@ export class GetReconciliationSummary {
     // Variación (Sm³) = Ventas Facturadas - Volumen Consolidado Despachado
     const variationSm3 = totalDispensed - calculatedVolumeSm3;
 
-    const pressureDelta = record.initialPressureBar - record.finalPressureBar;
-    if (pressureDelta <= 0) {
-      throw new InvalidReconciliationDataError(`Invalid pressure delta: ${pressureDelta}. Initial pressure must be greater than final pressure.`);
+    const pressureDelta = Math.abs(record.initialPressureBar - record.finalPressureBar);
+    if (pressureDelta === 0) {
+      throw new InvalidReconciliationDataError(`Invalid pressure delta: 0. Initial and final pressures cannot be equal.`);
     }
 
     const aforoSm3PerBar = calculatedVolumeSm3 / pressureDelta;

@@ -1,4 +1,3 @@
-import { DEFAULT_GAS_PROFILES } from '../domain/gasPresets';
 import React, { useState, useEffect, useMemo } from 'react';
 import { thermodynamicsService, TransferResult } from '../core/api/thermodynamic.service';
 import { psiToBar, celsiusToKelvin, barToPsi } from '../core/utils/UnitConversion';
@@ -36,8 +35,8 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
   const [isSavedFeedback, setIsSavedFeedback] = useState(false);
 
   // Perfiles de Gas
-  const [gasProfiles, setGasProfiles] = useState<{ id: string; name: string }[]>(DEFAULT_GAS_PROFILES);
-  const [selectedGasProfileId, setSelectedGasProfileId] = useState<string>(DEFAULT_GAS_PROFILES[0].id);
+  const [gasProfiles, setGasProfiles] = useState<{ id: string; name: string }[]>([]);
+  const [selectedGasProfileId, setSelectedGasProfileId] = useState<string>('');
 
   useEffect(() => {
     thermodynamicsService.getGasProfiles().then(profiles => {
@@ -45,7 +44,7 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
         setGasProfiles(profiles);
         setSelectedGasProfileId(profiles[0].id);
       }
-    }).catch(err => console.warn('Perfiles por defecto:', err));
+    }).catch(err => console.error(err));
   }, []);
 
   // Posiciones del Rack
@@ -249,7 +248,7 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
               </div>
 
               <div className="flex items-center gap-2 ml-4">
-                <span className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">Gas:</span>
+                <span className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">Perfil de Gas:</span>
                 <select
                   value={selectedGasProfileId}
                   onChange={(e) => setSelectedGasProfileId(e.target.value)}
@@ -257,6 +256,9 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
                 >
                   {gasProfiles.map(profile => (
                     <option key={profile.id} value={profile.id}>{profile.name}</option>
+                  ))}
+                  {gasProfiles.length === 0 && (
+                    <option value='' disabled>No hay perfiles</option>
                   ))}
                 </select>
               </div>

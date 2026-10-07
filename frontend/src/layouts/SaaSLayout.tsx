@@ -27,14 +27,14 @@ export default function SaaSLayout() {
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <span className="text-base font-serif font-bold tracking-tight text-[var(--color-text-primary)]">
-                Ingeniería y Control
+                GNV Manager
               </span>
               <span className="hidden sm:inline-block text-[9px] font-mono tracking-widest uppercase px-1.5 py-0.5 rounded-xs bg-[var(--color-canvas)] text-[var(--color-text-secondary)] border border-[var(--color-border)]">
                 v2.0 PRO
               </span>
             </div>
             <span className="text-[10px] font-mono tracking-wider text-[var(--color-text-secondary)] uppercase">
-              Surtigas Piloto Sabanas
+              Ingeniería y Control
             </span>
           </div>
         </div>

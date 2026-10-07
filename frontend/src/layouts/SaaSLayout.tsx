@@ -13,8 +13,6 @@ export default function SaaSLayout() {
   const menuItems = [
     { path: '/app/thermodynamics', label: 'Consola de Despacho', icon: LayoutDashboard },
     { path: '/app/gas-profiles', label: 'Perfiles de Gas', icon: Database },
-    { path: '/app/reports', label: 'Reportes & Auditoría', icon: BarChart3 },
-    { path: '/app/settings', label: 'Configuración', icon: Settings },
   ];
 
   return (
@@ -29,7 +27,7 @@ export default function SaaSLayout() {
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <span className="text-base font-serif font-bold tracking-tight text-[var(--color-text-primary)]">
-                GNV Manager
+                Ingeniería y Control
               </span>
               <span className="hidden sm:inline-block text-[9px] font-mono tracking-widest uppercase px-1.5 py-0.5 rounded-xs bg-[var(--color-canvas)] text-[var(--color-text-secondary)] border border-[var(--color-border)]">
                 v2.0 PRO

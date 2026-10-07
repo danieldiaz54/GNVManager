@@ -4,7 +4,6 @@ import { ThemeProvider } from './context/ThemeContext';
 import Login from './pages/Login';
 import SaaSLayout from './layouts/SaaSLayout';
 import ThermodynamicsModule from './pages/ThermodynamicsModule';
-import ReportsModule from './pages/ReportsModule';
 import GasProfilesModule from './pages/GasProfilesModule';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -34,8 +33,6 @@ function App() {
             >
               <Route path="thermodynamics" element={<ThermodynamicsModule />} />
               <Route path="gas-profiles" element={<GasProfilesModule />} />
-              <Route path="reports" element={<ReportsModule />} />
-              <Route path="settings" element={<ReportsModule />} />
               <Route index element={<Navigate to="thermodynamics" replace />} />
             </Route>
 

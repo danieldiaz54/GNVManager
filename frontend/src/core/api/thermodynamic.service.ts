@@ -32,11 +32,24 @@ export interface BatchCalculationItem {
 export interface GasProfileDTO {
   id: string;
   name: string;
+  reportDate?: string;
+  reportNumber?: string;
   methanePercentage: number;
+  ethanePercentage?: number;
+  propanePercentage?: number;
+  isoButanePercentage?: number;
+  normalButanePercentage?: number;
+  isoPentanePercentage?: number;
+  normalPentanePercentage?: number;
+  hexanesPlusPercentage?: number;
   nitrogenPercentage?: number;
+  carbonDioxidePercentage?: number;
+  oxygenPercentage?: number;
   grossCalorificValue?: number;
   specificGravity: number;
   molarMass: number;
+  compressibilityFactor?: number;
+  wobbeIndex?: number;
   criticalPressure: number;
   criticalTemperature: number;
 }

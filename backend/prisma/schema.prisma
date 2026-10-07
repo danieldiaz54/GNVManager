@@ -76,18 +76,42 @@ model User {
   @@map("users")
 }
 
-// Perfil de Gas (Cromatografías Surtigas u otros)
+// Perfil de Gas Completo (Cromatografía)
 model GasProfile {
-  id                  String   @id @default(uuid())
-  name                String   @unique
-  methanePercentage   Float
-  nitrogenPercentage  Float?
-  grossCalorificValue Float?
-  specificGravity     Float
-  molarMass           Float
+  id   String @id @default(uuid())
+  name String @unique
+
+  // Trazabilidad
+  reportDate   DateTime?
+  reportNumber String?
+
+  // Componentes Principales (% mol)
+  methanePercentage       Float // C1
+  ethanePercentage        Float? // C2
+  propanePercentage       Float? // C3
+  isoButanePercentage     Float? // i-C4
+  normalButanePercentage  Float? // n-C4
+  isoPentanePercentage    Float? // i-C5
+  normalPentanePercentage Float? // n-C5
+  hexanesPlusPercentage   Float? // C6+
+
+  // Inertes (% mol)
+  nitrogenPercentage      Float? // N2
+  carbonDioxidePercentage Float? // CO2
+  oxygenPercentage        Float? // O2
+
+  // Propiedades Físicas / Termodinámicas
+  grossCalorificValue   Float? // Poder Calorífico Superior (BTU/ft3 o MJ/m3)
+  specificGravity       Float // Gravedad Específica
+  molarMass             Float // Masa Molar (g/mol)
+  compressibilityFactor Float? // Factor de Compresibilidad (Z a condiciones estándar)
+  wobbeIndex            Float? // Índice de Wobbe
+
+  // Constantes Críticas
   criticalPressure    Float
   criticalTemperature Float
-  createdAt           DateTime @default(now())
+
+  createdAt DateTime @default(now())
 
   @@map("gas_profiles")
 }

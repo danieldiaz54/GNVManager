@@ -21,6 +21,20 @@ export interface TransferResult {
   thermalPressureLossBar: number;
 }
 
+export class DivergenceException extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'DivergenceException';
+  }
+}
+
+export class PressureExceededException extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'PressureExceededException';
+  }
+}
+
 // Valores estándar de negocio (Enterprise Business Rules)
 // Estas reglas aplican a cualquier aplicación que procese GNV, independientemente del framework.
 export const STANDARD_GAS_COMPOSITION: GasComposition = {

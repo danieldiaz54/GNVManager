@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/infrastructure/webserver/server.ts",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
     "postinstall": "prisma skills sync || exit 0"
   },
   "keywords": [],
@@ -30,9 +30,10 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^22.20.2",
+    "@types/node": "^22.20.5",
     "prisma": "^6.19.3",
     "tsx": "^4.23.13",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
   }
 }

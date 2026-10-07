@@ -63,12 +63,12 @@ export default function HomeModule() {
               Consola de Despacho
             </h2>
             <p className="text-sm text-[var(--color-text-secondary)] max-w-md">
-              Ingresa al motor termodinámico central para el cálculo de aforos, transferencia de custodia y simulación de compresión AGA-8 en tiempo real.
+              Realiza cálculos de aforo, control de inventario y estimaciones de despacho en tiempo real.
             </p>
           </div>
 
           <div className="mt-8 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--color-text-primary)]">
-            Acceder al Motor <span className="group-hover:translate-x-1 transition-transform">→</span>
+            Abrir Consola <span className="group-hover:translate-x-1 transition-transform">→</span>
           </div>
         </Link>
 
@@ -108,37 +108,37 @@ export default function HomeModule() {
         <div className="p-5 bg-[var(--color-canvas)] border border-[var(--color-border)] rounded-md flex flex-col">
           <div className="flex items-center gap-2 mb-3 text-[var(--color-text-secondary)]">
             <Activity className="w-4 h-4" />
-            <span className="text-[10px] uppercase font-bold tracking-wider">Estabilidad Térmica</span>
+            <span className="text-[10px] uppercase font-bold tracking-wider">Operación</span>
           </div>
           <span className="text-xl font-mono font-bold text-[var(--color-text-primary)]">Nominal</span>
-          <span className="text-xs text-[var(--color-alert-green-text)] mt-1 font-medium">Operación a 250 bar óptima</span>
+          <span className="text-xs text-[var(--color-alert-green-text)] mt-1 font-medium">Llenado óptimo a 250 bar</span>
         </div>
 
         <div className="p-5 bg-[var(--color-canvas)] border border-[var(--color-border)] rounded-md flex flex-col">
           <div className="flex items-center gap-2 mb-3 text-[var(--color-text-secondary)]">
             <Layers className="w-4 h-4" />
-            <span className="text-[10px] uppercase font-bold tracking-wider">Topología de Rack</span>
+            <span className="text-[10px] uppercase font-bold tracking-wider">Módulos</span>
           </div>
           <span className="text-xl font-mono font-bold text-[var(--color-text-primary)]">Flexible</span>
-          <span className="text-xs text-[var(--color-text-secondary)] mt-1 font-medium">Soporte dinámico 11/12 pos.</span>
+          <span className="text-xs text-[var(--color-text-secondary)] mt-1 font-medium">Soporte para 11 o 12 cilindros</span>
         </div>
 
         <div className="p-5 bg-[var(--color-canvas)] border border-[var(--color-border)] rounded-md flex flex-col">
           <div className="flex items-center gap-2 mb-3 text-[var(--color-text-secondary)]">
             <TrendingUp className="w-4 h-4" />
-            <span className="text-[10px] uppercase font-bold tracking-wider">Algoritmo Newton-Raphson</span>
+            <span className="text-[10px] uppercase font-bold tracking-wider">Factor de Compresibilidad</span>
           </div>
-          <span className="text-xl font-mono font-bold text-[var(--color-text-primary)]">Convergente</span>
-          <span className="text-xs text-[var(--color-text-secondary)] mt-1 font-medium">Precisión Factor Z validada</span>
+          <span className="text-xl font-mono font-bold text-[var(--color-text-primary)]">Dinámico</span>
+          <span className="text-xs text-[var(--color-text-secondary)] mt-1 font-medium">Ajustado según cromatografía</span>
         </div>
 
         <div className="p-5 bg-[var(--color-canvas)] border border-[var(--color-border)] rounded-md flex flex-col">
           <div className="flex items-center gap-2 mb-3 text-[var(--color-text-secondary)]">
             <Droplets className="w-4 h-4" />
-            <span className="text-[10px] uppercase font-bold tracking-wider">Certificación de Aforo</span>
+            <span className="text-[10px] uppercase font-bold tracking-wider">Certificación</span>
           </div>
           <span className="text-xl font-mono font-bold text-[var(--color-text-primary)]">Activa</span>
-          <span className="text-xs text-[var(--color-text-secondary)] mt-1 font-medium">Umbral dinámico a 230 bar</span>
+          <span className="text-xs text-[var(--color-text-secondary)] mt-1 font-medium">Validación estricta de presión</span>
         </div>
 
       </div>

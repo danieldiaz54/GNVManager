@@ -646,7 +646,7 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
             </>
           ) : (
             <>
-              <span>Asentar Operación Física en Ledger Inmutable</span>
+              <span>Guardar Registro de Operaci�n</span>
               <ArrowRight className="w-5 h-5" />
             </>
           )}

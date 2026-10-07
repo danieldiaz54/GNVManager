@@ -122,7 +122,7 @@ export default function ReconciliationLedger({
         {/* Card 2: Ventas Registradas en Estación */}
         <div className="p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-none">
           <span className="text-[11px] font-mono text-[var(--color-text-secondary)] uppercase tracking-wider block">
-            Ventas Surtidores (Ledger)
+            Ventas Registradas
           </span>
           <div className="flex items-baseline gap-2 mt-4">
             <span className="text-4xl font-serif font-bold text-[var(--color-text-primary)] tracking-tight">

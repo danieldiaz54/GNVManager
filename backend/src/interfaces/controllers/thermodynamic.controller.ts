@@ -7,6 +7,8 @@ import { DivergenceException, PressureExceededException } from '../../domain/ent
 // Valida entradas del mundo exterior (HTTP/JSON) y las traduce para la Capa de Aplicación.
 
 const thermodynamicInputSchema = z.object({
+  operationType: z.enum(['CARGUE', 'DESCARGUE']).optional(),
+  gasProfileId: z.string().optional(),
   initial: z.object({
     pressureBar: z.number().nonnegative(),
     temperatureK: z.number().positive(),
@@ -22,6 +24,8 @@ const batchThermodynamicInputSchema = z.object({
   items: z.array(
     z.object({
       id: z.union([z.number(), z.string()]),
+      operationType: z.enum(['CARGUE', 'DESCARGUE']).optional(),
+      gasProfileId: z.string().optional(),
       initial: z.object({
         pressureBar: z.number().nonnegative(),
         temperatureK: z.number().positive(),

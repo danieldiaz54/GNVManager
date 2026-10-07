@@ -6,6 +6,7 @@ export interface ReconciliationRecordEntity {
   positionNumber?: number | null;
   parentId?: string | null;
   children?: ReconciliationRecordEntity[];
+  operationType?: string;
   moduleCapacityLiters: number;
   initialPressureBar: number;
   initialTempK: number;

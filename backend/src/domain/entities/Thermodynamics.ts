@@ -21,6 +21,11 @@ export interface TransferResult {
   thermalPressureLossBar: number;
 }
 
+export interface AforoCertification {
+  certified: boolean;
+  aforoSm3PerBar: number;
+}
+
 export class DivergenceException extends Error {
   constructor(message: string) {
     super(message);

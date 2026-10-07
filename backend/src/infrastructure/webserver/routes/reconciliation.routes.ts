@@ -9,5 +9,6 @@ router.post('/rack', reconciliationController.saveRackRecord);
 router.post('/manifold', reconciliationController.saveRackRecord);
 router.get('/', reconciliationController.getHistory);
 router.patch('/:id/sale', reconciliationController.updateSale);
+router.get('/:id/export', reconciliationController.exportRecord);
 
 export default router;

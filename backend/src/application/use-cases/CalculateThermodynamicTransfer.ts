@@ -7,7 +7,8 @@ import {
   STANDARD_GAS_COMPOSITION, 
   UNIVERSAL_GAS_CONSTANT, 
   STANDARD_PRESSURE_BAR, 
-  STANDARD_TEMPERATURE_K 
+  STANDARD_TEMPERATURE_K,
+  AforoCertification
 } from '../../domain/entities/Thermodynamics';
 
 // Capa 2: Use Cases (Application Business Rules)
@@ -18,27 +19,27 @@ export class CalculateThermodynamicTransferUseCase {
   private readonly AMBIENT_TEMP_K = 293.15;
   private readonly AMBIENT_TEMP_CELSIUS = 20.0;
 
-  constructor(private readonly gasComposition: GasComposition = STANDARD_GAS_COMPOSITION) {}
+  constructor() {}
 
-  public execute(initial: ThermodynamicState, final: ThermodynamicState, volumeLiters: number): TransferResult {
-    if (initial.pressureBar > 230) {
-      throw new PressureExceededException(`Initial pressure exceeds max limit of 230 bar: ${initial.pressureBar} bar`);
+  public execute(initial: ThermodynamicState, final: ThermodynamicState, volumeLiters: number, gasComposition: GasComposition = STANDARD_GAS_COMPOSITION): TransferResult {
+    if (initial.pressureBar > 260) {
+      throw new PressureExceededException(`Initial pressure exceeds max limit of 260 bar: ${initial.pressureBar} bar`);
     }
-    if (final.pressureBar > 230) {
-      throw new PressureExceededException(`Final pressure exceeds max limit of 230 bar: ${final.pressureBar} bar`);
+    if (final.pressureBar > 260) {
+      throw new PressureExceededException(`Final pressure exceeds max limit of 260 bar: ${final.pressureBar} bar`);
     }
 
-    const zInitial = this.calculateZFactor(initial.pressureBar, initial.temperatureK);
-    const zFinal = this.calculateZFactor(final.pressureBar, final.temperatureK);
+    const zInitial = this.calculateZFactor(initial.pressureBar, initial.temperatureK, gasComposition);
+    const zFinal = this.calculateZFactor(final.pressureBar, final.temperatureK, gasComposition);
 
-    const initialMass = this.calculateMass(initial.pressureBar, initial.temperatureK, volumeLiters, zInitial);
-    const finalMass = this.calculateMass(final.pressureBar, final.temperatureK, volumeLiters, zFinal);
+    const initialMass = this.calculateMass(initial.pressureBar, initial.temperatureK, volumeLiters, gasComposition, zInitial);
+    const finalMass = this.calculateMass(final.pressureBar, final.temperatureK, volumeLiters, gasComposition, zFinal);
     
     const massTransferred = Math.max(0, finalMass - initialMass);
-    const volumeTransferred = this.calculateStandardVolume(massTransferred);
+    const volumeTransferred = this.calculateStandardVolume(massTransferred, gasComposition);
 
     // Predicción de presión estabilizada en reposo a temperatura ambiente (20°C)
-    const stabilizedPressureBar = this.calculateStabilizedPressure(finalMass, volumeLiters, this.AMBIENT_TEMP_K, final.pressureBar);
+    const stabilizedPressureBar = this.calculateStabilizedPressure(finalMass, volumeLiters, this.AMBIENT_TEMP_K, final.pressureBar, gasComposition);
     const thermalPressureLossBar = Math.max(0, final.pressureBar - stabilizedPressureBar);
 
     return {
@@ -58,11 +59,11 @@ export class CalculateThermodynamicTransferUseCase {
    * Ecuación de Estado AGA-8 / Dranchuk-Abu-Kassem (DAK) para Gas Natural.
    * Precisión de alta fidelidad (< 0.15% de desviación) en el rango de 0 a 350 bar.
    */
-  public calculateZFactor(pressureBar: number, temperatureK: number): number {
+  public calculateZFactor(pressureBar: number, temperatureK: number, gasComposition: GasComposition): number {
     if (pressureBar <= 0.05) return 1.0;
     
-    const Pr = pressureBar / this.gasComposition.criticalPressure;
-    const Tr = temperatureK / this.gasComposition.criticalTemperature;
+    const Pr = pressureBar / gasComposition.criticalPressure;
+    const Tr = temperatureK / gasComposition.criticalTemperature;
 
     // Coeficientes empíricos AGA-8 / DAK calibrados para mezclas de GNC/GNV
     const A1 = 0.3265;
@@ -118,17 +119,17 @@ export class CalculateThermodynamicTransferUseCase {
     return z;
   }
 
-  private calculateMass(pressureBar: number, temperatureK: number, volumeLiters: number, zFactor?: number): number {
+  private calculateMass(pressureBar: number, temperatureK: number, volumeLiters: number, gasComposition: GasComposition, zFactor?: number): number {
     if (pressureBar <= 0) return 0;
-    const z = zFactor ?? this.calculateZFactor(pressureBar, temperatureK);
-    const massGrams = (pressureBar * volumeLiters * this.gasComposition.molarMass) / (z * UNIVERSAL_GAS_CONSTANT * temperatureK);
+    const z = zFactor ?? this.calculateZFactor(pressureBar, temperatureK, gasComposition);
+    const massGrams = (pressureBar * volumeLiters * gasComposition.molarMass) / (z * UNIVERSAL_GAS_CONSTANT * temperatureK);
     return massGrams / 1000;
   }
 
-  private calculateStandardVolume(massKg: number): number {
-    const zStd = this.calculateZFactor(STANDARD_PRESSURE_BAR, STANDARD_TEMPERATURE_K);
+  private calculateStandardVolume(massKg: number, gasComposition: GasComposition): number {
+    const zStd = this.calculateZFactor(STANDARD_PRESSURE_BAR, STANDARD_TEMPERATURE_K, gasComposition);
     const massGrams = massKg * 1000;
-    const volumeLiters = (massGrams * zStd * UNIVERSAL_GAS_CONSTANT * STANDARD_TEMPERATURE_K) / (STANDARD_PRESSURE_BAR * this.gasComposition.molarMass);
+    const volumeLiters = (massGrams * zStd * UNIVERSAL_GAS_CONSTANT * STANDARD_TEMPERATURE_K) / (STANDARD_PRESSURE_BAR * gasComposition.molarMass);
     return volumeLiters / 1000;
   }
 
@@ -136,17 +137,17 @@ export class CalculateThermodynamicTransferUseCase {
    * Resuelve el balance isocórico (Volumen constante, Masa constante)
    * para predecir la presión que alcanzará el módulo al enfriarse a temperatura ambiente.
    */
-  private calculateStabilizedPressure(finalMassKg: number, volumeLiters: number, ambientTempK: number, pInitialEstimate: number): number {
+  private calculateStabilizedPressure(finalMassKg: number, volumeLiters: number, ambientTempK: number, pInitialEstimate: number, gasComposition: GasComposition): number {
     if (finalMassKg <= 0 || volumeLiters <= 0) return 0;
 
     // Constante objetivo: P / Z(P, Tamb) = (m_f * R * Tamb) / (V * M)
-    const targetRatio = (finalMassKg * 1000 * UNIVERSAL_GAS_CONSTANT * ambientTempK) / (volumeLiters * this.gasComposition.molarMass);
+    const targetRatio = (finalMassKg * 1000 * UNIVERSAL_GAS_CONSTANT * ambientTempK) / (volumeLiters * gasComposition.molarMass);
 
     // Estimación inicial usando ley de Charles como punto de partida
     let p = Math.max(1, pInitialEstimate * (ambientTempK / 323.15));
 
     for (let iter = 0; iter < 10; iter++) {
-      const z = this.calculateZFactor(p, ambientTempK);
+      const z = this.calculateZFactor(p, ambientTempK, gasComposition);
       const currentRatio = p / z;
       const error = currentRatio - targetRatio;
 
@@ -158,5 +159,12 @@ export class CalculateThermodynamicTransferUseCase {
     }
 
     return p;
+  }
+
+  public certifyAforo(pStabilized: number, totalVolumeSm3: number, totalDeltaP: number): AforoCertification {
+    return {
+      certified: pStabilized >= 230,
+      aforoSm3PerBar: totalDeltaP > 0 ? Number((totalVolumeSm3 / totalDeltaP).toFixed(4)) : 0
+    };
   }
 }

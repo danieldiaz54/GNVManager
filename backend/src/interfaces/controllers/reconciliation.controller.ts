@@ -4,9 +4,12 @@ import { SaveReconciliationRecordUseCase } from '../../application/use-cases/Sav
 import { SaveRackReconciliationUseCase } from '../../application/use-cases/SaveRackReconciliation';
 import { UpdateSaleVolumeUseCase } from '../../application/use-cases/UpdateSaleVolume';
 import { PrismaReconciliationRepository } from '../../infrastructure/database/PrismaReconciliationRepository';
+import { DivergenceException, PressureExceededException } from '../../domain/entities/Thermodynamics';
 
 const reconciliationSchema = z.object({
   recordType: z.string().optional(),
+  operationType: z.enum(['CARGUE', 'DESCARGUE']).optional(),
+  gasProfileId: z.string().optional(),
   moduleIdentifier: z.string().optional().nullable(),
   positionNumber: z.number().optional().nullable(),
   moduleCapacityLiters: z.number().positive(),
@@ -52,6 +55,10 @@ export class ReconciliationController {
         res.status(400).json({ success: false, error: 'Datos inválidos', details: error.issues });
         return;
       }
+      if (error instanceof DivergenceException || error instanceof PressureExceededException) {
+        res.status(422).json({ success: false, error: error.message });
+        return;
+      }
       console.error(error);
       res.status(500).json({ success: false, error: 'Error interno guardando la conciliación' });
     }
@@ -69,6 +76,10 @@ export class ReconciliationController {
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ success: false, error: 'Datos de rack inválidos', details: error.issues });
+        return;
+      }
+      if (error instanceof DivergenceException || error instanceof PressureExceededException) {
+        res.status(422).json({ success: false, error: error.message });
         return;
       }
       console.error(error);
@@ -117,6 +128,27 @@ export class ReconciliationController {
       }
       console.error(error);
       res.status(500).json({ success: false, error: 'Error actualizando venta' });
+    }
+  public exportRecord = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { format } = req.query; // csv | pdf
+
+      if (!id || typeof id !== 'string') {
+        res.status(400).json({ success: false, error: 'ID de registro requerido' });
+        return;
+      }
+
+      if (format !== 'csv' && format !== 'pdf') {
+        res.status(400).json({ success: false, error: 'Formato inválido. Use csv o pdf.' });
+        return;
+      }
+
+      // TODO: Implement export functionality
+      res.status(501).json({ success: false, error: 'Not Implemented' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ success: false, error: 'Error interno exportando registro' });
     }
   }
 }

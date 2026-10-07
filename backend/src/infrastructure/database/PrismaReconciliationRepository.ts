@@ -12,6 +12,7 @@ export class PrismaReconciliationRepository implements IReconciliationRepository
         moduleIdentifier: record.moduleIdentifier ?? null,
         positionNumber: record.positionNumber ?? null,
         parentId: record.parentId ?? null,
+        operationType: record.operationType || 'DESCARGUE',
         moduleCapacityLiters: record.moduleCapacityLiters,
         initialPressureBar: record.initialPressureBar,
         initialTempK: record.initialTempK,
@@ -35,6 +36,7 @@ export class PrismaReconciliationRepository implements IReconciliationRepository
         data: {
           recordType: dto.parent.recordType || 'RACK_PARENT',
           moduleIdentifier: dto.parent.moduleIdentifier || 'RACK-11P',
+          operationType: dto.parent.operationType || 'DESCARGUE',
           moduleCapacityLiters: dto.parent.moduleCapacityLiters,
           initialPressureBar: dto.parent.initialPressureBar,
           initialTempK: dto.parent.initialTempK,
@@ -53,6 +55,7 @@ export class PrismaReconciliationRepository implements IReconciliationRepository
             moduleIdentifier: dto.parent.moduleIdentifier || 'RACK-11P',
             positionNumber: pos.positionNumber ?? null,
             parentId: parentRecord.id,
+            operationType: pos.operationType || 'DESCARGUE',
             moduleCapacityLiters: pos.moduleCapacityLiters,
             initialPressureBar: pos.initialPressureBar,
             initialTempK: pos.initialTempK,

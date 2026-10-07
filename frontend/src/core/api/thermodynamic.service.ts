@@ -15,6 +15,8 @@ export interface TransferResult {
 
 export interface BatchCalculationItem {
   id: number | string;
+  operationType?: 'CARGUE' | 'DESCARGUE';
+  gasProfileId?: string;
   initialPressureBar: number;
   initialTempK: number;
   finalPressureBar: number;
@@ -28,7 +30,9 @@ export interface IThermodynamicsService {
     initialTempK: number,
     finalPressureBar: number,
     finalTempK: number,
-    volumeLiters: number
+    volumeLiters: number,
+    operationType?: 'CARGUE' | 'DESCARGUE',
+    gasProfileId?: string
   ): Promise<TransferResult>;
 
   calculateBatch(
@@ -44,9 +48,13 @@ export class AxiosThermodynamicsService implements IThermodynamicsService {
     initialTempK: number,
     finalPressureBar: number,
     finalTempK: number,
-    volumeLiters: number
+    volumeLiters: number,
+    operationType?: 'CARGUE' | 'DESCARGUE',
+    gasProfileId?: string
   ): Promise<TransferResult> {
     const response = await axios.post(`${this.baseURL}/thermodynamics/calculate`, {
+      operationType,
+      gasProfileId,
       initial: {
         pressureBar: initialPressureBar,
         temperatureK: initialTempK
@@ -67,6 +75,8 @@ export class AxiosThermodynamicsService implements IThermodynamicsService {
     const response = await axios.post(`${this.baseURL}/thermodynamics/calculate-batch`, {
       items: items.map(item => ({
         id: item.id,
+        operationType: item.operationType,
+        gasProfileId: item.gasProfileId,
         initial: {
           pressureBar: item.initialPressureBar,
           temperatureK: item.initialTempK

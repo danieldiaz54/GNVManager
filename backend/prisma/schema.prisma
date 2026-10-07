@@ -23,6 +23,9 @@ model ReconciliationRecord {
   moduleIdentifier String?
   positionNumber   Int?
 
+  // Operación: "CARGUE" o "DESCARGUE"
+  operationType String @default("DESCARGUE")
+
   // Relación Jerárquica para Rack
   parentId String?
   parent   ReconciliationRecord?  @relation("ManifoldHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
@@ -71,4 +74,18 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
 
   @@map("users")
+}
+
+// Perfil de Gas (Cromatografías Surtigas u otros)
+model GasProfile {
+  id                  String   @id @default(uuid())
+  name                String   @unique
+  methanePercentage   Float
+  specificGravity     Float
+  molarMass           Float
+  criticalPressure    Float
+  criticalTemperature Float
+  createdAt           DateTime @default(now())
+
+  @@map("gas_profiles")
 }

@@ -1,25 +1,12 @@
-# Thermodynamics Engine Specification
+# Thermodynamic Engine Specification
 
-## Overview
-This document outlines the business rules and constraints for the Thermodynamics Engine within the GNV Manager application, adhering to Clean Architecture and Spec-Driven Development (SDD) principles.
+## 1. Reglas Operativas e Isocóricas
+- El cálculo termodinámico (DAK / Newton-Raphson) debe resolver divergencias usando `DivergenceException` si las iteraciones > 12.
+- **Techo Operativo Nominal:** El límite máximo absoluto permitido para las presiones de entrada de instrumentos es de **260 bar** (para soportar picos de compresores de 250 bar). Un valor mayor arroja `PressureExceededException`.
+- **Certificación Sabanas (Aforo):** La barrera de los 230 bar **no** detiene ni invalida una operación. Es una regla de certificación en frío. El motor debe contar con una función `certifyAforo(pStabilized, totalVolumeSm3, totalDeltaP)` que retorne `{ certified: boolean, aforoSm3PerBar: number }`. Sólo si `pStabilized >= 230` bar se considera `certified: true`. De lo contrario, se marca como falso (subllenado térmico) pero el cálculo se acepta.
 
-## 1. Domain Entities & Exceptions
-The domain model must be robust and encapsulate critical business constraints.
-
-### 1.1 Exceptions
-- **`DivergenceException`**: Thrown when a numerical solver (like Newton-Raphson) fails to converge within the allowed maximum number of iterations.
-- **`PressureExceededException`**: Thrown when the system pressure exceeds the maximum safe operational limits.
-
-### 1.2 Gas Properties Injection
-Hardcoded physical properties such as `molarMass`, `criticalPressure`, and `criticalTemperature` must not be directly hardcoded into the calculation logic. Instead, a `GasComposition` object must be injected into the thermodynamics services to ensure flexibility across different gas mixtures.
-
-## 2. Z-Factor Calculation (Newton-Raphson Solver)
-The engine utilizes the AGA-8 / Dranchuk-Abu-Kassem (DAK) Equation of State for natural gas.
-- The iterative solver uses the Newton-Raphson method to find the reduced density.
-- **Rule**: If the solver does not converge (difference between iterations `< 1e-6`) within exactly 12 iterations, it **MUST THROW** a `DivergenceException`.
-- **Constraint**: The previous behavior of silently clamping the Z-factor between 0.2 and 2.0 upon completion or failure is strictly forbidden as it hides calculation instability. The clamping can still exist for valid converged results, but non-convergence must throw.
-
-## 3. Sabanas / Aforo Constraints
-For Sabanas (or specifically for Aforo/Loading scenarios), there are strict operational safety limits.
-- **Rule**: The maximum valid pressure is capped at **230 bar**.
-- **Behavior**: The system must validate any `ThermodynamicState` (initial or final) provided to the transfer calculation. If the `pressureBar` exceeds 230 bar, a `PressureExceededException` **MUST** be thrown to prevent unsafe estimations or operations.
+## 2. Perfiles Cromatográficos Oficiales Surtigas
+La composición molar del gas ($G_r$) se parametrizará a través de la entidad `GasProfile`:
+- **Bonga-Mamey (Sabanas):** ~96.3666% $CH_4$. Masa Molar ($M$) equivalente a Gravedad Específica $G_r = 0.5756$.
+- **Candilejas (Canacol 2):** ~99.1685% $CH_4$. Masa Molar ($M$) equivalente a Gravedad Específica $G_r = 0.5600$.
+*(Nota: Masa Molar = $G_r \times 28.9625$)*

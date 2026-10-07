@@ -27,7 +27,6 @@ import {
   Sparkles
 } from 'lucide-react';
 
-export type TopologyMode = 'RACK_11' | 'RACK_12' | 'INDIVIDUAL';
 export type FlowType = 'CARGUE' | 'DESCARGUE';
 
 export interface PositionState {
@@ -45,12 +44,11 @@ interface DispatchConsoleProps {
 }
 
 export default function DispatchConsole({ onSaveOperation, isSaving = false }: DispatchConsoleProps) {
-  // 1. Selector de Topología y Módulo
-  const [topology, setTopology] = useState<TopologyMode>('RACK_11');
+  // 1. Capacidad Geométrica Desacoplada
+  const [totalCapacity, setTotalCapacity] = useState<number>(13497);
   const [flowType, setFlowType] = useState<FlowType>('CARGUE');
   const [pressureUnit, setPressureUnit] = useState<'bar' | 'psi'>('bar');
-  const [identifier, setIdentifier] = useState('RACK-11P');
-  const [totalCapacity, setTotalCapacity] = useState<number>(13497);
+  const [identifier, setIdentifier] = useState('RACK-12P');
 
   // 2. Cromatografía Dinámica Surtigas
   const [gasProfiles, setGasProfiles] = useState<GasProfileDTO[] | GasProfilePreset[]>(DEFAULT_GAS_PROFILES);
@@ -61,9 +59,6 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
   const [headerPf, setHeaderPf] = useState(250);
   const [headerTi, setHeaderTi] = useState(25);
   const [headerTf, setHeaderTf] = useState(45);
-
-  // 4. Conciliación FinOps en Tiempo Real (Simulación / Auditoría para Gerencia)
-  const [dispensedSalesInput, setDispensedSalesInput] = useState<string>('');
 
   // 5. Estados UI
   const [showTuning, setShowTuning] = useState(false);
@@ -85,24 +80,11 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
     return DEFAULT_GAS_PROFILES[0];
   }, [gasProfiles, selectedGasProfileId]);
 
-  const totalCylindersCount = topology === 'INDIVIDUAL' ? 1 : topology === 'RACK_12' ? 12 : 11;
-
-  // Manejo de Topología
-  const handleTopologyChange = (newTop: TopologyMode) => {
-    setTopology(newTop);
-    if (newTop === 'INDIVIDUAL') {
-      setIdentifier('MOD-01');
-      setTotalCapacity(13497);
-    } else if (newTop === 'RACK_12') {
-      setIdentifier('RACK-12P');
-    } else {
-      setIdentifier('RACK-11P');
-    }
-  };
+  const totalCylindersCount = 12;
 
   // Posiciones del Rack
   const [positions, setPositions] = useState<PositionState[]>(() =>
-    Array.from({ length: 11 }, (_, i) => ({
+    Array.from({ length: 12 }, (_, i) => ({
       id: i + 1,
       label: `POS-${String(i + 1).padStart(2, '0')}`,
       active: true,
@@ -118,14 +100,14 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
         if (existing) return existing;
         return {
           id: i + 1,
-          label: topology === 'INDIVIDUAL' ? 'TUBO INDIVIDUAL' : `POS-${String(i + 1).padStart(2, '0')}`,
+          label: `POS-${String(i + 1).padStart(2, '0')}`,
           active: true,
           pi: headerPi,
           pf: headerPf,
         };
       });
     });
-  }, [totalCylindersCount, topology]);
+  }, [totalCylindersCount]);
 
   const activePositions = useMemo(() => positions.filter(p => p.active), [positions]);
   const activeCount = activePositions.length;
@@ -231,13 +213,6 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
   const isAforoCertified = avgStabilizedPressureBar >= 230;
   const aforoConstant = absDeltaPressureBar > 0 ? (totalVolume_Sm3 / absDeltaPressureBar) : 0;
 
-  // Conciliación FinOps en Vivo
-  const parsedDispensedSales = parseFloat(dispensedSalesInput);
-  const hasDispensedInput = !isNaN(parsedDispensedSales) && parsedDispensedSales > 0;
-  const variationSm3 = hasDispensedInput ? parsedDispensedSales - totalVolume_Sm3 : 0;
-  const variationPercent = hasDispensedInput && totalVolume_Sm3 > 0 ? (variationSm3 / totalVolume_Sm3) * 100 : 0;
-  const isWithinFinOpsTolerance = Math.abs(variationPercent) <= 2.0;
-
   // Toggle de cilindros individuales
   const togglePositionActive = (id: number) => {
     setPositions(prev => prev.map(p => p.id === id ? { ...p, active: !p.active } : p));
@@ -263,7 +238,7 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
 
     const payload: SaveRackDTO = {
       parent: {
-        recordType: topology === 'INDIVIDUAL' ? 'INDIVIDUAL' : 'RACK_PARENT',
+        recordType: 'RACK_PARENT',
         operationType: flowType,
         gasProfileId: selectedGasProfileId,
         moduleIdentifier: identifier,
@@ -276,7 +251,7 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
         calculatedVolumeSm3: totalVolume_Sm3
       },
       positions: activePositions.map(pos => ({
-        recordType: topology === 'INDIVIDUAL' ? 'INDIVIDUAL' : 'RACK_CHILD',
+        recordType: 'RACK_CHILD',
         operationType: flowType,
         gasProfileId: selectedGasProfileId,
         moduleIdentifier: identifier,
@@ -301,78 +276,44 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
   };
 
   return (
-    <div className="space-y-6 w-full animate-fade-in font-sans">
+    <div className="space-y-8 w-full animate-fade-in font-sans">
       
       {/* 1. Barra Ejecutiva de Control Operacional */}
-      <div className="p-4 sm:p-5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col xl:flex-row xl:items-center justify-between gap-4 shadow-none">
+      <div className="p-6 sm:p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col xl:flex-row xl:items-center justify-between gap-6 shadow-none">
         
         {/* Lado Izquierdo: Selección de Flota y Flujo */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-4">
           
-          {/* Topología */}
-          <div className="flex bg-[var(--color-canvas)] border border-[var(--color-border)] p-0.5 rounded-md text-xs">
-            <button
-              type="button"
-              onClick={() => handleTopologyChange('RACK_11')}
-              className={`px-3 py-1.5 font-medium rounded-sm transition-all flex items-center gap-1.5 ${
-                topology === 'RACK_11'
-                  ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] font-bold shadow-xs border border-[var(--color-border)]'
-                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5" />
-              <span>Batería 11 Cilindros</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTopologyChange('RACK_12')}
-              className={`px-3 py-1.5 font-medium rounded-sm transition-all flex items-center gap-1.5 ${
-                topology === 'RACK_12'
-                  ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] font-bold shadow-xs border border-[var(--color-border)]'
-                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5" />
-              <span>Batería 12 Cilindros</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTopologyChange('INDIVIDUAL')}
-              className={`px-3 py-1.5 font-medium rounded-sm transition-all flex items-center gap-1.5 ${
-                topology === 'INDIVIDUAL'
-                  ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] font-bold shadow-xs border border-[var(--color-border)]'
-                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-              }`}
-            >
-              <Box className="w-3.5 h-3.5" />
-              <span>Módulo Individual</span>
-            </button>
-          </div>
 
           {/* Conmutador Operativo: Cargue vs Descargue */}
-          <div className="flex bg-[var(--color-canvas)] border border-[var(--color-border)] p-0.5 rounded-md text-xs">
-            <button
-              type="button"
-              onClick={() => handleFlowSwitch('CARGUE')}
-              className={`px-3.5 py-1.5 font-bold uppercase tracking-wider rounded-sm transition-all ${
-                flowType === 'CARGUE'
-                  ? 'bg-[var(--color-alert-blue-bg)] text-[var(--color-alert-blue-text)] border border-[var(--color-border)]'
-                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-              }`}
-            >
-              Cargue
-            </button>
-            <button
-              type="button"
-              onClick={() => handleFlowSwitch('DESCARGUE')}
-              className={`px-3.5 py-1.5 font-bold uppercase tracking-wider rounded-sm transition-all ${
-                flowType === 'DESCARGUE'
-                  ? 'bg-[var(--color-alert-green-bg)] text-[var(--color-alert-green-text)] border border-[var(--color-border)]'
-                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-              }`}
-            >
-              Descargue
-            </button>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">
+              Flujo:
+            </span>
+            <div className="flex bg-[var(--color-canvas)] border border-[var(--color-border)] p-0.5 rounded-md text-xs">
+              <button
+                type="button"
+                onClick={() => handleFlowSwitch('CARGUE')}
+                className={`px-3.5 py-1.5 font-bold uppercase tracking-wider rounded-sm transition-all ${
+                  flowType === 'CARGUE'
+                    ? 'bg-[var(--color-alert-blue-bg)] text-[var(--color-alert-blue-text)] border border-[var(--color-border)]'
+                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                }`}
+              >
+                Cargue
+              </button>
+              <button
+                type="button"
+                onClick={() => handleFlowSwitch('DESCARGUE')}
+                className={`px-3.5 py-1.5 font-bold uppercase tracking-wider rounded-sm transition-all ${
+                  flowType === 'DESCARGUE'
+                    ? 'bg-[var(--color-alert-green-bg)] text-[var(--color-alert-green-text)] border border-[var(--color-border)]'
+                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                }`}
+              >
+                Descargue
+              </button>
+            </div>
           </div>
 
         </div>
@@ -457,14 +398,14 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
 
       </div>
 
-      {/* 2. Tríptico de Control Ejecutivo (Las 3 Tarjetas Directivas del Gerente General) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+      {/* 2. Díptico de Control Ejecutivo */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
         
         {/* TARJETA 1: Parámetros Físicos y Certificado del Gas */}
-        <div className="p-6 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col justify-between space-y-6 shadow-none">
+        <div className="p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col justify-between space-y-8 shadow-none">
           
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--color-border)]">
+          <div className="space-y-8">
+            <div className="flex items-center justify-between pb-4 border-b border-[var(--color-border)]">
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-secondary)] block">
                   1. Entrada Instrumental
@@ -477,12 +418,12 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
             </div>
 
             {/* Presiones de Entrada */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)]">
-                <span className="text-[10px] font-mono text-[var(--color-text-secondary)] uppercase block mb-1">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="p-6 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-border)] shadow-none">
+                <span className="text-xs font-mono text-[var(--color-text-secondary)] uppercase block mb-4 tracking-widest">
                   {flowType === 'CARGUE' ? 'P₁ Talón' : 'P₁ Llegada'}
                 </span>
-                <div className="flex items-baseline gap-1">
+                <div className="flex items-baseline gap-2 border-b border-[var(--color-border)] pb-2 mb-4">
                   <input
                     type="number"
                     value={headerPi}
@@ -491,27 +432,27 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
                       setHeaderPi(val);
                       applyHeaderToPositions(val, headerPf);
                     }}
-                    className="w-full bg-transparent font-mono font-bold text-lg text-[var(--color-text-primary)] focus:outline-none"
+                    className="w-full bg-transparent font-serif font-bold text-4xl sm:text-5xl text-[var(--color-text-primary)] focus:outline-none"
                   />
-                  <span className="text-[11px] text-[var(--color-text-secondary)] font-mono">{pressureUnit}</span>
+                  <span className="text-sm text-[var(--color-text-secondary)] font-mono">{pressureUnit}</span>
                 </div>
-                <div className="flex items-center gap-1 mt-1 text-[11px] text-[var(--color-text-secondary)]">
-                  <Thermometer className="w-3 h-3" />
+                <div className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
+                  <Thermometer className="w-4 h-4" />
                   <input 
                     type="number" 
                     value={headerTi} 
                     onChange={(e) => setHeaderTi(Number(e.target.value))}
-                    className="w-10 bg-transparent font-mono text-[11px] focus:outline-none"
+                    className="w-12 bg-transparent font-mono text-sm focus:outline-none"
                   />
                   <span>°C</span>
                 </div>
               </div>
 
-              <div className="p-3 rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)]">
-                <span className="text-[10px] font-mono text-[var(--color-text-secondary)] uppercase block mb-1">
+              <div className="p-6 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-border)] shadow-none">
+                <span className="text-xs font-mono text-[var(--color-text-secondary)] uppercase block mb-4 tracking-widest">
                   {flowType === 'CARGUE' ? 'P₂ Corte' : 'P₂ Remanente'}
                 </span>
-                <div className="flex items-baseline gap-1">
+                <div className="flex items-baseline gap-2 border-b border-[var(--color-border)] pb-2 mb-4">
                   <input
                     type="number"
                     value={headerPf}
@@ -520,56 +461,87 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
                       setHeaderPf(val);
                       applyHeaderToPositions(headerPi, val);
                     }}
-                    className="w-full bg-transparent font-mono font-bold text-lg text-[var(--color-text-primary)] focus:outline-none"
+                    className="w-full bg-transparent font-serif font-bold text-4xl sm:text-5xl text-[var(--color-text-primary)] focus:outline-none"
                   />
-                  <span className="text-[11px] text-[var(--color-text-secondary)] font-mono">{pressureUnit}</span>
+                  <span className="text-sm text-[var(--color-text-secondary)] font-mono">{pressureUnit}</span>
                 </div>
-                <div className="flex items-center gap-1 mt-1 text-[11px] text-[var(--color-text-secondary)]">
-                  <Thermometer className="w-3 h-3" />
+                <div className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
+                  <Thermometer className="w-4 h-4" />
                   <input 
                     type="number" 
                     value={headerTf} 
                     onChange={(e) => setHeaderTf(Number(e.target.value))}
-                    className="w-10 bg-transparent font-mono text-[11px] focus:outline-none"
+                    className="w-12 bg-transparent font-mono text-sm focus:outline-none"
                   />
                   <span>°C</span>
                 </div>
               </div>
             </div>
 
-            {/* Presets de Volumen Nominal */}
-            <div>
-              <span className="text-[11px] font-mono text-[var(--color-text-secondary)] uppercase block mb-1.5">
-                Capacidad Geométrica Nominal
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                {MODULE_PRESETS.map(preset => (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => setTotalCapacity(preset.capacity_L)}
-                    className={`py-1.5 px-2 text-xs font-mono rounded-md border text-center transition-colors ${
-                      totalCapacity === preset.capacity_L
-                        ? 'bg-[var(--color-text-primary)] text-[var(--color-canvas)] border-[var(--color-text-primary)] font-bold'
-                        : 'bg-[var(--color-canvas)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:text-[var(--color-text-primary)]'
-                    }`}
-                  >
-                    {preset.label}
-                  </button>
-                ))}
+            {/* Capacidad Geométrica Total & Prorrateo Automático */}
+            <div className="p-4 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-border)] space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-mono text-[var(--color-text-secondary)] uppercase tracking-wider font-bold">
+                  Capacidad Geométrica Total (Litros de Agua)
+                </span>
+                <span className="text-[11px] font-mono font-bold text-[var(--color-text-primary)]">
+                  Prorrateo: {capacityPerCylinder.toFixed(1)} L / tubo ({activeCount} activos)
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setTotalCapacity(13497)}
+                  className={`py-2 px-2.5 text-xs font-mono rounded-md border text-center transition-all cursor-pointer ${
+                    totalCapacity === 13497
+                      ? 'bg-[var(--color-text-primary)] text-[var(--color-canvas)] border-[var(--color-text-primary)] font-bold'
+                      : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:text-[var(--color-text-primary)]'
+                  }`}
+                >
+                  13,497 Litros
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTotalCapacity(26950)}
+                  className={`py-2 px-2.5 text-xs font-mono rounded-md border text-center transition-all cursor-pointer ${
+                    totalCapacity === 26950
+                      ? 'bg-[var(--color-text-primary)] text-[var(--color-canvas)] border-[var(--color-text-primary)] font-bold'
+                      : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:text-[var(--color-text-primary)]'
+                  }`}
+                >
+                  26,950 Litros
+                </button>
+                <div className="flex items-center gap-1.5 border border-[var(--color-border)] rounded-md px-2.5 bg-[var(--color-surface)]">
+                  <input
+                    type="number"
+                    step="1"
+                    value={totalCapacity}
+                    onChange={(e) => setTotalCapacity(Math.max(1, Number(e.target.value)))}
+                    className="w-full bg-transparent font-mono text-xs font-bold text-[var(--color-text-primary)] focus:outline-none"
+                    placeholder="Otro vol."
+                  />
+                  <span className="text-[10px] text-[var(--color-text-secondary)] font-mono">L</span>
+                </div>
               </div>
             </div>
 
-            {/* Ficha Técnica de la Cromatografía Seleccionada */}
-            <div className="p-3 rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)] text-xs space-y-1.5">
+            {/* Ficha Técnica de la Cromatografía Oficial Surtigas */}
+            <div className="p-3.5 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-border)] text-xs space-y-2">
               <div className="flex items-center justify-between text-[11px] font-bold text-[var(--color-text-primary)]">
-                <span>Ficha Cromatográfica:</span>
-                <span>{activeGas.name}</span>
+                <span className="flex items-center gap-1.5">
+                  <Flame className="w-3.5 h-3.5 text-amber-500" />
+                  Certificado Surtigas RUT (14.65 psia / 60 °F):
+                </span>
+                <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)]">
+                  {activeGas.name}
+                </span>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-[10px] font-mono text-[var(--color-text-secondary)] pt-1 border-t border-[var(--color-border)]">
-                <div>Metano: <strong className="text-[var(--color-text-primary)]">{activeGas.methanePercentage ? `${activeGas.methanePercentage.toFixed(2)}%` : '96.36%'}</strong></div>
-                <div>Gr. Esp: <strong className="text-[var(--color-text-primary)]">{activeGas.specificGravity ? activeGas.specificGravity.toFixed(4) : '0.5756'}</strong></div>
-                <div>Masa: <strong className="text-[var(--color-text-primary)]">{activeGas.molarMass ? `${activeGas.molarMass.toFixed(2)} g/mol` : '16.67'}</strong></div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-mono text-[var(--color-text-secondary)] pt-1.5 border-t border-[var(--color-border)]">
+                <div>CH₄: <strong className="text-[var(--color-text-primary)]">{activeGas.methanePercentage ? `${activeGas.methanePercentage.toFixed(4)}%` : '96.3666%'}</strong></div>
+                <div>N₂: <strong className="text-[var(--color-text-primary)]">{activeGas.nitrogenPercentage ? `${activeGas.nitrogenPercentage.toFixed(4)}%` : '2.5379%'}</strong></div>
+                <div>Gr. Esp (Gr): <strong className="text-[var(--color-text-primary)]">{activeGas.specificGravity ? activeGas.specificGravity.toFixed(4) : '0.5756'}</strong></div>
+                <div>P. Calorífico: <strong className="text-[var(--color-text-primary)]">{activeGas.grossCalorificValue ? `${activeGas.grossCalorificValue.toFixed(1)} kcal/m³` : '8,884.3 kcal/m³'}</strong></div>
               </div>
             </div>
 
@@ -582,10 +554,10 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
         </div>
 
         {/* TARJETA 2: Dictamen Termodinámico y Certificación Sabanas */}
-        <div className="p-6 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col justify-between space-y-6 shadow-none">
+        <div className="p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col justify-between space-y-8 shadow-none">
           
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--color-border)]">
+          <div className="space-y-8">
+            <div className="flex items-center justify-between pb-4 border-b border-[var(--color-border)]">
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-secondary)] block">
                   2. Balance Físico & Certificación
@@ -596,28 +568,28 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
             </div>
 
             {/* Carga Neta Normalizada */}
-            <div className="p-4 rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)]">
-              <span className="text-[11px] font-mono text-[var(--color-text-secondary)] uppercase tracking-wider block">
+            <div className="p-6 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-border)] shadow-none">
+              <span className="text-xs font-mono text-[var(--color-text-secondary)] uppercase tracking-widest block mb-4">
                 Volumen Transferido AGA-8
               </span>
-              <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-4xl font-serif font-bold text-[var(--color-text-primary)] tracking-tight">
+              <div className="flex items-baseline gap-3 mt-1 border-b border-[var(--color-border)] pb-4 mb-4">
+                <span className="text-6xl font-serif font-bold text-[var(--color-text-primary)] tracking-tight">
                   {Math.abs(totalVolume_Sm3).toFixed(2)}
                 </span>
-                <span className="text-sm font-mono text-[var(--color-text-secondary)]">Sm³</span>
+                <span className="text-lg font-mono text-[var(--color-text-secondary)]">Sm³</span>
               </div>
-              <div className="mt-2 text-xs font-mono text-[var(--color-text-secondary)]">
-                Masa Neta: <strong className="text-[var(--color-text-primary)]">{Math.abs(totalMass_kg).toFixed(2)} kg</strong>
+              <div className="text-sm font-mono text-[var(--color-text-secondary)]">
+                Masa Neta: <strong className="text-[var(--color-text-primary)] font-bold text-base">{Math.abs(totalMass_kg).toFixed(2)} kg</strong>
               </div>
             </div>
 
             {/* Sello de Aforo Certificado (Sabanas) */}
-            <div className={`p-4 rounded-md border transition-all ${
+            <div className={`p-6 rounded-lg border transition-all shadow-none ${
               isAforoCertified
                 ? 'bg-[var(--color-alert-green-bg)] border-[var(--color-alert-green-border)] text-[var(--color-alert-green-text)]'
                 : 'bg-[var(--color-alert-yellow-bg)] border-[var(--color-alert-yellow-border)] text-[var(--color-alert-yellow-text)]'
             }`}>
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-4">
                 {isAforoCertified ? (
                   <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
                 ) : (
@@ -651,102 +623,40 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
 
         </div>
 
-        {/* TARJETA 3: Auditoría FinOps (Ventas vs Físico) & Asentamiento */}
-        <div className="p-6 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col justify-between space-y-6 shadow-none">
-          
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--color-border)]">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-secondary)] block">
-                  3. Conciliación FinOps Directa
-                </span>
-                <span className="text-[11px] text-[var(--color-text-secondary)]">Ventas Dispensadas vs Físico</span>
-              </div>
-              <DollarSign className="w-4 h-4 text-blue-600" />
-            </div>
+      </div>
 
-            {/* Input de Ventas en Surtidor para Conciliación Inmediata */}
-            <div className="p-4 rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)] space-y-2">
-              <label className="text-[11px] font-mono text-[var(--color-text-secondary)] uppercase block">
-                Ventas Dispensadas en Surtidores (Sm³)
-              </label>
-              <div className="flex items-baseline gap-2">
-                <input
-                  type="number"
-                  step="0.1"
-                  placeholder="Ej. 2680.0"
-                  value={dispensedSalesInput}
-                  onChange={(e) => setDispensedSalesInput(e.target.value)}
-                  className="w-full bg-[var(--color-surface)] px-3 py-2 rounded-md border border-[var(--color-border)] font-mono font-bold text-lg text-[var(--color-text-primary)] focus:outline-none"
-                />
-                <span className="text-xs font-mono text-[var(--color-text-secondary)]">Sm³</span>
-              </div>
-            </div>
-
-            {/* Diagnóstico de Variación y Merma */}
-            {hasDispensedInput ? (
-              <div className={`p-4 rounded-md border ${
-                isWithinFinOpsTolerance
-                  ? 'bg-[var(--color-alert-green-bg)] border-[var(--color-alert-green-border)] text-[var(--color-alert-green-text)]'
-                  : 'bg-[var(--color-alert-red-bg)] border-[var(--color-alert-red-border)] text-[var(--color-alert-red-text)]'
-              }`}>
-                <div className="flex items-center justify-between text-xs font-bold uppercase mb-1">
-                  <span>Variación Operativa</span>
-                  <span>{isWithinFinOpsTolerance ? 'En Tolerancia (≤2%)' : 'Alerta de Merma (>2%)'}</span>
-                </div>
-                <div className="flex items-baseline gap-2 text-2xl font-serif font-bold">
-                  <span>{variationSm3 > 0 ? `+${variationSm3.toFixed(1)}` : variationSm3.toFixed(1)} Sm³</span>
-                  <span className="text-xs font-mono ml-auto">({variationPercent > 0 ? `+${variationPercent.toFixed(2)}` : variationPercent.toFixed(2)}%)</span>
-                </div>
-                <p className="text-[10px] mt-1 opacity-90">
-                  {variationSm3 >= 0 ? 'Faltante de volumen entregado frente a ventas' : 'Sobrante a favor de la estación'}
-                </p>
-              </div>
-            ) : (
-              <div className="p-4 rounded-md border border-dashed border-[var(--color-border)] bg-[var(--color-canvas)] text-center text-xs text-[var(--color-text-secondary)]">
-                Ingresa la venta de los surtidores para calcular la variación y certificar la merma de inmediato.
-              </div>
-            )}
-
-          </div>
-
-          {/* Botón de Asentamiento en Libro Mayor */}
-          <div className="pt-4 border-t border-[var(--color-border)]">
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={activeCount === 0 || isSaving}
-              className={`w-full py-3.5 px-4 rounded-md text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
-                isSavedFeedback
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-[var(--color-text-primary)] hover:opacity-90 text-[var(--color-canvas)] disabled:opacity-40 cursor-pointer'
-              }`}
-            >
-              {isSaving ? (
-                <span>Asentando en Libro Mayor...</span>
-              ) : isSavedFeedback ? (
-                <>
-                  <Check className="w-4 h-4 stroke-[2.5px]" />
-                  <span>Operación Asentada Exitosamente</span>
-                </>
-              ) : (
-                <>
-                  <span>Asentar Operación en Ledger Inmutable</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </div>
-
-        </div>
-
+      {/* Botón de Asentamiento en Libro Mayor */}
+      <div className="pt-2">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={activeCount === 0 || isSaving}
+          className={`w-full py-4 px-4 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-sm ${
+            isSavedFeedback
+              ? 'bg-emerald-600 text-white'
+              : 'bg-[var(--color-text-primary)] hover:opacity-90 text-[var(--color-canvas)] disabled:opacity-40 cursor-pointer'
+          }`}
+        >
+          {isSaving ? (
+            <span>Asentando en Libro Mayor...</span>
+          ) : isSavedFeedback ? (
+            <>
+              <Check className="w-5 h-5 stroke-[2.5px]" />
+              <span>Operación Asentada Exitosamente</span>
+            </>
+          ) : (
+            <>
+              <span>Asentar Operación Física en Ledger Inmutable</span>
+              <ArrowRight className="w-5 h-5" />
+            </>
+          )}
+        </button>
       </div>
 
       {/* 3. Digital Twin de la Batería de Cilindros & Ajuste Fino */}
-      {topology !== 'INDIVIDUAL' && (
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-6 space-y-4 shadow-none">
+      <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-8 space-y-8 shadow-none mt-8">
           
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--color-border)]">
             <div>
               <span className="text-xs font-bold text-[var(--color-text-primary)] uppercase tracking-wider block">
                 Digital Twin: Estado de la Batería ({activeCount}/{totalCylindersCount} Cilindros Activos)
@@ -898,8 +808,6 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
           )}
 
         </div>
-      )}
-
     </div>
   );
 }

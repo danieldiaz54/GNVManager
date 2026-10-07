@@ -8,18 +8,24 @@ async function main() {
     where: { username: 'gerente_gnv' }
   });
 
+  const passwordHash = await bcrypt.hash('seguridad123', 10);
+  
   if (!adminExists) {
-    const passwordHash = await bcrypt.hash('seguridad123', 10);
     const user = await prisma.user.create({
       data: {
         username: 'gerente_gnv',
+        fullName: 'Fernando Diaz Benavides',
         passwordHash,
         role: 'admin'
       }
     });
     console.log(`Usuario administrador creado con ID: ${user.id}`);
   } else {
-    console.log('El usuario administrador ya existe.');
+    await prisma.user.update({
+      where: { username: 'gerente_gnv' },
+      data: { fullName: 'Fernando Diaz Benavides' }
+    });
+    console.log('El usuario administrador ya existe. Actualizado con nombre completo.');
   }
 
   // Seed Gas Profiles con datos oficiales de los certificados Surtigas 2026

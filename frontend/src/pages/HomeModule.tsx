@@ -28,7 +28,7 @@ export default function HomeModule() {
       <div className="flex flex-col md:flex-row md:items-end justify-between pb-6 border-b border-[var(--color-border)] gap-4">
         <div>
           <h1 className="text-3xl font-serif font-bold text-[var(--color-text-primary)] tracking-tight">
-            {timeGreeting()}, {user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1).replace('_', ' ') : 'Operador'}
+            {timeGreeting()}, {user?.fullName || (user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1).replace('_', ' ') : 'Operador')}
           </h1>
           <p className="text-sm text-[var(--color-text-secondary)] font-mono mt-2">
             Panel principal de GNV Manager · Ingeniería y Control

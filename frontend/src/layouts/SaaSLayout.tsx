@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, BarChart3, Settings, LogOut, Menu, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Settings, LogOut, Menu, Sun, Moon, Database } from 'lucide-react';
 import GasFlame from '../components/GasFlame';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -12,6 +12,7 @@ export default function SaaSLayout() {
 
   const menuItems = [
     { path: '/app/thermodynamics', label: 'Consola de Despacho', icon: LayoutDashboard },
+    { path: '/app/gas-profiles', label: 'Perfiles de Gas', icon: Database },
     { path: '/app/reports', label: 'Reportes & Auditoría', icon: BarChart3 },
     { path: '/app/settings', label: 'Configuración', icon: Settings },
   ];

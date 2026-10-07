@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LayoutDashboard, Database, Activity, TrendingUp, AlertTriangle, Layers, Droplets } from 'lucide-react';
 import { thermodynamicsService } from '../core/api/thermodynamic.service';
+import { useAuth } from '../context/AuthContext';
 
 export default function HomeModule() {
   const [profileCount, setProfileCount] = useState<number>(0);
+  const { user } = useAuth();
   
   useEffect(() => {
     thermodynamicsService.getGasProfiles()
@@ -25,8 +27,8 @@ export default function HomeModule() {
       {/* Encabezado */}
       <div className="flex flex-col md:flex-row md:items-end justify-between pb-6 border-b border-[var(--color-border)] gap-4">
         <div>
-          <h1 className="text-3xl font-serif font-bold text-[var(--color-text-primary)] tracking-tight">
-            {timeGreeting()}, Operador
+          <h1 className="text-3xl font-serif font-bold text-[var(--color-text-primary)] tracking-tight capitalize">
+            {timeGreeting()}, {user?.username || 'Operador'}
           </h1>
           <p className="text-sm text-[var(--color-text-secondary)] font-mono mt-2">
             Panel principal de GNV Manager · Ingeniería y Control

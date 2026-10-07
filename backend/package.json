@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/infrastructure/webserver/server.ts",
     "test": "vitest run",
-    "postinstall": "prisma skills sync || exit 0"
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",

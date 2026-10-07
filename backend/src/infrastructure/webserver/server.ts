@@ -67,9 +67,12 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
+if (process.env.VERCEL !== "1") {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`[Seguridad Activada] Servidor escuchando en el puerto ${PORT}`);
+  });
+}
 
-app.listen(PORT, () => {
-  console.log(`[Seguridad Activada] Servidor escuchando en el puerto ${PORT}`);
-  console.log(`[CORS] Orígenes permitidos: ${corsOptions.origin}`);
-});
+export default app;
+

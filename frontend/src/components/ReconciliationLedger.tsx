@@ -31,10 +31,18 @@ export default function ReconciliationLedger({
   const [editingSaleId, setEditingSaleId] = useState<string | null>(null);
   const [saleInputVal, setSaleInputVal] = useState<string>('');
 
+  const getSaleVolume = (record: ReconciliationRecord): number | null => {
+    if (!record.events) return null;
+    const sales = record.events.filter(e => e.eventType === 'SALE_DISPENSED');
+    if (sales.length === 0) return null;
+    return sales.reduce((sum, e) => sum + (e.saleVolumeSm3 || 0), 0);
+  };
+
   const filteredRecords = useMemo(() => {
     return records.filter(record => {
       const isRack = record.recordType === 'RACK_PARENT' || record.recordType === 'MANIFOLD_PARENT';
-      const isPending = record.saleVolumeSm3 === null || record.saleVolumeSm3 === undefined;
+      const saleVol = getSaleVolume(record);
+      const isPending = saleVol === null;
 
       if (filter === 'RACKS' && !isRack) return false;
       if (filter === 'INDIVIDUAL' && isRack) return false;
@@ -52,12 +60,13 @@ export default function ReconciliationLedger({
   }, [records, filter, searchTerm]);
 
   const pendingCount = useMemo(() => {
-    return records.filter(r => r.saleVolumeSm3 === null || r.saleVolumeSm3 === undefined).length;
+    return records.filter(r => getSaleVolume(r) === null).length;
   }, [records]);
 
   const startEditSale = (record: ReconciliationRecord) => {
     setEditingSaleId(record.id);
-    setSaleInputVal(record.saleVolumeSm3 !== null && record.saleVolumeSm3 !== undefined ? record.saleVolumeSm3.toString() : '');
+    const saleVol = getSaleVolume(record);
+    setSaleInputVal(saleVol !== null ? saleVol.toString() : '');
   };
 
   const saveEditSale = (id: string) => {
@@ -180,8 +189,9 @@ export default function ReconciliationLedger({
               <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/80">
                 {filteredRecords.map((record) => {
                   const isRack = record.recordType === 'RACK_PARENT' || record.recordType === 'MANIFOLD_PARENT';
-                  const hasSale = record.saleVolumeSm3 !== undefined && record.saleVolumeSm3 !== null;
-                  const discrepancy = hasSale ? record.calculatedVolumeSm3 - record.saleVolumeSm3! : 0;
+                  const saleVol = getSaleVolume(record);
+                  const hasSale = saleVol !== null;
+                  const discrepancy = hasSale ? record.calculatedVolumeSm3 - saleVol! : 0;
                   const percentage = hasSale ? (discrepancy / record.calculatedVolumeSm3) * 100 : 0;
                   const isWarning = percentage > 2 || percentage < -2;
                   const isEditingSale = editingSaleId === record.id;
@@ -282,7 +292,7 @@ export default function ReconciliationLedger({
                             className="group text-right font-bold text-slate-800 dark:text-zinc-200 hover:text-cyan-600 dark:hover:text-cyan-400"
                             title="Haz clic para editar la venta"
                           >
-                            <span>{record.saleVolumeSm3!.toFixed(2)}</span>{' '}
+                            <span>{saleVol!.toFixed(2)}</span>{' '}
                             <span className="text-[10px] font-sans font-normal text-slate-500">Sm³</span>
                           </button>
                         ) : (

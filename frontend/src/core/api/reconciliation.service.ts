@@ -15,7 +15,15 @@ export interface ReconciliationRecord {
   finalTempK: number;
   calculatedMassKg: number;
   calculatedVolumeSm3: number;
+  events?: ReconciliationEvent[];
+}
+
+export interface ReconciliationEvent {
+  id: string;
+  recordId: string;
+  eventType: string;
   saleVolumeSm3?: number | null;
+  createdAt: string;
 }
 
 export interface CreateReconciliationDTO {

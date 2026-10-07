@@ -76,7 +76,14 @@ export default function ThermodynamicsModule() {
     setSelectedDetailRecord(record);
   };
 
-  const pendingSalesCount = records.filter(r => r.saleVolumeSm3 === null || r.saleVolumeSm3 === undefined).length;
+  const getSaleVolume = (record: ReconciliationRecord): number | null => {
+    if (!record.events) return null;
+    const sales = record.events.filter(e => e.eventType === 'SALE_DISPENSED');
+    if (sales.length === 0) return null;
+    return sales.reduce((sum, e) => sum + (e.saleVolumeSm3 || 0), 0);
+  };
+
+  const pendingSalesCount = records.filter(r => getSaleVolume(r) === null).length;
 
   return (
     <div className="space-y-6 pb-20 relative w-full">

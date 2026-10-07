@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { SaveReconciliationRecordUseCase } from '../../application/use-cases/SaveReconciliationRecord';
 import { SaveRackReconciliationUseCase } from '../../application/use-cases/SaveRackReconciliation';
@@ -15,8 +15,7 @@ const reconciliationSchema = z.object({
   finalPressureBar: z.number().nonnegative(),
   finalTempK: z.number().positive(),
   calculatedMassKg: z.number().nonnegative(),
-  calculatedVolumeSm3: z.number().nonnegative(),
-  saleVolumeSm3: z.number().nonnegative().optional().nullable()
+  calculatedVolumeSm3: z.number().nonnegative()
 });
 
 const rackSaveSchema = z.object({

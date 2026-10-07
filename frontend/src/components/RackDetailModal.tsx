@@ -40,8 +40,17 @@ export default function RackDetailModal({ record, onClose, onBackToLedger, onAdd
 
   const isRack = record.recordType === 'RACK_PARENT' || record.recordType === 'MANIFOLD_PARENT';
   const children = record.children || [];
-  const hasSale = record.saleVolumeSm3 !== undefined && record.saleVolumeSm3 !== null;
-  const discrepancy = hasSale ? record.calculatedVolumeSm3 - record.saleVolumeSm3! : 0;
+
+  const getSaleVolume = (rec: ReconciliationRecord): number | null => {
+    if (!rec.events) return null;
+    const sales = rec.events.filter(e => e.eventType === 'SALE_DISPENSED');
+    if (sales.length === 0) return null;
+    return sales.reduce((sum, e) => sum + (e.saleVolumeSm3 || 0), 0);
+  };
+
+  const saleVol = getSaleVolume(record);
+  const hasSale = saleVol !== null;
+  const discrepancy = hasSale ? record.calculatedVolumeSm3 - saleVol! : 0;
   const percentage = hasSale ? (discrepancy / record.calculatedVolumeSm3) * 100 : 0;
   const isWarning = percentage > 2 || percentage < -2;
 
@@ -205,7 +214,7 @@ export default function RackDetailModal({ record, onClose, onBackToLedger, onAdd
               {hasSale ? (
                 <div>
                   <p className="text-2xl font-mono font-bold text-[var(--color-text-primary)]">
-                    {record.saleVolumeSm3!.toFixed(2)}{' '}
+                    {saleVol!.toFixed(2)}{' '}
                     <span className="text-sm font-sans font-normal text-[var(--color-text-secondary)]">Sm³</span>
                   </p>
                   <p className={`text-xs font-mono font-semibold mt-1 ${isWarning ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>

@@ -1,6 +1,7 @@
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { CalculateThermodynamicTransferUseCase } from '../../application/use-cases/CalculateThermodynamicTransfer';
+import { DivergenceException, PressureExceededException } from '../../domain/entities/Thermodynamics';
 
 // Capa 3: Interface Adapters (Controllers)
 // Valida entradas del mundo exterior (HTTP/JSON) y las traduce para la Capa de Aplicación.
@@ -61,6 +62,10 @@ export class ThermodynamicController {
         res.status(400).json({ success: false, error: 'Datos de entrada inválidos', details: error.issues });
         return;
       }
+      if (error instanceof DivergenceException || error instanceof PressureExceededException) {
+        res.status(422).json({ success: false, error: error.message });
+        return;
+      }
       console.error(error);
       res.status(500).json({ success: false, error: 'Error interno calculando termodinámica' });
     }
@@ -87,6 +92,10 @@ export class ThermodynamicController {
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ success: false, error: 'Datos de entrada por lote inválidos', details: error.issues });
+        return;
+      }
+      if (error instanceof DivergenceException || error instanceof PressureExceededException) {
+        res.status(422).json({ success: false, error: error.message });
         return;
       }
       console.error(error);

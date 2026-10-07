@@ -95,8 +95,8 @@ export default function SaaSLayout() {
             <div className="w-7 h-7 rounded-full bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)] flex items-center justify-center font-bold text-xs uppercase">
               {(user?.fullName || user?.username || 'U').charAt(0)}
             </div>
-            <div className="hidden lg:block text-left">
-              <p className="text-xs font-semibold leading-tight text-[var(--color-text-primary)]">{user?.fullName || user?.username}</p>
+            <div className="flex flex-col text-left max-w-[150px] sm:max-w-[200px]">
+              <p className="text-xs font-semibold leading-tight text-[var(--color-text-primary)] truncate" title={user?.fullName || user?.username}>{user?.fullName || user?.username}</p>
               <p className="text-[10px] text-[var(--color-text-secondary)] leading-tight">{user?.role === 'admin' ? 'Administrador' : 'Operador'}</p>
             </div>
             <button

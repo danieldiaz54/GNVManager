@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { LayoutDashboard, BarChart3, Settings, LogOut, Menu, Sun, Moon, Database } from 'lucide-react';
 import GasFlame from '../components/GasFlame';
 import { useAuth } from '../context/AuthContext';
@@ -22,7 +22,7 @@ export default function SaaSLayout() {
       <header className="h-16 shrink-0 border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 sm:px-8 flex items-center justify-between gap-4 z-30">
         
         {/* Izquierda: Identidad de Marca */}
-        <div className="flex items-center gap-3 shrink-0">
+        <Link to="/app/home" className="flex items-center gap-3 shrink-0 hover:opacity-80 transition-opacity">
           <GasFlame size={26} />
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
@@ -37,7 +37,7 @@ export default function SaaSLayout() {
               Ingeniería y Control
             </span>
           </div>
-        </div>
+        </Link>
 
         {/* Centro: Navegación Principal Horizontal */}
         <nav className="flex items-center gap-1 overflow-x-auto py-1">

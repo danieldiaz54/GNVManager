@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # Base de Datos PostgreSQL
+  postgres_gnv:
+    image: postgres:15-alpine
+    container_name: gnv_postgres_db
+    environment:
+      POSTGRES_USER: gnv_admin
+      POSTGRES_PASSWORD: super_secure_password_123
+      POSTGRES_DB: gnv_manager_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # PgAdmin (Opcional: Interfaz gráfica web para ver la base de datos)
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: gnv_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gnvmanager.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres_gnv
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

@@ -1,9 +1,109 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Geist Sans', 'SF Pro Display', 'Helvetica Neue', 'Inter', sans-serif;
+  --font-mono: 'Geist Mono', 'SF Mono', 'JetBrains Mono', monospace;
+  --font-serif: 'Lyon Text', 'Newsreader', 'Playfair Display', serif;
+}
+
+/* Light Mode (Default) */
+:root {
+  /* Slate Clean Minimalist Palette - Updated for Minimalist Protocol */
+  --color-canvas: #f7f6f3;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f9f9f8;
+  --color-border: #eaeaea;        /* Borde nítido para líneas divisoras claras */
+  --color-border-hover: rgba(0,0,0,0.06);
+  
+  --color-text-primary: #111111;
+  --color-text-secondary: #787774;
+  
+  /* Accent Colors */
+  --color-accent: #111111;
+  --color-accent-hover: #333333;
+  --color-accent-glow: transparent;
+  --color-accent-glow-strong: transparent;
+  
+  /* Alerts */
+  --color-alert-red-bg: #fdebec;
+  --color-alert-red-text: #9f2f2d;
+  --color-alert-red-border: #fdebec;
+  
+  --color-alert-green-bg: #edf3ec;
+  --color-alert-green-text: #346538;
+  --color-alert-green-border: #edf3ec;
+
+  --color-alert-blue-bg: #e1f3fe;
+  --color-alert-blue-text: #1f6c9f;
+
+  --color-alert-yellow-bg: #fbf3db;
+  --color-alert-yellow-text: #956400;
+
+  /* Grid Blueprint - Presencia calibrada y nítida */
+  --grid-line: rgba(100, 116, 139, 0.04);
+}
+
+/* Dark Mode */
+.dark {
+  /* Zinc Dark Palette */
+  --color-canvas: #09090b;
+  --color-surface: #18181b;
+  --color-surface-hover: #27272a;
+  --color-border: #27272a;
+  --color-border-hover: #3f3f46;
+  
+  --color-text-primary: #fafafa;
+  --color-text-secondary: #a1a1aa;
+  
+  /* Tactical Alerts */
+  --color-alert-red-bg: rgba(153, 27, 27, 0.2);
+  --color-alert-red-text: #f87171;
+  --color-alert-red-border: rgba(153, 27, 27, 0.4);
+  
+  --color-alert-green-bg: rgba(22, 101, 52, 0.2);
+  --color-alert-green-text: #4ade80;
+  --color-alert-green-border: rgba(22, 101, 52, 0.4);
+
+  /* Grid Blueprint */
+  --grid-line: rgba(255, 255, 255, 0.02);
+}
 
 @layer base {
   body {
-    @apply bg-industrial-950 text-slate-100 font-sans;
+    @apply bg-[var(--color-canvas)] text-[var(--color-text-primary)] font-sans antialiased transition-colors duration-300;
+    line-height: 1.6;
+    background-image: 
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  
+  h1, h2, h3, h4 {
+    @apply font-serif tracking-tight leading-tight text-[var(--color-text-primary)];
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  .ui-card {
+    @apply bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-6 sm:p-8 transition-colors duration-300 shadow-none;
+  }
+  
+  .ui-input {
+    @apply bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md px-4 py-3 text-[var(--color-text-primary)] font-sans focus:outline-none focus:border-[#111111] focus:ring-1 focus:ring-[#111111] transition-all w-full;
+  }
+  
+  .ui-button {
+    @apply bg-[var(--color-text-primary)] text-white font-sans py-3 px-6 rounded-md hover:bg-[var(--color-accent-hover)] active:scale-[0.98] transition-all cursor-pointer inline-flex items-center justify-center border-none shadow-none;
+  }
+  
+  .ui-button-secondary {
+    @apply bg-[var(--color-surface)] text-[var(--color-text-primary)] font-sans py-3 px-6 rounded-md border border-[var(--color-border)] hover:border-[var(--color-text-primary)] active:scale-[0.98] transition-all cursor-pointer inline-flex items-center justify-center shadow-none;
+  }
+
+  .ui-badge {
+    @apply rounded-full px-3 py-1 text-xs font-sans uppercase tracking-[0.05em] inline-flex items-center border border-transparent;
   }
 }

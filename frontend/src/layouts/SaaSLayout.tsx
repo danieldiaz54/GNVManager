@@ -134,8 +134,8 @@ export default function SaaSLayout() {
         </header>
 
         {/* Scrollable Page Content */}
-        <main className="flex-1 overflow-auto py-24 px-6 md:px-12 relative animate-in fade-in duration-500">
-          <div className="max-w-5xl mx-auto w-full h-full">
+        <main className="flex-1 overflow-auto py-6 sm:py-8 px-4 sm:px-8 lg:px-12 relative animate-in fade-in duration-300">
+          <div className="max-w-[1600px] mx-auto w-full">
             <Outlet />
           </div>
         </main>

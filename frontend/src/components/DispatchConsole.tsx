@@ -287,7 +287,7 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
   const selectedGasName = gasProfiles.find(g => g.id === selectedGasProfileId)?.name || 'Gas Estándar';
 
   return (
-    <div className="space-y-6 w-full max-w-5xl mx-auto animate-fade-in font-sans">
+    <div className="space-y-6 w-full animate-fade-in font-sans">
       
       {/* 1. Barra de Control Contextual (Stepped Flow - Nivel 1) */}
       <div className="p-4 sm:p-5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-none flex flex-col lg:flex-row lg:items-center justify-between gap-4">

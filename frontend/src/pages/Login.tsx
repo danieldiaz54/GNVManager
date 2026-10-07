@@ -21,7 +21,7 @@ export default function Login() {
     try {
       const response = await authService.login(username, password);
       login(response.token, response.user);
-      navigate('/app/thermodynamics');
+      navigate('/app/home');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Credenciales inválidas');
     } finally {

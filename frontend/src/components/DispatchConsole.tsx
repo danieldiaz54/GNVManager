@@ -325,7 +325,7 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider flex items-center gap-1">
               <Flame className="w-3.5 h-3.5 text-amber-500" />
-              Perfiles de Gas:
+              Perfil de Gas:
             </span>
             <select
               value={selectedGasProfileId}

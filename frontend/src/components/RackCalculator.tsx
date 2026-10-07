@@ -34,6 +34,19 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
   const [showPerCylinderTuning, setShowPerCylinderTuning] = useState(false);
   const [isSavedFeedback, setIsSavedFeedback] = useState(false);
 
+  // Perfiles de Gas
+  const [gasProfiles, setGasProfiles] = useState<{ id: string; name: string }[]>([]);
+  const [selectedGasProfileId, setSelectedGasProfileId] = useState<string>('');
+
+  useEffect(() => {
+    thermodynamicsService.getGasProfiles().then(profiles => {
+      setGasProfiles(profiles);
+      if (profiles.length > 0) {
+        setSelectedGasProfileId(profiles[0].id);
+      }
+    }).catch(err => console.error('Error fetching gas profiles', err));
+  }, []);
+
   // Posiciones del Rack
   const [positions, setPositions] = useState<RackPositionState[]>(() =>
     Array.from({ length: 11 }, (_, i) => ({
@@ -106,6 +119,8 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
       try {
         const batchItems = activeToCompute.map(pos => ({
           id: pos.id,
+          operationType: flowType,
+          gasProfileId: selectedGasProfileId,
           initialPressureBar: pressureUnit === 'psi' ? psiToBar(pos.pi) : pos.pi,
           initialTempK: celsiusToKelvin(headerTi),
           finalPressureBar: pressureUnit === 'psi' ? psiToBar(pos.pf) : pos.pf,
@@ -137,6 +152,8 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
     capacityPerCylinder,
     headerTi,
     headerTf,
+    flowType,
+    selectedGasProfileId,
     positions.map(p => `${p.active}-${p.pi}-${p.pf}`).join('|')
   ]);
 
@@ -169,6 +186,8 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
     const payload: SaveRackDTO = {
       parent: {
         recordType: 'RACK_PARENT',
+        operationType: flowType,
+        gasProfileId: selectedGasProfileId,
         moduleIdentifier: identifier,
         moduleCapacityLiters: totalRackCapacity,
         initialPressureBar: avgPi,
@@ -180,6 +199,8 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
       },
       positions: activePositions.map(pos => ({
         recordType: 'RACK_CHILD',
+        operationType: flowType,
+        gasProfileId: selectedGasProfileId,
         moduleIdentifier: identifier,
         positionNumber: pos.id,
         moduleCapacityLiters: capacityPerCylinder,
@@ -629,3 +650,4 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
     </div>
   );
 }
+

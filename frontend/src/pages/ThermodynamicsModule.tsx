@@ -98,8 +98,8 @@ export default function ThermodynamicsModule() {
             onClick={() => setActiveMode('individual')}
             className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm transition-all duration-200 border ${
               activeMode === 'individual'
-                ? 'bg-white border-[#EAEAEA] text-[#111111]'
-                : 'bg-transparent border-transparent text-[#787774] hover:text-[#111111]'
+                ? 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-primary)]'
+                : 'bg-transparent border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
             }`}
           >
             <Box className="w-4 h-4 stroke-[1.5px]" />
@@ -111,8 +111,8 @@ export default function ThermodynamicsModule() {
             onClick={() => setActiveMode('rack')}
             className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm transition-all duration-200 border ${
               activeMode === 'rack'
-                ? 'bg-[#E1F3FE] border-[#E1F3FE] text-[#1F6C9F]'
-                : 'bg-transparent border-transparent text-[#787774] hover:text-[#111111]'
+                ? 'bg-[var(--color-alert-blue-bg)] border-[var(--color-alert-blue-bg)] text-[var(--color-alert-blue-text)]'
+                : 'bg-transparent border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
             }`}
           >
             <Layers className="w-4 h-4 stroke-[1.5px]" />
@@ -124,15 +124,15 @@ export default function ThermodynamicsModule() {
             onClick={() => setActiveMode('ledger')}
             className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm transition-all duration-200 border ${
               activeMode === 'ledger'
-                ? 'bg-[#EDF3EC] border-[#EDF3EC] text-[#346538]'
-                : 'bg-transparent border-transparent text-[#787774] hover:text-[#111111]'
+                ? 'bg-[var(--color-alert-green-bg)] border-[var(--color-alert-green-border)] text-[var(--color-alert-green-text)]'
+                : 'bg-transparent border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
             }`}
           >
             <div className="relative">
               <History className="w-4 h-4 stroke-[1.5px]" />
             </div>
             <span>Libro Mayor</span>
-            <span className="ml-1 text-xs font-mono px-2 py-0.5 rounded-full bg-white text-[#111111] border border-[#EAEAEA]">
+            <span className="ml-1 text-xs font-mono px-2 py-0.5 rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--color-border)]">
               {records.length}
             </span>
           </button>

@@ -1,3 +1,4 @@
+import { DEFAULT_GAS_PROFILES } from '../domain/gasPresets';
 import React, { useState, useEffect, useMemo } from 'react';
 import { thermodynamicsService, TransferResult } from '../core/api/thermodynamic.service';
 import { psiToBar, celsiusToKelvin, barToPsi } from '../core/utils/UnitConversion';

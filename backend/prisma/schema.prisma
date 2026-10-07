@@ -81,6 +81,8 @@ model GasProfile {
   id                  String   @id @default(uuid())
   name                String   @unique
   methanePercentage   Float
+  nitrogenPercentage  Float?
+  grossCalorificValue Float?
   specificGravity     Float
   molarMass           Float
   criticalPressure    Float

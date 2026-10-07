@@ -35,16 +35,16 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
   const [isSavedFeedback, setIsSavedFeedback] = useState(false);
 
   // Perfiles de Gas
-  const [gasProfiles, setGasProfiles] = useState<{ id: string; name: string }[]>([]);
-  const [selectedGasProfileId, setSelectedGasProfileId] = useState<string>('');
+  const [gasProfiles, setGasProfiles] = useState<{ id: string; name: string }[]>(DEFAULT_GAS_PROFILES);
+  const [selectedGasProfileId, setSelectedGasProfileId] = useState<string>(DEFAULT_GAS_PROFILES[0].id);
 
   useEffect(() => {
     thermodynamicsService.getGasProfiles().then(profiles => {
-      setGasProfiles(profiles);
-      if (profiles.length > 0) {
+      if (profiles && profiles.length > 0) {
+        setGasProfiles(profiles);
         setSelectedGasProfileId(profiles[0].id);
       }
-    }).catch(err => console.error('Error fetching gas profiles', err));
+    }).catch(err => console.warn('Perfiles por defecto:', err));
   }, []);
 
   // Posiciones del Rack
@@ -244,8 +244,21 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
                 className={`text-xs font-mono px-3 py-1 transition-colors ${totalCylinders === 12 ? 'bg-white border border-[#EAEAEA] text-slate-900 shadow-sm' : 'text-slate-500'}`}
               >
                 12 Cilindros
-              </button>
-            </div>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2 ml-4">
+                <span className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">Gas:</span>
+                <select
+                  value={selectedGasProfileId}
+                  onChange={(e) => setSelectedGasProfileId(e.target.value)}
+                  className="h-8 px-2 border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] font-mono text-xs focus:outline-none focus:border-[var(--color-text-primary)] cursor-pointer"
+                >
+                  {gasProfiles.map(profile => (
+                    <option key={profile.id} value={profile.id}>{profile.name}</option>
+                  ))}
+                </select>
+              </div>
           </div>
         </div>
 
@@ -650,4 +663,5 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
     </div>
   );
 }
+
 

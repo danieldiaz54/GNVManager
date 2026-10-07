@@ -83,6 +83,22 @@ export class AxiosReconciliationService {
     const response = await axios.patch(`${this.baseURL}/reconciliation/${id}/sale`, { saleVolumeSm3 });
     return response.data.data;
   }
+
+  async exportLedgerReport(id: string, format: 'pdf' | 'csv'): Promise<void> {
+    const response = await axios.get(`${this.baseURL}/reconciliation/${id}/export`, {
+      params: { format },
+      responseType: 'blob'
+    });
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `reconciliation_ledger_${id}_${dateStr}.${format}`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  }
 }
 
 export const reconciliationService = new AxiosReconciliationService();

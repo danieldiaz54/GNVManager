@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { SaveReconciliationRecordUseCase } from '../../application/use-cases/SaveReconciliationRecord';
 import { SaveRackReconciliationUseCase } from '../../application/use-cases/SaveRackReconciliation';
 import { UpdateSaleVolumeUseCase } from '../../application/use-cases/UpdateSaleVolume';
+import { GenerateReconciliationReport } from '../../application/use-cases/GenerateReconciliationReport';
 import { PrismaReconciliationRepository } from '../../infrastructure/database/PrismaReconciliationRepository';
 import { DivergenceException, PressureExceededException } from '../../domain/entities/Thermodynamics';
 
@@ -32,6 +33,7 @@ export class ReconciliationController {
   private saveUseCase: SaveReconciliationRecordUseCase;
   private saveRackUseCase: SaveRackReconciliationUseCase;
   private updateSaleUseCase: UpdateSaleVolumeUseCase;
+  private generateReportUseCase: GenerateReconciliationReport;
   private repository: PrismaReconciliationRepository;
 
   constructor() {
@@ -39,6 +41,7 @@ export class ReconciliationController {
     this.saveUseCase = new SaveReconciliationRecordUseCase(this.repository);
     this.saveRackUseCase = new SaveRackReconciliationUseCase(this.repository);
     this.updateSaleUseCase = new UpdateSaleVolumeUseCase(this.repository);
+    this.generateReportUseCase = new GenerateReconciliationReport(this.repository);
   }
 
   public saveRecord = async (req: Request, res: Response): Promise<void> => {
@@ -129,6 +132,7 @@ export class ReconciliationController {
       console.error(error);
       res.status(500).json({ success: false, error: 'Error actualizando venta' });
     }
+  };
   public exportRecord = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -144,9 +148,22 @@ export class ReconciliationController {
         return;
       }
 
-      // TODO: Implement export functionality
-      res.status(501).json({ success: false, error: 'Not Implemented' });
+      const reportData = await this.generateReportUseCase.execute(id, format as 'csv' | 'pdf');
+
+      if (format === 'pdf') {
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename="report.pdf"');
+        res.status(200).send(reportData);
+      } else {
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="report.csv"');
+        res.status(200).send(reportData);
+      }
     } catch (error) {
+      if (error instanceof Error && error.message.includes('no encontrado')) {
+        res.status(404).json({ success: false, error: error.message });
+        return;
+      }
       console.error(error);
       res.status(500).json({ success: false, error: 'Error interno exportando registro' });
     }

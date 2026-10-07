@@ -86,56 +86,53 @@ export default function ThermodynamicsModule() {
   const pendingSalesCount = records.filter(r => getSaleVolume(r) === null).length;
 
   return (
-    <div className="space-y-6 pb-20 relative w-full">
+    <div className="space-y-12 pb-20 relative w-full">
       
       {/* Barra Superior de Navegación Segmentada (3 Vistas Principales) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-2 rounded-2xl bg-white/60 dark:bg-zinc-900/60 backdrop-blur-md border border-slate-200 dark:border-zinc-800 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-b border-[var(--color-border)]">
         
-        <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700/80 shadow-inner w-full sm:w-auto flex-wrap gap-1">
+        <div className="flex items-center gap-2 flex-wrap">
           
           <button
             type="button"
             onClick={() => setActiveMode('individual')}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm transition-all duration-200 border ${
               activeMode === 'individual'
-                ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 shadow-sm border border-slate-200/80 dark:border-zinc-700'
-                : 'text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200'
+                ? 'bg-white border-[#EAEAEA] text-[#111111]'
+                : 'bg-transparent border-transparent text-[#787774] hover:text-[#111111]'
             }`}
           >
-            <Box className="w-4 h-4 stroke-[1.8px]" />
+            <Box className="w-4 h-4 stroke-[1.5px]" />
             <span>Módulo Individual</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveMode('rack')}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm transition-all duration-200 border ${
               activeMode === 'rack'
-                ? 'bg-white dark:bg-zinc-900 text-cyan-600 dark:text-cyan-400 shadow-sm border border-slate-200/80 dark:border-zinc-700'
-                : 'text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200'
+                ? 'bg-[#E1F3FE] border-[#E1F3FE] text-[#1F6C9F]'
+                : 'bg-transparent border-transparent text-[#787774] hover:text-[#111111]'
             }`}
           >
-            <Layers className="w-4 h-4 stroke-[1.8px]" />
+            <Layers className="w-4 h-4 stroke-[1.5px]" />
             <span>Carga Rack (11 Posiciones)</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveMode('ledger')}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm transition-all duration-200 border ${
               activeMode === 'ledger'
-                ? 'bg-white dark:bg-zinc-900 text-emerald-600 dark:text-emerald-400 shadow-sm border border-slate-200/80 dark:border-zinc-700'
-                : 'text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200'
+                ? 'bg-[#EDF3EC] border-[#EDF3EC] text-[#346538]'
+                : 'bg-transparent border-transparent text-[#787774] hover:text-[#111111]'
             }`}
           >
             <div className="relative">
-              <History className="w-4 h-4 stroke-[1.8px]" />
-              {pendingSalesCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-              )}
+              <History className="w-4 h-4 stroke-[1.5px]" />
             </div>
             <span>Libro Mayor</span>
-            <span className="ml-1 text-xs font-mono font-medium px-2 py-0.5 rounded-full bg-slate-200/80 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
+            <span className="ml-1 text-xs font-mono px-2 py-0.5 rounded-full bg-white text-[#111111] border border-[#EAEAEA]">
               {records.length}
             </span>
           </button>

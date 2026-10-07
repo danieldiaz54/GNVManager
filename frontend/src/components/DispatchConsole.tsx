@@ -646,7 +646,7 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
             </>
           ) : (
             <>
-              <span>Guardar Registro de Operación</span>
+              <span>Guardar Registro de OperaciÃ³n</span>
               <ArrowRight className="w-5 h-5" />
             </>
           )}

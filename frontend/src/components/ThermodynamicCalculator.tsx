@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { thermodynamicsService } from '../core/api/thermodynamic.service';
 import { psiToBar, celsiusToKelvin, barToPsi } from '../core/utils/UnitConversion';
 import { MODULE_PRESETS } from '../domain/modulePresets';
+import { DEFAULT_GAS_PROFILES } from '../domain/gasPresets';
 import { Gauge, Thermometer, Check, ChevronDown, ChevronUp, Snowflake, Activity } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
@@ -29,6 +30,18 @@ export default function ThermodynamicCalculator({ onSaveCharge }: { onSaveCharge
   const [isSavedFeedback, setIsSavedFeedback] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
+  const [gasProfiles, setGasProfiles] = useState<{ id: string; name: string }[]>(DEFAULT_GAS_PROFILES);
+  const [selectedGasProfileId, setSelectedGasProfileId] = useState<string>(DEFAULT_GAS_PROFILES[0].id);
+
+  useEffect(() => {
+    thermodynamicsService.getGasProfiles().then(profiles => {
+      if (profiles && profiles.length > 0) {
+        setGasProfiles(profiles);
+        setSelectedGasProfileId(profiles[0].id);
+      }
+    }).catch(err => console.warn('Perfiles por defecto:', err));
+  }, []);
+
   useEffect(() => {
     let isCancelled = false;
 
@@ -42,8 +55,8 @@ export default function ThermodynamicCalculator({ onSaveCharge }: { onSaveCharge
         const t_f_K = celsiusToKelvin(tfInput);
 
         const calculated = await thermodynamicsService.calculateTransfer(
-          Number(p_i_bar), t_i_K, Number(p_f_bar), t_f_K, capacity
-        );
+        Number(p_i_bar), t_i_K, Number(p_f_bar), t_f_K, capacity, 'CARGUE', selectedGasProfileId || undefined
+      );
         
         if (!isCancelled) {
           setResult({
@@ -108,8 +121,21 @@ export default function ThermodynamicCalculator({ onSaveCharge }: { onSaveCharge
           </p>
         </div>
 
-        {/* Controles de Módulo y Unidad */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">Gas:</span>
+          <select
+            value={selectedGasProfileId}
+            onChange={(e) => setSelectedGasProfileId(e.target.value)}
+            className="h-8 px-2 border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] font-mono text-xs focus:outline-none focus:border-[var(--color-text-primary)] cursor-pointer"
+          >
+            {gasProfiles.map(profile => (
+              <option key={profile.id} value={profile.id}>{profile.name}</option>
+            ))}
+          </select>
+        </div>
+
+          {/* Controles de Módulo y Unidad */}
+          <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">Módulo:</span>
             <Select value={capacity.toString()} onValueChange={(val) => setCapacity(Number(val))}>

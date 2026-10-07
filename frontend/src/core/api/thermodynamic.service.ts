@@ -24,7 +24,21 @@ export interface BatchCalculationItem {
   volumeLiters: number;
 }
 
+export interface GasProfileDTO {
+  id: string;
+  name: string;
+  methanePercentage: number;
+  nitrogenPercentage?: number;
+  grossCalorificValue?: number;
+  specificGravity: number;
+  molarMass: number;
+  criticalPressure: number;
+  criticalTemperature: number;
+}
+
 export interface IThermodynamicsService {
+  getGasProfiles(): Promise<GasProfileDTO[]>;
+  
   calculateTransfer(
     initialPressureBar: number,
     initialTempK: number,
@@ -42,6 +56,11 @@ export interface IThermodynamicsService {
 
 export class AxiosThermodynamicsService implements IThermodynamicsService {
   private baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+
+  async getGasProfiles(): Promise<GasProfileDTO[]> {
+    const response = await axios.get(`${this.baseURL}/gas-profiles`);
+    return response.data;
+  }
 
   async calculateTransfer(
     initialPressureBar: number,

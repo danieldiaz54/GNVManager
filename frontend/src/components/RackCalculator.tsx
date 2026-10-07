@@ -1,3 +1,4 @@
+import { DEFAULT_GAS_PROFILES } from '../domain/gasPresets';
 import React, { useState, useEffect, useMemo } from 'react';
 import { thermodynamicsService, TransferResult } from '../core/api/thermodynamic.service';
 import { psiToBar, celsiusToKelvin, barToPsi } from '../core/utils/UnitConversion';
@@ -33,6 +34,19 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
 
   const [showPerCylinderTuning, setShowPerCylinderTuning] = useState(false);
   const [isSavedFeedback, setIsSavedFeedback] = useState(false);
+
+  // Perfiles de Gas
+  const [gasProfiles, setGasProfiles] = useState<{ id: string; name: string }[]>(DEFAULT_GAS_PROFILES);
+  const [selectedGasProfileId, setSelectedGasProfileId] = useState<string>(DEFAULT_GAS_PROFILES[0].id);
+
+  useEffect(() => {
+    thermodynamicsService.getGasProfiles().then(profiles => {
+      if (profiles && profiles.length > 0) {
+        setGasProfiles(profiles);
+        setSelectedGasProfileId(profiles[0].id);
+      }
+    }).catch(err => console.warn('Perfiles por defecto:', err));
+  }, []);
 
   // Posiciones del Rack
   const [positions, setPositions] = useState<RackPositionState[]>(() =>
@@ -106,6 +120,8 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
       try {
         const batchItems = activeToCompute.map(pos => ({
           id: pos.id,
+          operationType: flowType,
+          gasProfileId: selectedGasProfileId,
           initialPressureBar: pressureUnit === 'psi' ? psiToBar(pos.pi) : pos.pi,
           initialTempK: celsiusToKelvin(headerTi),
           finalPressureBar: pressureUnit === 'psi' ? psiToBar(pos.pf) : pos.pf,
@@ -137,6 +153,8 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
     capacityPerCylinder,
     headerTi,
     headerTf,
+    flowType,
+    selectedGasProfileId,
     positions.map(p => `${p.active}-${p.pi}-${p.pf}`).join('|')
   ]);
 
@@ -169,6 +187,8 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
     const payload: SaveRackDTO = {
       parent: {
         recordType: 'RACK_PARENT',
+        operationType: flowType,
+        gasProfileId: selectedGasProfileId,
         moduleIdentifier: identifier,
         moduleCapacityLiters: totalRackCapacity,
         initialPressureBar: avgPi,
@@ -180,6 +200,8 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
       },
       positions: activePositions.map(pos => ({
         recordType: 'RACK_CHILD',
+        operationType: flowType,
+        gasProfileId: selectedGasProfileId,
         moduleIdentifier: identifier,
         positionNumber: pos.id,
         moduleCapacityLiters: capacityPerCylinder,
@@ -223,8 +245,21 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
                 className={`text-xs font-mono px-3 py-1 transition-colors ${totalCylinders === 12 ? 'bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] shadow-none' : 'text-[var(--color-text-secondary)]'}`}
               >
                 12 Cilindros
-              </button>
-            </div>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2 ml-4">
+                <span className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">Gas:</span>
+                <select
+                  value={selectedGasProfileId}
+                  onChange={(e) => setSelectedGasProfileId(e.target.value)}
+                  className="h-8 px-2 border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] font-mono text-xs focus:outline-none focus:border-[var(--color-text-primary)] cursor-pointer"
+                >
+                  {gasProfiles.map(profile => (
+                    <option key={profile.id} value={profile.id}>{profile.name}</option>
+                  ))}
+                </select>
+              </div>
           </div>
         </div>
 
@@ -629,3 +664,5 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
     </div>
   );
 }
+
+

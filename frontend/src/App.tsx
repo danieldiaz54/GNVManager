@@ -4,7 +4,9 @@ import { ThemeProvider } from './context/ThemeContext';
 import Login from './pages/Login';
 import SaaSLayout from './layouts/SaaSLayout';
 import ThermodynamicsModule from './pages/ThermodynamicsModule';
-import ReportsModule from './pages/ReportsModule';
+import GasProfilesModule from './pages/GasProfilesModule';
+
+import HomeModule from './pages/HomeModule';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -31,14 +33,14 @@ function App() {
                 </ProtectedRoute>
               } 
             >
+              <Route path="home" element={<HomeModule />} />
               <Route path="thermodynamics" element={<ThermodynamicsModule />} />
-              <Route path="reports" element={<ReportsModule />} />
-              <Route path="settings" element={<ReportsModule />} />
-              <Route index element={<Navigate to="thermodynamics" replace />} />
+              <Route path="gas-profiles" element={<GasProfilesModule />} />
+              <Route index element={<Navigate to="home" replace />} />
             </Route>
 
-            <Route path="/" element={<Navigate to="/app/thermodynamics" replace />} />
-            <Route path="/dashboard" element={<Navigate to="/app/thermodynamics" replace />} />
+            <Route path="/" element={<Navigate to="/app/home" replace />} />
+            <Route path="/dashboard" element={<Navigate to="/app/home" replace />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

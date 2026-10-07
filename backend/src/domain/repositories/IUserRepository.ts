@@ -1,6 +1,7 @@
 export interface UserEntity {
   id?: string;
   username: string;
+  fullName?: string | null;
   passwordHash: string;
   role: string;
   createdAt?: Date;

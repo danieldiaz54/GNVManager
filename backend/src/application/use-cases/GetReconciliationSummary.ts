@@ -24,11 +24,12 @@ export class GetReconciliationSummary {
       .reduce((sum, event) => sum + (event.saleVolumeSm3 || 0), 0);
 
     const calculatedVolumeSm3 = record.calculatedVolumeSm3 || 0;
-    const variationSm3 = calculatedVolumeSm3 - totalDispensed;
+    // Variación (Sm³) = Ventas Facturadas - Volumen Consolidado Despachado
+    const variationSm3 = totalDispensed - calculatedVolumeSm3;
 
-    const pressureDelta = record.initialPressureBar - record.finalPressureBar;
-    if (pressureDelta <= 0) {
-      throw new InvalidReconciliationDataError(`Invalid pressure delta: ${pressureDelta}. Initial pressure must be greater than final pressure.`);
+    const pressureDelta = Math.abs(record.initialPressureBar - record.finalPressureBar);
+    if (pressureDelta === 0) {
+      throw new InvalidReconciliationDataError(`Invalid pressure delta: 0. Initial and final pressures cannot be equal.`);
     }
 
     const aforoSm3PerBar = calculatedVolumeSm3 / pressureDelta;

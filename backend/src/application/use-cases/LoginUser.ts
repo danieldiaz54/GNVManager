@@ -6,6 +6,7 @@ export interface LoginResult {
   token: string;
   user: {
     username: string;
+    fullName?: string | null;
     role: string;
   };
 }
@@ -41,6 +42,7 @@ export class LoginUserUseCase {
       token,
       user: {
         username: user.username,
+        fullName: user.fullName,
         role: user.role
       }
     };

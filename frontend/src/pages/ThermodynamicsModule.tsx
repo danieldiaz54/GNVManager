@@ -1,16 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Box, Layers, History } from 'lucide-react';
-import ThermodynamicCalculator from '../components/ThermodynamicCalculator';
-import RackCalculator from '../components/RackCalculator';
+import DispatchConsole from '../components/DispatchConsole';
 import ReconciliationLedger from '../components/ReconciliationLedger';
 import RackDetailModal from '../components/RackDetailModal';
-import { reconciliationService, CreateReconciliationDTO, SaveRackDTO, ReconciliationRecord } from '../core/api/reconciliation.service';
-import { psiToBar, celsiusToKelvin } from '../core/utils/UnitConversion';
+import { reconciliationService, SaveRackDTO, ReconciliationRecord } from '../core/api/reconciliation.service';
 
 export default function ThermodynamicsModule() {
   const [records, setRecords] = useState<ReconciliationRecord[]>([]);
-  const [activeMode, setActiveMode] = useState<'individual' | 'rack' | 'ledger'>('individual');
-  const [isSavingRack, setIsSavingRack] = useState(false);
+  const [activeMode, setActiveMode] = useState<'console' | 'ledger'>('console');
+  const [isSaving, setIsSaving] = useState(false);
   const [selectedDetailRecord, setSelectedDetailRecord] = useState<ReconciliationRecord | null>(null);
 
   useEffect(() => {
@@ -25,38 +23,17 @@ export default function ThermodynamicsModule() {
     fetchHistory();
   }, []);
 
-  const handleSaveCharge = async (chargeData: any) => {
+  const handleSaveOperation = async (operationData: SaveRackDTO) => {
+    setIsSaving(true);
     try {
-      const dto: CreateReconciliationDTO = {
-        moduleCapacityLiters: chargeData.capacity,
-        initialPressureBar: chargeData.unit === 'psi' ? psiToBar(chargeData.initial.p) : chargeData.initial.p,
-        initialTempK: celsiusToKelvin(chargeData.initial.t),
-        finalPressureBar: chargeData.unit === 'psi' ? psiToBar(chargeData.final.p) : chargeData.final.p,
-        finalTempK: celsiusToKelvin(chargeData.final.t),
-        calculatedMassKg: chargeData.mass_kg,
-        calculatedVolumeSm3: chargeData.volume_Sm3
-      };
-
-      const savedRecord = await reconciliationService.saveRecord(dto);
+      const savedRecord = await reconciliationService.saveRackRecord(operationData);
       setRecords(prev => [savedRecord, ...prev]);
-      setActiveMode('ledger'); // Cambia a la vista principal del libro mayor
+      setActiveMode('ledger'); // Transición natural hacia el libro contable
     } catch (error) {
-      console.error("Error guardando el registro", error);
+      console.error("Error guardando la operación", error);
       alert("Hubo un error guardando el registro en la base de datos.");
-    }
-  };
-
-  const handleSaveRack = async (rackData: SaveRackDTO) => {
-    setIsSavingRack(true);
-    try {
-      const savedRecord = await reconciliationService.saveRackRecord(rackData);
-      setRecords(prev => [savedRecord, ...prev]);
-      setActiveMode('ledger'); // Cambia a la vista principal del libro mayor
-    } catch (error) {
-      console.error("Error guardando la carga del rack", error);
-      alert("Hubo un error guardando el rack en la base de datos.");
     } finally {
-      setIsSavingRack(false);
+      setIsSaving(false);
     }
   };
 
@@ -86,55 +63,45 @@ export default function ThermodynamicsModule() {
   const pendingSalesCount = records.filter(r => getSaleVolume(r) === null).length;
 
   return (
-    <div className="space-y-12 pb-20 relative w-full">
+    <div className="space-y-8 pb-20 relative w-full font-sans">
       
-      {/* Barra Superior de Navegación Segmentada (3 Vistas Principales) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-b border-[var(--color-border)]">
+      {/* Barra de Navegación Operacional Unificada (2 Modos Claros) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-3 border-b border-[var(--color-border)]">
         
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
           
           <button
             type="button"
-            onClick={() => setActiveMode('individual')}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm transition-all duration-200 border ${
-              activeMode === 'individual'
-                ? 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-primary)]'
+            onClick={() => setActiveMode('console')}
+            className={`flex items-center gap-2 py-2 px-4 rounded-md text-sm transition-all font-medium border ${
+              activeMode === 'console'
+                ? 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-primary)] font-bold shadow-xs'
                 : 'bg-transparent border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
             }`}
           >
-            <Box className="w-4 h-4 stroke-[1.5px]" />
-            <span>Módulo Individual</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveMode('rack')}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm transition-all duration-200 border ${
-              activeMode === 'rack'
-                ? 'bg-[var(--color-alert-blue-bg)] border-[var(--color-alert-blue-bg)] text-[var(--color-alert-blue-text)]'
-                : 'bg-transparent border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-            }`}
-          >
-            <Layers className="w-4 h-4 stroke-[1.5px]" />
-            <span>Carga Rack (11 Posiciones)</span>
+            <Layers className="w-4 h-4 stroke-[1.8px]" />
+            <span>Consola de Operaciones & Despacho</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveMode('ledger')}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm transition-all duration-200 border ${
+            className={`flex items-center gap-2 py-2 px-4 rounded-md text-sm transition-all font-medium border ${
               activeMode === 'ledger'
-                ? 'bg-[var(--color-alert-green-bg)] border-[var(--color-alert-green-border)] text-[var(--color-alert-green-text)]'
+                ? 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-primary)] font-bold shadow-xs'
                 : 'bg-transparent border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
             }`}
           >
-            <div className="relative">
-              <History className="w-4 h-4 stroke-[1.5px]" />
-            </div>
-            <span>Libro Mayor</span>
-            <span className="ml-1 text-xs font-mono px-2 py-0.5 rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--color-border)]">
+            <History className="w-4 h-4 stroke-[1.8px]" />
+            <span>Libro Mayor & Conciliación</span>
+            <span className="ml-1 text-xs font-mono px-2 py-0.5 rounded-full bg-[var(--color-canvas)] text-[var(--color-text-primary)] border border-[var(--color-border)] font-bold">
               {records.length}
             </span>
+            {pendingSalesCount > 0 && (
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold border border-amber-200">
+                {pendingSalesCount} pend.
+              </span>
+            )}
           </button>
 
         </div>
@@ -143,26 +110,14 @@ export default function ThermodynamicsModule() {
 
       {/* Espacio de Trabajo Principal */}
       <div className="w-full transition-all duration-300">
-        {activeMode === 'individual' && (
-          <div className="w-full">
-            <ThermodynamicCalculator onSaveCharge={handleSaveCharge} />
-          </div>
-        )}
-
-        {activeMode === 'rack' && (
-          <div className="w-full">
-            <RackCalculator onSave={handleSaveRack} isSaving={isSavingRack} />
-          </div>
-        )}
-
-        {activeMode === 'ledger' && (
-          <div className="w-full">
-            <ReconciliationLedger 
-              records={records} 
-              onAddSale={handleAddSale} 
-              onSelectDetailRecord={handleOpenRecordDetail}
-            />
-          </div>
+        {activeMode === 'console' ? (
+          <DispatchConsole onSaveOperation={handleSaveOperation} isSaving={isSaving} />
+        ) : (
+          <ReconciliationLedger 
+            records={records} 
+            onAddSale={handleAddSale} 
+            onSelectDetailRecord={handleOpenRecordDetail}
+          />
         )}
       </div>
 

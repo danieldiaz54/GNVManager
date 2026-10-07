@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-// DTO de respuesta que recibimos del backend
+export interface AforoCertificationDTO {
+  certified: boolean;
+  aforoSm3PerBar: number;
+}
+
 export interface TransferResult {
   massTransferredKg: number;
   volumeTransferredSm3: number;
@@ -11,6 +15,7 @@ export interface TransferResult {
   stabilizedPressureBar: number;
   stabilizedTempCelsius: number;
   thermalPressureLossBar: number;
+  aforoCertification?: AforoCertificationDTO;
 }
 
 export interface BatchCalculationItem {
@@ -27,17 +32,34 @@ export interface BatchCalculationItem {
 export interface GasProfileDTO {
   id: string;
   name: string;
+  reportDate?: string;
+  reportNumber?: string;
   methanePercentage: number;
+  ethanePercentage?: number;
+  propanePercentage?: number;
+  isoButanePercentage?: number;
+  normalButanePercentage?: number;
+  isoPentanePercentage?: number;
+  normalPentanePercentage?: number;
+  hexanesPlusPercentage?: number;
   nitrogenPercentage?: number;
+  carbonDioxidePercentage?: number;
+  oxygenPercentage?: number;
   grossCalorificValue?: number;
   specificGravity: number;
   molarMass: number;
+  compressibilityFactor?: number;
+  wobbeIndex?: number;
   criticalPressure: number;
   criticalTemperature: number;
 }
 
 export interface IThermodynamicsService {
   getGasProfiles(): Promise<GasProfileDTO[]>;
+  getGasProfileById(id: string): Promise<GasProfileDTO>;
+  createGasProfile(data: Omit<GasProfileDTO, 'id'>): Promise<GasProfileDTO>;
+  updateGasProfile(id: string, data: Omit<GasProfileDTO, 'id'>): Promise<GasProfileDTO>;
+  deleteGasProfile(id: string): Promise<void>;
   
   calculateTransfer(
     initialPressureBar: number,
@@ -60,6 +82,25 @@ export class AxiosThermodynamicsService implements IThermodynamicsService {
   async getGasProfiles(): Promise<GasProfileDTO[]> {
     const response = await axios.get(`${this.baseURL}/gas-profiles`);
     return response.data;
+  }
+
+  async getGasProfileById(id: string): Promise<GasProfileDTO> {
+    const response = await axios.get(`${this.baseURL}/gas-profiles/${id}`);
+    return response.data;
+  }
+
+  async createGasProfile(data: Omit<GasProfileDTO, 'id'>): Promise<GasProfileDTO> {
+    const response = await axios.post(`${this.baseURL}/gas-profiles`, data);
+    return response.data;
+  }
+
+  async updateGasProfile(id: string, data: Omit<GasProfileDTO, 'id'>): Promise<GasProfileDTO> {
+    const response = await axios.put(`${this.baseURL}/gas-profiles/${id}`, data);
+    return response.data;
+  }
+
+  async deleteGasProfile(id: string): Promise<void> {
+    await axios.delete(`${this.baseURL}/gas-profiles/${id}`);
   }
 
   async calculateTransfer(

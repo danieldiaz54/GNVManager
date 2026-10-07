@@ -1,10 +1,17 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService, setupAxiosInterceptors } from '../core/api/auth.service';
 
+interface User {
+  id?: string;
+  username: string;
+  fullName?: string;
+  role?: string;
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: any;
-  login: (token: string, user: any) => void;
+  user: User | null;
+  login: (token: string, user: User) => void;
   logout: () => void;
 }
 
@@ -12,7 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,7 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Comprobar estado inicial
     const token = authService.getToken();
-    const currentUser = authService.getUser();
+    const currentUser = authService.getUser() as User | null;
     
     if (token && currentUser) {
       setIsAuthenticated(true);
@@ -30,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
-  const login = (token: string, userData: any) => {
+  const login = (token: string, userData: User) => {
     setIsAuthenticated(true);
     setUser(userData);
   };

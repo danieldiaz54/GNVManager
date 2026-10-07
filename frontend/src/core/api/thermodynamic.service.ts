@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-// DTO de respuesta que recibimos del backend
+export interface AforoCertificationDTO {
+  certified: boolean;
+  aforoSm3PerBar: number;
+}
+
 export interface TransferResult {
   massTransferredKg: number;
   volumeTransferredSm3: number;
@@ -11,6 +15,7 @@ export interface TransferResult {
   stabilizedPressureBar: number;
   stabilizedTempCelsius: number;
   thermalPressureLossBar: number;
+  aforoCertification?: AforoCertificationDTO;
 }
 
 export interface BatchCalculationItem {

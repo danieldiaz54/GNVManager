@@ -88,11 +88,92 @@ export default function ReconciliationLedger({
     }
   };
 
+  // Métricas Ejecutivas FinOps Consolidadas
+  const totalDispatchedSm3 = useMemo(() => {
+    return records.reduce((sum, r) => sum + (r.calculatedVolumeSm3 || 0), 0);
+  }, [records]);
+
+  const totalDispensedSm3 = useMemo(() => {
+    return records.reduce((sum, r) => {
+      const sale = getSaleVolume(r);
+      return sum + (sale !== null ? sale : 0);
+    }, 0);
+  }, [records]);
+
+  const globalVariationSm3 = totalDispatchedSm3 - totalDispensedSm3;
+  const globalMermaPercent = totalDispatchedSm3 > 0 ? (globalVariationSm3 / totalDispatchedSm3) * 100 : 0;
+  const isNormalTolerance = Math.abs(globalMermaPercent) <= 2.0;
+
   return (
-    <div className="space-y-4 animate-fade-in w-full">
+    <div className="space-y-6 animate-fade-in w-full font-sans">
       
+      {/* 1. Tarjetas Ejecutivas FinOps (Bento Cards de Control Operacional) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        
+        {/* Card 1: Volumen Consolidado Despachado */}
+        <div className="p-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-none">
+          <span className="text-[11px] font-mono text-[var(--color-text-secondary)] uppercase tracking-wider block">
+            Volumen Físico Despachado
+          </span>
+          <div className="flex items-baseline gap-2 mt-2">
+            <span className="text-3xl font-serif font-bold text-[var(--color-text-primary)] tracking-tight">
+              {totalDispatchedSm3.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+            </span>
+            <span className="text-xs font-mono text-[var(--color-text-secondary)]">Sm³</span>
+          </div>
+          <span className="text-[11px] text-[var(--color-text-secondary)] mt-2 block opacity-80">
+            {records.length} despachos registrados
+          </span>
+        </div>
+
+        {/* Card 2: Ventas Registradas en Estación */}
+        <div className="p-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-none">
+          <span className="text-[11px] font-mono text-[var(--color-text-secondary)] uppercase tracking-wider block">
+            Ventas Surtidores (Ledger)
+          </span>
+          <div className="flex items-baseline gap-2 mt-2">
+            <span className="text-3xl font-serif font-bold text-[var(--color-text-primary)] tracking-tight">
+              {totalDispensedSm3.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+            </span>
+            <span className="text-xs font-mono text-[var(--color-text-secondary)]">Sm³</span>
+          </div>
+          <span className="text-[11px] text-[var(--color-text-secondary)] mt-2 block opacity-80">
+            {pendingCount === 0 ? '✓ 100% conciliado' : `${pendingCount} cargas pendientes de venta`}
+          </span>
+        </div>
+
+        {/* Card 3: Variación Operativa / Merma */}
+        <div className={`p-4 rounded-lg border shadow-none ${
+          isNormalTolerance 
+            ? 'bg-[var(--color-alert-green-bg)] border-[var(--color-alert-green-border)] text-[var(--color-alert-green-text)]'
+            : 'bg-[var(--color-alert-red-bg)] border-[var(--color-alert-red-border)] text-[var(--color-alert-red-text)]'
+        }`}>
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-mono uppercase tracking-wider block opacity-90">
+              Variación Neta / Merma
+            </span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/70 font-bold border border-current">
+              {isNormalTolerance ? 'En Tolerancia (≤2%)' : 'Alerta de Merma (>2%)'}
+            </span>
+          </div>
+          <div className="flex items-baseline gap-2 mt-2">
+            <span className="text-3xl font-serif font-bold tracking-tight">
+              {globalVariationSm3 > 0 ? `+${globalVariationSm3.toFixed(1)}` : globalVariationSm3.toFixed(1)}
+            </span>
+            <span className="text-xs font-mono">Sm³</span>
+            <span className="text-sm font-mono font-bold ml-auto">
+              ({globalMermaPercent > 0 ? `+${globalMermaPercent.toFixed(2)}` : globalMermaPercent.toFixed(2)}%)
+            </span>
+          </div>
+          <span className="text-[11px] mt-2 block opacity-90">
+            {globalVariationSm3 >= 0 ? 'Faltante físico frente a venta' : 'Sobrante a favor de inventario'}
+          </span>
+        </div>
+
+      </div>
+
       {/* Barra de Encabezado Minimalista y Filtros */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#EAEAEA] dark:border-zinc-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)]">
         
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">

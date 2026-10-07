@@ -39,6 +39,10 @@ const batchThermodynamicInputSchema = z.object({
   ).min(1).max(50),
 });
 
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
 export class ThermodynamicController {
   private calculateUseCase: CalculateThermodynamicTransferUseCase;
 
@@ -46,19 +50,48 @@ export class ThermodynamicController {
     this.calculateUseCase = new CalculateThermodynamicTransferUseCase();
   }
 
+  private async getGasComposition(gasProfileId?: string) {
+    if (!gasProfileId) return undefined;
+    try {
+      const profile = await prisma.gasProfile.findUnique({ where: { id: gasProfileId } });
+      if (profile) {
+        return {
+          molarMass: profile.molarMass,
+          criticalPressure: profile.criticalPressure,
+          criticalTemperature: profile.criticalTemperature
+        };
+      }
+    } catch (e) {
+      console.warn('Could not fetch gas profile, falling back to default:', e);
+    }
+    return undefined;
+  }
+
   public calculateTransfer = async (req: Request, res: Response): Promise<void> => {
     try {
       const validatedData = thermodynamicInputSchema.parse(req.body);
+      const composition = await this.getGasComposition(validatedData.gasProfileId);
 
       const result = this.calculateUseCase.execute(
         validatedData.initial,
         validatedData.final,
-        validatedData.volumeLiters
+        validatedData.volumeLiters,
+        composition
+      );
+
+      const deltaP = Math.abs(validatedData.final.pressureBar - validatedData.initial.pressureBar);
+      const aforo = this.calculateUseCase.certifyAforo(
+        result.stabilizedPressureBar,
+        result.volumeTransferredSm3,
+        deltaP
       );
 
       res.status(200).json({
         success: true,
-        data: result
+        data: {
+          ...result,
+          aforoCertification: aforo
+        }
       });
       
     } catch (error) {
@@ -79,14 +112,43 @@ export class ThermodynamicController {
     try {
       const validatedData = batchThermodynamicInputSchema.parse(req.body);
 
-      const results = validatedData.items.map(item => ({
-        id: item.id,
-        result: this.calculateUseCase.execute(
+      // Pre-cargar perfiles únicos solicitados para eficiencia
+      const uniqueProfileIds = Array.from(new Set(validatedData.items.map(i => i.gasProfileId).filter(Boolean))) as string[];
+      const profileMap = new Map<string, any>();
+      if (uniqueProfileIds.length > 0) {
+        const profiles = await prisma.gasProfile.findMany({ where: { id: { in: uniqueProfileIds } } });
+        for (const p of profiles) {
+          profileMap.set(p.id, {
+            molarMass: p.molarMass,
+            criticalPressure: p.criticalPressure,
+            criticalTemperature: p.criticalTemperature
+          });
+        }
+      }
+
+      const results = validatedData.items.map(item => {
+        const composition = item.gasProfileId ? profileMap.get(item.gasProfileId) : undefined;
+        const res = this.calculateUseCase.execute(
           item.initial,
           item.final,
-          item.volumeLiters
-        )
-      }));
+          item.volumeLiters,
+          composition
+        );
+        const deltaP = Math.abs(item.final.pressureBar - item.initial.pressureBar);
+        const aforo = this.calculateUseCase.certifyAforo(
+          res.stabilizedPressureBar,
+          res.volumeTransferredSm3,
+          deltaP
+        );
+
+        return {
+          id: item.id,
+          result: {
+            ...res,
+            aforoCertification: aforo
+          }
+        };
+      });
 
       res.status(200).json({
         success: true,

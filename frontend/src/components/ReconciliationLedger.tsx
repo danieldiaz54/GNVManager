@@ -9,9 +9,11 @@ import {
   Check, 
   X,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  Download,
+  FileText
 } from 'lucide-react';
-import { ReconciliationRecord } from '../core/api/reconciliation.service';
+import { ReconciliationRecord, reconciliationService } from '../core/api/reconciliation.service';
 
 interface ReconciliationLedgerProps {
   records: ReconciliationRecord[];
@@ -76,6 +78,14 @@ export default function ReconciliationLedger({
     }
     setEditingSaleId(null);
     setSaleInputVal('');
+  };
+
+  const handleExport = async (format: 'pdf' | 'csv') => {
+    try {
+      await reconciliationService.exportLedgerReport(format);
+    } catch (error) {
+      console.error('Failed to export ledger report:', error);
+    }
   };
 
   return (
@@ -144,16 +154,41 @@ export default function ReconciliationLedger({
           </div>
         </div>
 
-        {/* Buscador Compacto */}
-        <div className="relative w-full sm:w-56">
-          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Buscar por placa o ID..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-8 pl-8 pr-3 text-xs rounded-lg bg-slate-50 dark:bg-zinc-900 border border-[#EAEAEA] dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 font-sans"
-          />
+        {/* Acciones Derecha */}
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          {/* Buscador Compacto */}
+          <div className="relative w-full sm:w-56">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Buscar por placa o ID..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full h-8 pl-8 pr-3 text-xs rounded-lg bg-slate-50 dark:bg-zinc-900 border border-[#EAEAEA] dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 font-sans"
+            />
+          </div>
+          
+          {/* Export Buttons */}
+          <div className="flex items-center gap-1.5 border-l border-[#EAEAEA] dark:border-zinc-800 pl-2">
+            <button
+              type="button"
+              onClick={() => handleExport('pdf')}
+              className="inline-flex items-center justify-center h-8 px-2.5 text-xs font-medium text-slate-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-[#EAEAEA] dark:border-zinc-700 hover:bg-stone-50 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+              title="Exportar Acta (PDF)"
+            >
+              <FileText className="w-3.5 h-3.5 sm:mr-1.5" />
+              <span className="hidden sm:inline">PDF</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleExport('csv')}
+              className="inline-flex items-center justify-center h-8 px-2.5 text-xs font-medium text-slate-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-[#EAEAEA] dark:border-zinc-700 hover:bg-stone-50 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+              title="Exportar Datos (CSV)"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 sm:mr-1.5" />
+              <span className="hidden sm:inline">CSV</span>
+            </button>
+          </div>
         </div>
 
       </div>

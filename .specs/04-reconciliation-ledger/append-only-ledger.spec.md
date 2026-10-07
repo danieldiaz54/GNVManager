@@ -1,24 +1,34 @@
-# Append-Only Ledger for Reconciliation Records
+# Append-Only Reconciliation Ledger Spec
 
-## Architecture Overview
+## Goal
+Refactor the mutable database logic into an append-only Event Sourcing / Immutable Ledger pattern.
 
-To maintain a strict audit trail and prevent the loss of historical information, the system implements an append-only architecture (Event Sourcing / Immutable Ledger) for handling operations on `ReconciliationRecord` entities.
+## Entities
 
-Instead of mutating existing database records (e.g., updating the `saleVolumeSm3` field directly when a sale is dispensed), the system appends new events to a related `ReconciliationEvent` table.
+### `ReconciliationRecord`
+Represents the state of a manifold or module during a reconciliation lifecycle.
 
-## Data Model
+Fields:
+- `id`: UUID
+- `recordType`: "INDIVIDUAL" | "RACK_PARENT" | "RACK_CHILD" | "MANIFOLD_PARENT" | "MANIFOLD_CHILD"
+- `moduleIdentifier`: String?
+- `positionNumber`: Int?
+- `operationType`: "CARGUE" o "DESCARGUE"
+- `moduleCapacityLiters`: Float
+- Initial & Final states (Pressure, Temp)
+- Calculated mass and volume
 
-- **ReconciliationRecord**: The core ledger record describing the initial and final states of a volume transfer. This record is immutable once created.
-- **ReconciliationEvent**: An append-only table linking to a `ReconciliationRecord`. Each time a business action occurs (such as registering the dispensed sale volume), a new event is inserted.
-  - `eventType`: Describes the action (e.g., `SALE_DISPENSED`).
-  - `saleVolumeSm3`: The volume associated with the event.
-  - `createdAt`: Timestamp of the event.
+### `ReconciliationEvent`
+An append-only log of events affecting a `ReconciliationRecord`.
 
-## Use Case Refactoring
+Fields:
+- `id`: UUID
+- `recordId`: UUID (foreign key)
+- `eventType`: String (e.g. "TRANSFER_CALCULATED", "SALE_DISPENSED")
+- `saleVolumeSm3`: Float?
+- `createdAt`: DateTime
 
-The `UpdateSaleVolumeUseCase` has been refactored to:
-1. Validate the input.
-2. Ensure the record exists.
-3. Call the repository to append a `SALE_DISPENSED` event.
-
-The repository's `updateSaleVolume` method no longer executes a SQL `UPDATE` on the `ReconciliationRecord`. Instead, it inserts a new `ReconciliationEvent` and re-fetches the record with its associated events to dynamically calculate or provide the latest state.
+## Workflow
+1. When a reconciliation calculation completes, instead of mutating fields like `saleVolumeSm3` directly in the record, a new `ReconciliationEvent` (e.g. `TRANSFER_CALCULATED` or `SALE_DISPENSED`) is appended.
+2. Repositories and Use Cases query events and reduce them to compute the current total sale volume.
+3. The `ReconciliationRecord` serves as the anchor entity.

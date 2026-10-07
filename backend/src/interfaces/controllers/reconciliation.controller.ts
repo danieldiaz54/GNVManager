@@ -3,10 +3,14 @@ import { z } from 'zod';
 import { SaveReconciliationRecordUseCase } from '../../application/use-cases/SaveReconciliationRecord';
 import { SaveRackReconciliationUseCase } from '../../application/use-cases/SaveRackReconciliation';
 import { UpdateSaleVolumeUseCase } from '../../application/use-cases/UpdateSaleVolume';
+import { GenerateReconciliationReport } from '../../application/use-cases/GenerateReconciliationReport';
 import { PrismaReconciliationRepository } from '../../infrastructure/database/PrismaReconciliationRepository';
+import { DivergenceException, PressureExceededException } from '../../domain/entities/Thermodynamics';
 
 const reconciliationSchema = z.object({
   recordType: z.string().optional(),
+  operationType: z.enum(['CARGUE', 'DESCARGUE']).optional(),
+  gasProfileId: z.string().optional(),
   moduleIdentifier: z.string().optional().nullable(),
   positionNumber: z.number().optional().nullable(),
   moduleCapacityLiters: z.number().positive(),
@@ -29,6 +33,7 @@ export class ReconciliationController {
   private saveUseCase: SaveReconciliationRecordUseCase;
   private saveRackUseCase: SaveRackReconciliationUseCase;
   private updateSaleUseCase: UpdateSaleVolumeUseCase;
+  private generateReportUseCase: GenerateReconciliationReport;
   private repository: PrismaReconciliationRepository;
 
   constructor() {
@@ -36,6 +41,7 @@ export class ReconciliationController {
     this.saveUseCase = new SaveReconciliationRecordUseCase(this.repository);
     this.saveRackUseCase = new SaveRackReconciliationUseCase(this.repository);
     this.updateSaleUseCase = new UpdateSaleVolumeUseCase(this.repository);
+    this.generateReportUseCase = new GenerateReconciliationReport(this.repository);
   }
 
   public saveRecord = async (req: Request, res: Response): Promise<void> => {
@@ -50,6 +56,10 @@ export class ReconciliationController {
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ success: false, error: 'Datos inválidos', details: error.issues });
+        return;
+      }
+      if (error instanceof DivergenceException || error instanceof PressureExceededException) {
+        res.status(422).json({ success: false, error: error.message });
         return;
       }
       console.error(error);
@@ -69,6 +79,10 @@ export class ReconciliationController {
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ success: false, error: 'Datos de rack inválidos', details: error.issues });
+        return;
+      }
+      if (error instanceof DivergenceException || error instanceof PressureExceededException) {
+        res.status(422).json({ success: false, error: error.message });
         return;
       }
       console.error(error);
@@ -117,6 +131,41 @@ export class ReconciliationController {
       }
       console.error(error);
       res.status(500).json({ success: false, error: 'Error actualizando venta' });
+    }
+  };
+  public exportRecord = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { format } = req.query; // csv | pdf
+
+      if (!id || typeof id !== 'string') {
+        res.status(400).json({ success: false, error: 'ID de registro requerido' });
+        return;
+      }
+
+      if (format !== 'csv' && format !== 'pdf') {
+        res.status(400).json({ success: false, error: 'Formato inválido. Use csv o pdf.' });
+        return;
+      }
+
+      const reportData = await this.generateReportUseCase.execute(id, format as 'csv' | 'pdf');
+
+      if (format === 'pdf') {
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename="report.pdf"');
+        res.status(200).send(reportData);
+      } else {
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="report.csv"');
+        res.status(200).send(reportData);
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('no encontrado')) {
+        res.status(404).json({ success: false, error: error.message });
+        return;
+      }
+      console.error(error);
+      res.status(500).json({ success: false, error: 'Error interno exportando registro' });
     }
   }
 }

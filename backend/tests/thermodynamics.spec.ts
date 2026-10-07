@@ -27,9 +27,9 @@ describe('CalculateThermodynamicTransferUseCase', () => {
     });
   });
 
-  describe('Sabanas rule (PressureExceededException)', () => {
-    it('should throw PressureExceededException when initial pressure > 230 bar', () => {
-      const initial: ThermodynamicState = { pressureBar: 231, temperatureK: 300 };
+  describe('Sabanas & Módulos Flexibles rule (PressureExceededException)', () => {
+    it('should throw PressureExceededException when initial pressure > 260 bar', () => {
+      const initial: ThermodynamicState = { pressureBar: 261, temperatureK: 300 };
       const final: ThermodynamicState = { pressureBar: 200, temperatureK: 320 };
       const volumeLiters = 1000;
 
@@ -37,22 +37,57 @@ describe('CalculateThermodynamicTransferUseCase', () => {
         .toThrow(PressureExceededException);
     });
 
-    it('should throw PressureExceededException when final pressure > 230 bar', () => {
+    it('should throw PressureExceededException when final pressure > 260 bar', () => {
       const initial: ThermodynamicState = { pressureBar: 200, temperatureK: 300 };
-      const final: ThermodynamicState = { pressureBar: 230.1, temperatureK: 320 };
+      const final: ThermodynamicState = { pressureBar: 260.1, temperatureK: 320 };
       const volumeLiters = 1000;
 
       expect(() => useCase.execute(initial, final, volumeLiters))
         .toThrow(PressureExceededException);
     });
 
-    it('should not throw when pressure is exactly 230 bar', () => {
-      const initial: ThermodynamicState = { pressureBar: 230, temperatureK: 300 };
-      const final: ThermodynamicState = { pressureBar: 230, temperatureK: 320 };
+    it('should not throw when pressure is exactly 260 bar', () => {
+      const initial: ThermodynamicState = { pressureBar: 260, temperatureK: 300 };
+      const final: ThermodynamicState = { pressureBar: 260, temperatureK: 320 };
       const volumeLiters = 1000;
 
       expect(() => useCase.execute(initial, final, volumeLiters))
         .not.toThrow(PressureExceededException);
+    });
+
+    it('should not throw when pressure is 250 bar', () => {
+      const initial: ThermodynamicState = { pressureBar: 250, temperatureK: 300 };
+      const final: ThermodynamicState = { pressureBar: 250, temperatureK: 320 };
+      const volumeLiters = 1000;
+
+      expect(() => useCase.execute(initial, final, volumeLiters))
+        .not.toThrow(PressureExceededException);
+    });
+  });
+
+  describe('certifyAforo', () => {
+    it('should return certified: true only if pStabilized >= 230', () => {
+      expect(useCase.certifyAforo(230, 1000, 10)).toEqual({
+        certified: true,
+        aforoSm3PerBar: 100
+      });
+      
+      expect(useCase.certifyAforo(229.9, 1000, 10)).toEqual({
+        certified: false,
+        aforoSm3PerBar: 100
+      });
+
+      expect(useCase.certifyAforo(240, 500, 50)).toEqual({
+        certified: true,
+        aforoSm3PerBar: 10
+      });
+    });
+
+    it('should return 0 aforoSm3PerBar if totalDeltaP is 0 or less', () => {
+      expect(useCase.certifyAforo(230, 1000, 0)).toEqual({
+        certified: true,
+        aforoSm3PerBar: 0
+      });
     });
   });
 

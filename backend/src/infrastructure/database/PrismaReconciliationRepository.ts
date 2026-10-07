@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { IReconciliationRepository, ReconciliationRecordEntity, SaveRackDTO } from '../../domain/repositories/IReconciliationRepository';
+import type { IReconciliationRepository, ReconciliationRecordEntity, SaveRackDTO } from '../../domain/repositories/IReconciliationRepository';
 
 const prisma = new PrismaClient();
 
@@ -9,17 +9,19 @@ export class PrismaReconciliationRepository implements IReconciliationRepository
     const saved = await prisma.reconciliationRecord.create({
       data: {
         recordType: record.recordType || 'INDIVIDUAL',
-        moduleIdentifier: record.moduleIdentifier,
-        positionNumber: record.positionNumber,
-        parentId: record.parentId,
+        moduleIdentifier: record.moduleIdentifier ?? null,
+        positionNumber: record.positionNumber ?? null,
+        parentId: record.parentId ?? null,
         moduleCapacityLiters: record.moduleCapacityLiters,
         initialPressureBar: record.initialPressureBar,
         initialTempK: record.initialTempK,
         finalPressureBar: record.finalPressureBar,
         finalTempK: record.finalTempK,
         calculatedMassKg: record.calculatedMassKg,
-        calculatedVolumeSm3: record.calculatedVolumeSm3,
-        saleVolumeSm3: record.saleVolumeSm3
+        calculatedVolumeSm3: record.calculatedVolumeSm3
+      },
+      include: {
+        events: true
       }
     });
     
@@ -39,8 +41,7 @@ export class PrismaReconciliationRepository implements IReconciliationRepository
           finalPressureBar: dto.parent.finalPressureBar,
           finalTempK: dto.parent.finalTempK,
           calculatedMassKg: dto.parent.calculatedMassKg,
-          calculatedVolumeSm3: dto.parent.calculatedVolumeSm3,
-          saleVolumeSm3: dto.parent.saleVolumeSm3
+          calculatedVolumeSm3: dto.parent.calculatedVolumeSm3
         }
       });
 
@@ -50,7 +51,7 @@ export class PrismaReconciliationRepository implements IReconciliationRepository
           data: {
             recordType: 'RACK_CHILD',
             moduleIdentifier: dto.parent.moduleIdentifier || 'RACK-11P',
-            positionNumber: pos.positionNumber,
+            positionNumber: pos.positionNumber ?? null,
             parentId: parentRecord.id,
             moduleCapacityLiters: pos.moduleCapacityLiters,
             initialPressureBar: pos.initialPressureBar,
@@ -58,8 +59,7 @@ export class PrismaReconciliationRepository implements IReconciliationRepository
             finalPressureBar: pos.finalPressureBar,
             finalTempK: pos.finalTempK,
             calculatedMassKg: pos.calculatedMassKg,
-            calculatedVolumeSm3: pos.calculatedVolumeSm3,
-            saleVolumeSm3: null
+            calculatedVolumeSm3: pos.calculatedVolumeSm3
           }
         });
       }
@@ -70,6 +70,9 @@ export class PrismaReconciliationRepository implements IReconciliationRepository
         include: {
           children: {
             orderBy: { positionNumber: 'asc' }
+          },
+          events: {
+            orderBy: { createdAt: 'desc' }
           }
         }
       });
@@ -88,6 +91,9 @@ export class PrismaReconciliationRepository implements IReconciliationRepository
       include: {
         children: {
           orderBy: { positionNumber: 'asc' }
+        },
+        events: {
+          orderBy: { createdAt: 'desc' }
         }
       }
     });
@@ -103,6 +109,9 @@ export class PrismaReconciliationRepository implements IReconciliationRepository
       include: {
         children: {
           orderBy: { positionNumber: 'asc' }
+        },
+        events: {
+          orderBy: { createdAt: 'desc' }
         }
       },
       orderBy: { createdAt: 'desc' }
@@ -111,15 +120,30 @@ export class PrismaReconciliationRepository implements IReconciliationRepository
   }
 
   async updateSaleVolume(id: string, saleVolumeSm3: number): Promise<ReconciliationRecordEntity> {
-    const updated = await prisma.reconciliationRecord.update({
+    await prisma.reconciliationEvent.create({
+      data: {
+        recordId: id,
+        eventType: 'SALE_DISPENSED',
+        saleVolumeSm3
+      }
+    });
+
+    const updated = await prisma.reconciliationRecord.findUnique({
       where: { id },
-      data: { saleVolumeSm3 },
       include: {
         children: {
           orderBy: { positionNumber: 'asc' }
+        },
+        events: {
+          orderBy: { createdAt: 'desc' }
         }
       }
     });
-    return updated as ReconciliationRecordEntity;
+
+    if (!updated) {
+      throw new Error(`Record with ID ${id} not found after adding event`);
+    }
+
+    return updated as unknown as ReconciliationRecordEntity;
   }
 }

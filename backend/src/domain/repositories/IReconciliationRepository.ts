@@ -13,7 +13,15 @@ export interface ReconciliationRecordEntity {
   finalTempK: number;
   calculatedMassKg: number;
   calculatedVolumeSm3: number;
+  events?: ReconciliationEventEntity[];
+}
+
+export interface ReconciliationEventEntity {
+  id?: string;
+  recordId: string;
+  eventType: string;
   saleVolumeSm3?: number | null;
+  createdAt?: Date;
 }
 
 export interface SaveRackDTO {

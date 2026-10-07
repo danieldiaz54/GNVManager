@@ -13,40 +13,53 @@ datasource db {
 
 // Modelo de Base de Datos (Libro Mayor de Conciliación)
 model ReconciliationRecord {
-  id                   String   @id @default(uuid())
-  createdAt            DateTime @default(now())
-  
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
   // Tipo de registro: "INDIVIDUAL" | "RACK_PARENT" | "RACK_CHILD" | "MANIFOLD_PARENT" | "MANIFOLD_CHILD"
-  recordType           String   @default("INDIVIDUAL")
-  
+  recordType String @default("INDIVIDUAL")
+
   // Identificador opcional (ej. "RACK-01" o "PLACA-GNV") y posición (1 a 11)
-  moduleIdentifier     String?
-  positionNumber       Int?
-  
+  moduleIdentifier String?
+  positionNumber   Int?
+
   // Relación Jerárquica para Rack
-  parentId             String?
-  parent               ReconciliationRecord?  @relation("ManifoldHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  children             ReconciliationRecord[] @relation("ManifoldHierarchy")
-  
+  parentId String?
+  parent   ReconciliationRecord?  @relation("ManifoldHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children ReconciliationRecord[] @relation("ManifoldHierarchy")
+
   // Capacidad del módulo o cilindro individual
   moduleCapacityLiters Float
-  
+
   // Estado inicial
-  initialPressureBar   Float
-  initialTempK         Float
-  
+  initialPressureBar Float
+  initialTempK       Float
+
   // Estado final tras la descarga
-  finalPressureBar     Float
-  finalTempK           Float
-  
+  finalPressureBar Float
+  finalTempK       Float
+
   // Resultados del Motor Termodinámico
-  calculatedMassKg     Float
-  calculatedVolumeSm3  Float
-  
-  // Venta en estación
-  saleVolumeSm3        Float?
-  
+  calculatedMassKg    Float
+  calculatedVolumeSm3 Float
+
+  // Eventos inmutables (Append-Only Ledger)
+  events ReconciliationEvent[]
+
   @@map("reconciliation_records")
+}
+
+// Modelo de Eventos para Ledger Inmutable
+model ReconciliationEvent {
+  id            String   @id @default(uuid())
+  recordId      String
+  eventType     String // e.g., "SALE_DISPENSED"
+  saleVolumeSm3 Float?
+  createdAt     DateTime @default(now())
+
+  record ReconciliationRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+
+  @@map("reconciliation_events")
 }
 
 // Modelo de Usuarios (Autenticación)

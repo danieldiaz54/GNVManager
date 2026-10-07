@@ -205,22 +205,22 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
     <div className="space-y-6 w-full max-w-5xl mx-auto animate-fade-in">
       
       {/* Encabezado Despejado */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#EAEAEA] gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[var(--color-border)] gap-4">
         <div>
           <div className="flex items-center gap-4">
-            <h2 className="text-xl font-serif font-bold text-slate-900">
+            <h2 className="text-xl font-serif font-bold text-[var(--color-text-primary)]">
               Operación de Rack
             </h2>
-            <div className="flex bg-[#F7F6F3] border border-[#EAEAEA] p-0.5">
+            <div className="flex bg-[var(--color-canvas)] border border-[var(--color-border)] p-0.5">
               <button 
                 onClick={() => setTotalCylinders(11)}
-                className={`text-xs font-mono px-3 py-1 transition-colors ${totalCylinders === 11 ? 'bg-white border border-[#EAEAEA] text-slate-900 shadow-sm' : 'text-slate-500'}`}
+                className={`text-xs font-mono px-3 py-1 transition-colors ${totalCylinders === 11 ? 'bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] shadow-none' : 'text-[var(--color-text-secondary)]'}`}
               >
                 11 Cilindros
               </button>
               <button 
                 onClick={() => setTotalCylinders(12)}
-                className={`text-xs font-mono px-3 py-1 transition-colors ${totalCylinders === 12 ? 'bg-white border border-[#EAEAEA] text-slate-900 shadow-sm' : 'text-slate-500'}`}
+                className={`text-xs font-mono px-3 py-1 transition-colors ${totalCylinders === 12 ? 'bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] shadow-none' : 'text-[var(--color-text-secondary)]'}`}
               >
                 12 Cilindros
               </button>
@@ -230,17 +230,17 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
 
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">ID Rack:</span>
+            <span className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">ID Rack:</span>
             <input
               type="text"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              className="h-8 w-28 px-2.5 border border-[#EAEAEA] bg-transparent font-mono font-bold text-xs focus:outline-none focus:border-slate-400"
+              className="h-8 w-28 px-2.5 border border-[var(--color-border)] bg-transparent font-mono font-bold text-xs focus:outline-none focus:border-[var(--color-border-hover)]"
               placeholder="RACK-01"
             />
           </div>
 
-          <div className="flex items-center gap-1 bg-[#F7F6F3] p-0.5 border border-[#EAEAEA] text-xs">
+          <div className="flex items-center gap-1 bg-[var(--color-canvas)] p-0.5 border border-[var(--color-border)] text-xs">
             <button
               type="button"
               onClick={() => {
@@ -258,7 +258,7 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
                 }
               }}
               className={`px-2.5 py-1 transition-colors ${
-                pressureUnit === 'bar' ? 'bg-white border border-[#EAEAEA] text-slate-900 shadow-sm' : 'text-slate-500'
+                pressureUnit === 'bar' ? 'bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] shadow-none' : 'text-[var(--color-text-secondary)]'
               }`}
             >
               bar
@@ -280,7 +280,7 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
                 }
               }}
               className={`px-2.5 py-1 transition-colors ${
-                pressureUnit === 'psi' ? 'bg-white border border-[#EAEAEA] text-slate-900 shadow-sm' : 'text-slate-500'
+                pressureUnit === 'psi' ? 'bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] shadow-none' : 'text-[var(--color-text-secondary)]'
               }`}
             >
               psi
@@ -289,60 +289,60 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 border border-[#EAEAEA] bg-white">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 border border-[var(--color-border)] bg-[var(--color-surface)]">
         
         {/* Columna Izquierda: Entradas de Cabezal Común */}
-        <div className="lg:col-span-7 p-6 border-b lg:border-b-0 lg:border-r border-[#EAEAEA] space-y-6">
+        <div className="lg:col-span-7 p-6 border-b lg:border-b-0 lg:border-r border-[var(--color-border)] space-y-6">
           
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex bg-[#F7F6F3] border border-[#EAEAEA] p-0.5">
+            <div className="flex bg-[var(--color-canvas)] border border-[var(--color-border)] p-0.5">
               <button
                 onClick={() => handleFlowSwitch('CARGUE')}
-                className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${flowType === 'CARGUE' ? 'bg-white border border-[#EAEAEA] text-slate-900 shadow-sm' : 'text-slate-500'}`}
+                className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${flowType === 'CARGUE' ? 'bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] shadow-none' : 'text-[var(--color-text-secondary)]'}`}
               >
                 Cargue
               </button>
               <button
                 onClick={() => handleFlowSwitch('DESCARGUE')}
-                className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${flowType === 'DESCARGUE' ? 'bg-white border border-[#EAEAEA] text-slate-900 shadow-sm' : 'text-slate-500'}`}
+                className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${flowType === 'DESCARGUE' ? 'bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] shadow-none' : 'text-[var(--color-text-secondary)]'}`}
               >
                 Descargue
               </button>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-xs text-slate-500 font-medium">Capacidad Total Rack:</span>
+              <span className="text-xs text-[var(--color-text-secondary)] font-medium">Capacidad Total Rack:</span>
               <div className="relative">
                 <input 
                   type="number"
                   value={totalRackCapacity}
                   onChange={(e) => setTotalRackCapacity(Number(e.target.value))}
-                  className="w-28 h-8 px-2 pr-6 border border-[#EAEAEA] bg-transparent text-xs font-mono focus:outline-none focus:border-slate-400 text-right"
+                  className="w-28 h-8 px-2 pr-6 border border-[var(--color-border)] bg-transparent text-xs font-mono focus:outline-none focus:border-[var(--color-border-hover)] text-right"
                 />
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-mono">L</span>
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-[var(--color-text-secondary)] font-mono">L</span>
               </div>
             </div>
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">
                 Parámetros de Cabezal Común
               </span>
-              <span className="text-xs font-mono font-medium px-2 py-1 bg-[#F7F6F3] border border-[#EAEAEA] text-slate-900">
+              <span className="text-xs font-mono font-medium px-2 py-1 bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)]">
                 ΔP: {deltaPressure > 0 ? `+${deltaPressure.toFixed(1)}` : deltaPressure.toFixed(1)} {pressureUnit}
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-4 p-4 border border-[#EAEAEA] bg-[#F7F6F3]">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+              <div className="space-y-4 p-4 border border-[var(--color-border)] bg-[var(--color-canvas)]">
+                <span className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block">
                   1. {flowType === 'CARGUE' ? 'Remanente Inicial' : 'Lleno Inicial'}
                 </span>
                 
                 <div>
-                  <label className="block text-[11px] text-slate-500 mb-1.5">Presión Inicial (P₁)</label>
+                  <label className="block text-[11px] text-[var(--color-text-secondary)] mb-1.5">Presión Inicial (P₁)</label>
                   <div className="relative">
-                    <Gauge className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <Gauge className="w-4 h-4 text-[var(--color-text-secondary)] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="number"
                       value={headerPi}
@@ -351,35 +351,35 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
                         setHeaderPi(val);
                         applyHeaderToPositions(val, headerPf);
                       }}
-                      className="w-full h-10 pl-9 pr-2 border border-[#EAEAEA] bg-white font-mono text-sm focus:outline-none focus:border-slate-400 transition-colors"
+                      className="w-full h-10 pl-9 pr-2 border border-[var(--color-border)] bg-[var(--color-surface)] font-mono text-sm focus:outline-none focus:border-[var(--color-border-hover)] transition-colors"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] text-slate-500 mb-1.5">Temp Global (T₁)</label>
+                  <label className="block text-[11px] text-[var(--color-text-secondary)] mb-1.5">Temp Global (T₁)</label>
                   <div className="relative">
-                    <Thermometer className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <Thermometer className="w-4 h-4 text-[var(--color-text-secondary)] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="number"
                       step="0.5"
                       value={headerTi}
                       onChange={(e) => setHeaderTi(Number(e.target.value))}
-                      className="w-full h-10 pl-9 pr-2 border border-[#EAEAEA] bg-white font-mono text-sm focus:outline-none focus:border-slate-400 transition-colors"
+                      className="w-full h-10 pl-9 pr-2 border border-[var(--color-border)] bg-[var(--color-surface)] font-mono text-sm focus:outline-none focus:border-[var(--color-border-hover)] transition-colors"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4 p-4 border border-[#EAEAEA] bg-white">
-                <span className="text-[11px] font-bold text-slate-900 uppercase tracking-wider block">
+              <div className="space-y-4 p-4 border border-[var(--color-border)] bg-[var(--color-surface)]">
+                <span className="text-[11px] font-bold text-[var(--color-text-primary)] uppercase tracking-wider block">
                   2. {flowType === 'CARGUE' ? 'Corte Final' : 'Remanente Final'}
                 </span>
 
                 <div>
-                  <label className="block text-[11px] text-slate-500 mb-1.5">Presión Final (P₂)</label>
+                  <label className="block text-[11px] text-[var(--color-text-secondary)] mb-1.5">Presión Final (P₂)</label>
                   <div className="relative">
-                    <Gauge className="w-4 h-4 text-slate-900 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <Gauge className="w-4 h-4 text-[var(--color-text-primary)] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="number"
                       value={headerPf}
@@ -388,21 +388,21 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
                         setHeaderPf(val);
                         applyHeaderToPositions(headerPi, val);
                       }}
-                      className="w-full h-10 pl-9 pr-2 border border-slate-900 bg-white font-mono text-sm focus:outline-none focus:ring-1 focus:ring-slate-900"
+                      className="w-full h-10 pl-9 pr-2 border border-[var(--color-accent)] bg-[var(--color-surface)] font-mono text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] text-slate-500 mb-1.5">Temp Global (T₂)</label>
+                  <label className="block text-[11px] text-[var(--color-text-secondary)] mb-1.5">Temp Global (T₂)</label>
                   <div className="relative">
-                    <Thermometer className="w-4 h-4 text-slate-900 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <Thermometer className="w-4 h-4 text-[var(--color-text-primary)] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="number"
                       step="0.5"
                       value={headerTf}
                       onChange={(e) => setHeaderTf(Number(e.target.value))}
-                      className="w-full h-10 pl-9 pr-2 border border-slate-900 bg-white font-mono text-sm focus:outline-none focus:ring-1 focus:ring-slate-900"
+                      className="w-full h-10 pl-9 pr-2 border border-[var(--color-accent)] bg-[var(--color-surface)] font-mono text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
                     />
                   </div>
                 </div>
@@ -410,24 +410,24 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
             </div>
           </div>
 
-          <div className="pt-6 border-t border-[#EAEAEA]">
+          <div className="pt-6 border-t border-[var(--color-border)]">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">
                 Cilindros Conectados ({activeCount}/{totalCylinders})
               </span>
               <div className="flex items-center gap-3 text-[11px]">
                 <button
                   type="button"
                   onClick={() => setPositions(prev => prev.map(p => ({ ...p, active: true })))}
-                  className="text-slate-900 font-medium hover:underline"
+                  className="text-[var(--color-text-primary)] font-medium hover:underline"
                 >
                   Activar Todos
                 </button>
-                <span className="text-[#EAEAEA]">|</span>
+                <span className="text-[var(--color-border)]">|</span>
                 <button
                   type="button"
                   onClick={() => setPositions(prev => prev.map(p => ({ ...p, active: false })))}
-                  className="text-slate-400 hover:text-slate-600"
+                  className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-secondary)]"
                 >
                   Desactivar
                 </button>
@@ -442,8 +442,8 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
                   onClick={() => togglePositionActive(p.id)}
                   className={`py-2 px-1 text-xs font-mono border transition-colors text-center ${
                     p.active
-                      ? 'bg-slate-900 border-slate-900 text-white'
-                      : 'bg-[#F7F6F3] border-[#EAEAEA] text-slate-400 line-through'
+                      ? 'bg-[var(--color-accent)] border-[var(--color-accent)] text-white'
+                      : 'bg-[var(--color-canvas)] border-[var(--color-border)] text-[var(--color-text-secondary)] line-through'
                   }`}
                 >
                   #{p.id}
@@ -455,43 +455,43 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
         </div>
 
         {/* Columna Derecha: Consolidado */}
-        <div className="lg:col-span-5 p-6 flex flex-col justify-between bg-[#F7F6F3]">
+        <div className="lg:col-span-5 p-6 flex flex-col justify-between bg-[var(--color-canvas)]">
           
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">
                 Consolidado Total
               </span>
-              <span className="text-xs font-mono text-slate-900 font-semibold px-2 py-0.5 bg-white border border-[#EAEAEA]">
+              <span className="text-xs font-mono text-[var(--color-text-primary)] font-semibold px-2 py-0.5 bg-[var(--color-surface)] border border-[var(--color-border)]">
                 {identifier}
               </span>
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-[var(--color-text-secondary)]">
               Suma simultánea de las {activeCount} posiciones
             </p>
 
             <div className="mt-8 space-y-4">
               
-              <div className="p-5 bg-white border border-[#EAEAEA]">
-                <span className="text-[11px] font-mono text-slate-500 uppercase tracking-wider">Volumen Transferido</span>
+              <div className="p-5 bg-[var(--color-surface)] border border-[var(--color-border)]">
+                <span className="text-[11px] font-mono text-[var(--color-text-secondary)] uppercase tracking-wider">Volumen Transferido</span>
                 <div className="flex items-baseline gap-2 mt-2">
-                  <span className="text-4xl font-serif text-slate-900 tracking-tight">
+                  <span className="text-4xl font-serif text-[var(--color-text-primary)] tracking-tight">
                     {Math.abs(totalVolume_Sm3).toFixed(2)}
                   </span>
-                  <span className="text-sm text-slate-500 font-medium">Sm³</span>
+                  <span className="text-sm text-[var(--color-text-secondary)] font-medium">Sm³</span>
                 </div>
-                <span className="text-[11px] font-mono text-slate-400 mt-3 block pt-3 border-t border-[#EAEAEA]">
+                <span className="text-[11px] font-mono text-[var(--color-text-secondary)] mt-3 block pt-3 border-t border-[var(--color-border)]">
                   Capacidad prorrateada: {capacityPerCylinder.toFixed(1)} L/cilindro
                 </span>
               </div>
 
-              <div className="p-5 bg-white border border-[#EAEAEA]">
-                <span className="text-[11px] font-mono text-slate-500 uppercase tracking-wider">Masa Total</span>
+              <div className="p-5 bg-[var(--color-surface)] border border-[var(--color-border)]">
+                <span className="text-[11px] font-mono text-[var(--color-text-secondary)] uppercase tracking-wider">Masa Total</span>
                 <div className="flex items-baseline gap-2 mt-2">
-                  <span className="text-3xl font-serif text-slate-900 tracking-tight">
+                  <span className="text-3xl font-serif text-[var(--color-text-primary)] tracking-tight">
                     {Math.abs(totalMass_kg).toFixed(2)}
                   </span>
-                  <span className="text-sm text-slate-500 font-medium">kg</span>
+                  <span className="text-sm text-[var(--color-text-secondary)] font-medium">kg</span>
                 </div>
               </div>
 
@@ -505,8 +505,8 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
               disabled={activeCount === 0 || isSaving}
               className={`w-full py-4 px-4 text-sm font-semibold border transition-colors flex items-center justify-center gap-2 ${
                 isSavedFeedback
-                  ? 'bg-white border-slate-900 text-slate-900'
-                  : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900 disabled:opacity-50 disabled:bg-slate-100 disabled:text-slate-400 disabled:border-[#EAEAEA]'
+                  ? 'bg-[var(--color-surface)] border-[var(--color-accent)] text-[var(--color-text-primary)]'
+                  : 'bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white border-[var(--color-accent)] disabled:opacity-50 disabled:bg-[var(--color-surface-hover)] disabled:text-[var(--color-text-secondary)] disabled:border-[var(--color-border)]'
               }`}
             >
               {isSaving ? (
@@ -527,93 +527,93 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
       </div>
 
       {/* Ajuste Individual */}
-      <div className="border border-[#EAEAEA] bg-white">
+      <div className="border border-[var(--color-border)] bg-[var(--color-surface)]">
         <button
           type="button"
           onClick={() => setShowPerCylinderTuning(!showPerCylinderTuning)}
-          className="w-full px-6 py-4 flex items-center justify-between text-xs font-medium text-slate-600 hover:bg-[#F7F6F3] transition-colors"
+          className="w-full px-6 py-4 flex items-center justify-between text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-canvas)] transition-colors"
         >
           <div className="flex items-center gap-3">
-            <Sliders className="w-4 h-4 text-slate-400" />
+            <Sliders className="w-4 h-4 text-[var(--color-text-secondary)]" />
             <span>Ajuste Individual de Presiones por Cilindro</span>
           </div>
           {showPerCylinderTuning ? (
-            <ChevronUp className="w-4 h-4 text-slate-400" />
+            <ChevronUp className="w-4 h-4 text-[var(--color-text-secondary)]" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-slate-400" />
+            <ChevronDown className="w-4 h-4 text-[var(--color-text-secondary)]" />
           )}
         </button>
 
         {showPerCylinderTuning && (
-          <div className="p-6 border-t border-[#EAEAEA] bg-[#F7F6F3] space-y-4">
+          <div className="p-6 border-t border-[var(--color-border)] bg-[var(--color-canvas)] space-y-4">
             
             <div className="flex items-center justify-between text-xs">
-              <p className="text-slate-500">
+              <p className="text-[var(--color-text-secondary)]">
                 Ajuste manual para cilindros aislados o con diferentes remanentes.
               </p>
               <button
                 type="button"
                 onClick={resetAllToHeader}
-                className="flex items-center gap-1.5 text-xs font-medium text-slate-900 hover:underline"
+                className="flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-primary)] hover:underline"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Restaurar P₁ y P₂ de cabezal</span>
               </button>
             </div>
 
-            <div className="overflow-x-auto border border-[#EAEAEA] bg-white">
+            <div className="overflow-x-auto border border-[var(--color-border)] bg-[var(--color-surface)]">
               <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-[#F7F6F3] text-[10px] text-slate-500 uppercase tracking-wider border-b border-[#EAEAEA]">
+                <thead className="bg-[var(--color-canvas)] text-[10px] text-[var(--color-text-secondary)] uppercase tracking-wider border-b border-[var(--color-border)]">
                   <tr>
-                    <th className="py-3 px-4 border-r border-[#EAEAEA] w-12 text-center">Est</th>
-                    <th className="py-3 px-4 border-r border-[#EAEAEA]">Posición</th>
-                    <th className="py-3 px-4 border-r border-[#EAEAEA]">P₁ ({pressureUnit})</th>
-                    <th className="py-3 px-4 border-r border-[#EAEAEA]">P₂ ({pressureUnit})</th>
-                    <th className="py-3 px-4 border-r border-[#EAEAEA]">ΔP</th>
+                    <th className="py-3 px-4 border-r border-[var(--color-border)] w-12 text-center">Est</th>
+                    <th className="py-3 px-4 border-r border-[var(--color-border)]">Posición</th>
+                    <th className="py-3 px-4 border-r border-[var(--color-border)]">P₁ ({pressureUnit})</th>
+                    <th className="py-3 px-4 border-r border-[var(--color-border)]">P₂ ({pressureUnit})</th>
+                    <th className="py-3 px-4 border-r border-[var(--color-border)]">ΔP</th>
                     <th className="py-3 px-4 text-right">Volumen Sm³</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#EAEAEA]">
+                <tbody className="divide-y divide-[var(--color-border)]">
                   {positions.map((pos) => (
                     <tr 
                       key={pos.id} 
-                      className={`hover:bg-[#F7F6F3] transition-colors ${
-                        !pos.active ? 'opacity-40 bg-[#F7F6F3]' : ''
+                      className={`hover:bg-[var(--color-canvas)] transition-colors ${
+                        !pos.active ? 'opacity-40 bg-[var(--color-canvas)]' : ''
                       }`}
                     >
-                      <td className="py-2 px-4 border-r border-[#EAEAEA] text-center">
+                      <td className="py-2 px-4 border-r border-[var(--color-border)] text-center">
                         <input
                           type="checkbox"
                           checked={pos.active}
                           onChange={() => togglePositionActive(pos.id)}
-                          className="rounded-sm border-[#EAEAEA] text-slate-900 focus:ring-slate-900"
+                          className="rounded-sm border-[var(--color-border)] text-[var(--color-text-primary)] focus:ring-[var(--color-accent)]"
                         />
                       </td>
-                      <td className="py-2 px-4 border-r border-[#EAEAEA] text-slate-900 font-medium">
+                      <td className="py-2 px-4 border-r border-[var(--color-border)] text-[var(--color-text-primary)] font-medium">
                         {pos.label}
                       </td>
-                      <td className="py-2 px-4 border-r border-[#EAEAEA]">
+                      <td className="py-2 px-4 border-r border-[var(--color-border)]">
                         <input
                           type="number"
                           disabled={!pos.active}
                           value={pos.pi}
                           onChange={(e) => updateIndividualPosition(pos.id, 'pi', Number(e.target.value))}
-                          className="w-20 h-8 px-2 text-xs border border-[#EAEAEA] bg-white focus:outline-none focus:border-slate-400"
+                          className="w-20 h-8 px-2 text-xs border border-[var(--color-border)] bg-[var(--color-surface)] focus:outline-none focus:border-[var(--color-border-hover)]"
                         />
                       </td>
-                      <td className="py-2 px-4 border-r border-[#EAEAEA]">
+                      <td className="py-2 px-4 border-r border-[var(--color-border)]">
                         <input
                           type="number"
                           disabled={!pos.active}
                           value={pos.pf}
                           onChange={(e) => updateIndividualPosition(pos.id, 'pf', Number(e.target.value))}
-                          className="w-20 h-8 px-2 text-xs border border-[#EAEAEA] bg-white focus:outline-none focus:border-slate-400"
+                          className="w-20 h-8 px-2 text-xs border border-[var(--color-border)] bg-[var(--color-surface)] focus:outline-none focus:border-[var(--color-border-hover)]"
                         />
                       </td>
-                      <td className="py-2 px-4 border-r border-[#EAEAEA] text-slate-500">
+                      <td className="py-2 px-4 border-r border-[var(--color-border)] text-[var(--color-text-secondary)]">
                         {(pos.pf - pos.pi).toFixed(1)}
                       </td>
-                      <td className="py-2 px-4 text-right text-slate-900 font-medium">
+                      <td className="py-2 px-4 text-right text-[var(--color-text-primary)] font-medium">
                         {pos.active && pos.result ? `${Math.abs(pos.result.volumeTransferredSm3).toFixed(2)}` : '—'}
                       </td>
                     </tr>

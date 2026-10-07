@@ -42,7 +42,7 @@ export default function Login() {
           <p className="text-sm text-[var(--color-text-secondary)] mt-1">Inicia sesión para acceder al sistema</p>
         </div>
 
-        <div className="ui-card shadow-lg dark:shadow-black/40">
+        <div className="ui-card shadow-none">
           {error && (
             <div className="mb-6 p-3 rounded-md bg-[var(--color-alert-red-bg)] border border-[var(--color-alert-red-border)] text-[var(--color-alert-red-text)] flex items-start gap-3 text-sm">
               <ShieldAlert className="w-5 h-5 shrink-0 stroke-[1.5px]" />

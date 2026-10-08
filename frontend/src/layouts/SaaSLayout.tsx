@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, BarChart3, Settings, LogOut, Menu, Sun, Moon, Database } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Settings, LogOut, Menu, X, Sun, Moon, Database } from 'lucide-react';
 import GasFlame from '../components/GasFlame';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -114,23 +114,25 @@ export default function SaaSLayout() {
             </button>
           </div>
 
-          {/* Botón Hamburguesa para Mobile */}
+          {/* Botón Hamburguesa con animación de rotación suave */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer"
-            aria-label="Abrir menú"
+            className="md:hidden p-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] transition-all duration-300 cursor-pointer"
+            aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
           >
-            <Menu className="w-4 h-4" />
+            <span className="block transform transition-transform duration-300">
+              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </span>
           </button>
 
         </div>
 
       </header>
 
-      {/* Menú Desplegable Móvil (Drawer / Dropdown) */}
+      {/* Menú Desplegable Móvil con animación suave anim-drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4 space-y-3 z-20 shadow-md animate-in slide-in-from-top-2">
+        <div className="md:hidden border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-5 space-y-4 z-20 shadow-lg anim-drawer">
           <div className="pb-3 border-b border-[var(--color-border)]">
             <p className="text-xs font-bold text-[var(--color-text-primary)]">
               {user?.fullName || user?.username}

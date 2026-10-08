@@ -18,9 +18,22 @@ app.use(helmet());
 // 2. Parseo de JSON seguro (Rechaza payloads inmensos)
 app.use(express.json({ limit: '10kb' }));
 
-// 3. Control de Acceso (CORS) - Lista Blanca estricta
-const corsOptions = {
-  origin: process.env.CORS_ORIGINS || 'http://localhost:5173',
+// 3. Control de Acceso (CORS) - Admite múltiples orígenes o comodines Vercel
+const rawOrigins = process.env.CORS_ORIGINS || 'http://localhost:5173';
+const allowedOrigins = rawOrigins.split(',').map(o => o.trim());
+
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    // Permitir peticiones sin origin (como apps móviles, curl, Postman o health checks)
+    if (!origin) return callback(null, true);
+    if (rawOrigins === '*' || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS bloqueado para origen: ${origin}`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));

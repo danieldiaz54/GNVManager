@@ -44,19 +44,19 @@ export default function HomeModule() {
       </div>
 
       {/* Grid Bento Principal */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 anim-slide-up">
         
         {/* Módulo: Consola de Despacho (Destacado) */}
         <Link 
           to="/app/thermodynamics"
-          className="md:col-span-2 group relative overflow-hidden bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-text-primary)] transition-colors p-8 rounded-md flex flex-col justify-between min-h-[240px]"
+          className="md:col-span-2 group relative overflow-hidden bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-text-primary)] card-interactive p-8 rounded-md flex flex-col justify-between min-h-[240px]"
         >
           <div className="absolute right-0 top-0 opacity-5 group-hover:opacity-10 transition-opacity transform translate-x-4 -translate-y-4">
             <LayoutDashboard className="w-48 h-48" />
           </div>
           
           <div>
-            <div className="w-10 h-10 flex items-center justify-center rounded-md bg-[var(--color-text-primary)] text-[var(--color-canvas)] mb-4">
+            <div className="w-10 h-10 flex items-center justify-center rounded-md bg-[var(--color-text-primary)] text-[var(--color-canvas)] mb-4 transition-transform group-hover:scale-105">
               <LayoutDashboard className="w-5 h-5" />
             </div>
             <h2 className="text-2xl font-serif font-bold text-[var(--color-text-primary)] mb-2">
@@ -75,10 +75,10 @@ export default function HomeModule() {
         {/* Módulo: Perfiles Cromatográficos */}
         <Link 
           to="/app/gas-profiles"
-          className="group bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-text-secondary)] transition-colors p-8 rounded-md flex flex-col justify-between min-h-[240px]"
+          className="group bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-text-primary)] card-interactive transition-all p-8 rounded-md flex flex-col justify-between min-h-[240px]"
         >
           <div>
-            <div className="w-10 h-10 flex items-center justify-center rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)] mb-4">
+            <div className="w-10 h-10 flex items-center justify-center rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)] mb-4 transition-transform group-hover:scale-105">
               <Database className="w-5 h-5 stroke-[1.5px]" />
             </div>
             <h2 className="text-xl font-serif font-bold text-[var(--color-text-primary)] mb-2">

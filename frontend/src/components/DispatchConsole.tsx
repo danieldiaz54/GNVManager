@@ -276,10 +276,10 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
   };
 
   return (
-    <div className="space-y-8 w-full animate-fade-in font-sans">
+    <div className="space-y-8 w-full anim-fade-in font-sans">
       
       {/* 1. Barra Ejecutiva de Control Operacional */}
-      <div className="p-6 sm:p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col xl:flex-row xl:items-center justify-between gap-6 shadow-none">
+      <div className="p-6 sm:p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col xl:flex-row xl:items-center justify-between gap-6 shadow-none transition-colors duration-300">
         
         {/* Lado Izquierdo: Selección de Flota y Flujo */}
         <div className="flex flex-wrap items-center gap-4">
@@ -399,10 +399,10 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
       </div>
 
       {/* 2. Díptico de Control Ejecutivo */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch anim-slide-up">
         
         {/* TARJETA 1: Parámetros Físicos y Certificado del Gas */}
-        <div className="p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col justify-between space-y-8 shadow-none">
+        <div className="p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col justify-between space-y-8 shadow-none transition-all duration-300">
           
           <div className="space-y-8">
             <div className="flex items-center justify-between pb-4 border-b border-[var(--color-border)]">
@@ -702,9 +702,9 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
                 <div
                   key={p.id}
                   onClick={() => togglePositionActive(p.id)}
-                  className={`p-3 rounded-md border text-center transition-all cursor-pointer flex flex-col justify-between ${
+                  className={`p-3 rounded-md border text-center transition-all duration-200 cursor-pointer flex flex-col justify-between hover:scale-[1.03] active:scale-[0.98] ${
                     p.active
-                      ? 'bg-[var(--color-canvas)] border-[var(--color-border)] hover:border-[var(--color-text-primary)]'
+                      ? 'bg-[var(--color-canvas)] border-[var(--color-border)] hover:border-[var(--color-text-primary)] hover:shadow-xs'
                       : 'bg-[var(--color-canvas)] border-[var(--color-border)] opacity-40 line-through'
                   }`}
                 >

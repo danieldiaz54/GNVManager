@@ -44,9 +44,9 @@ export default function Login() {
         {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
       </button>
       
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-sm anim-slide-up">
         <div className="flex flex-col items-center mb-10 text-center">
-          <div className="mb-6">
+          <div className="mb-6 transform hover:scale-105 transition-transform duration-300">
             <GasFlame size={48} className="w-12 h-12" />
           </div>
           <h1 className="text-3xl font-serif mb-1 text-[var(--color-text-primary)]">GNV Manager</h1>
@@ -54,7 +54,7 @@ export default function Login() {
           <p className="text-sm text-[var(--color-text-secondary)] mt-1">Inicia sesión para acceder al sistema</p>
         </div>
 
-        <div className="ui-card shadow-none">
+        <div className="ui-card shadow-none anim-scale-in">
           {error && (
             <div className="mb-6 p-3 rounded-md bg-[var(--color-alert-red-bg)] border border-[var(--color-alert-red-border)] text-[var(--color-alert-red-text)] flex items-start gap-3 text-sm">
               <ShieldAlert className="w-5 h-5 shrink-0 stroke-[1.5px]" />

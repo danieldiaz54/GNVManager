@@ -72,6 +72,14 @@ Cada subagente tiene un alcance estricto y un conjunto de reglas inquebrantables
   - Verificación del comportamiento append-only del ledger.
   - Ejecutar pruebas reales en terminal y confirmar aprobación antes de cerrar la tarea.
 
+### 📚 6. `docs-oracle` (Oráculo de Documentación y Requerimientos)
+- **Alcance**: Carpeta local `Docs/` (o `docs/`), actas de reunión, fichas técnicas de almacenamiento y cromatografías de gas.
+- **Responsabilidad**: Consultar, interpretar y proveer contexto de negocio, parámetros físicos y reglas operativas a partir de documentos locales sensibles.
+- **Reglas Críticas**:
+  - **CERO EXPOSICIÓN REMOTA (LEY INQUEBRANTABLE)**: NUNCA agregar al staging, hacer commit, ni push de los archivos contenidos en `Docs/` o `docs/`. Esa carpeta debe permanecer estrictamente ignorada en `.gitignore` y restringida al disco local.
+  - **Consumo Local y Sanitización**: Actuar como puente de conocimiento. Al redactar `.spec.md` o alimentar a otros subagentes (`domain-architect`, `data-architect`), debe extraer fórmulas, parámetros y constantes numéricas sin duplicar archivos confidenciales ni información sensible innecesaria en el repositorio.
+  - **Inmutabilidad de Fuentes**: La carpeta `Docs/` es fuente de verdad de solo lectura. Queda prohibido alterar o eliminar los documentos originales.
+
 ---
 
 ## 3. Protocolo de Ejecución del Orquestador
@@ -80,7 +88,8 @@ Cuando se recibe un requerimiento complejo:
 ```mermaid
 flowchart TD
     User["Requerimiento del Usuario"] --> Orch["Lead Orchestrator (Antigravity Principal)"]
-    Orch --> Plan["Elabora Plan & Especificaciones (SDD)"]
+    Orch --> DocsOracle["Subagente: docs-oracle (Consulta Docs/ local)"]
+    DocsOracle --> Plan["Elabora Plan & Especificaciones (SDD)"]
     Plan --> Domain["Subagente: domain-architect"]
     Plan --> Data["Subagente: data-architect"]
     Domain --> Integration["Subagente: integration-architect"]
@@ -94,11 +103,3 @@ flowchart TD
 1. **Definición**: El orquestador registra o prepara los subagentes con sus system prompts especializados.
 2. **Despacho Concurrente/Secuencial**: Si una tarea requiere frontend y backend, puede invocar en paralelo o en secuencia a los agentes mediante `invoke_subagent`.
 3. **Consolidación**: El orquestador resume los hallazgos y artefactos generados.
-
-### 📚 6. docs-oracle (Oráculo de Documentación y Requerimientos)
-- **Alcance**: Carpeta docs/
-- **Responsabilidad**: Consultar, interpretar y proveer contexto de negocio a partir de documentos sensibles (PDFs, audios .m4a, actas de reunión) locales.
-- **Reglas Críticas**:
-  - NUNCA exponer, hacer commit, ni push del contenido de la carpeta docs/ hacia el repositorio remoto.
-  - El contenido de docs/ es estrictamente para consumo local en este espacio de trabajo.
-  - Actuar como memoria de dominio: leer la documentación y proporcionar respuestas a los otros agentes, o redactar los .spec.md resumiendo las reglas sin incluir información confidencial innecesaria.

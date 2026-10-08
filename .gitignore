@@ -62,3 +62,22 @@ coverage/
 # Documentación sensible local
 docs/
 Docs/
+
+# Caché y herramientas de empaquetado
+.vite/
+**/.vite/
+
+# Archivos compilados o scripts temporales específicos
+backend/seed.js
+inject-*.js
+patch.js
+patch.ps1
+
+# Carpetas de configuración temporal de editores / asistentes IA en subcarpetas
+.claude/
+.cursor/
+.devin/
+backend/.agents/
+backend/.claude/
+backend/.cursor/
+backend/.devin/

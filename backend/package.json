@@ -4,7 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch src/infrastructure/webserver/server.ts",
+    "dev": "dotenv -e .env.development -- tsx watch src/infrastructure/webserver/server.ts",
+    "dev:prod": "dotenv -e .env.production -- tsx watch src/infrastructure/webserver/server.ts",
+    "db:push:dev": "dotenv -e .env.development -- prisma db push",
+    "db:migrate:dev": "dotenv -e .env.development -- prisma migrate dev",
+    "db:studio:dev": "dotenv -e .env.development -- prisma studio",
+    "db:migrate:prod": "dotenv -e .env.production -- prisma migrate deploy",
     "test": "vitest run",
     "postinstall": "prisma generate"
   },
@@ -35,6 +40,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.20.5",
     "@types/pdfkit": "^0.17.6",
+    "dotenv-cli": "^11.0.0",
     "prisma": "^6.19.3",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2",

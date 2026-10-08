@@ -258,8 +258,8 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
                     <option key={profile.id} value={profile.id}>{profile.name}</option>
                   ))}
                   {gasProfiles.length === 0 && (
-                    <option value='' disabled>No hay perfiles</option>
-                  ))}
+                    <option value="" disabled>No hay perfiles</option>
+                  )}
                 </select>
               </div>
           </div>

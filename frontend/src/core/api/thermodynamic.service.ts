@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_BASE_URL } from './config';
 
 export interface AforoCertificationDTO {
   certified: boolean;
@@ -77,7 +78,7 @@ export interface IThermodynamicsService {
 }
 
 export class AxiosThermodynamicsService implements IThermodynamicsService {
-  private baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+  private baseURL = API_BASE_URL;
 
   async getGasProfiles(): Promise<GasProfileDTO[]> {
     const response = await axios.get(`${this.baseURL}/gas-profiles`);

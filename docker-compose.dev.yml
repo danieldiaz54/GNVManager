@@ -1,0 +1,22 @@
+services:
+  postgres-dev:
+    image: postgres:16-alpine
+    container_name: gnv-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gnv_dev
+      POSTGRES_PASSWORD: gnv_dev_password
+      POSTGRES_DB: gnv_manager_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - gnv_dev_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gnv_dev -d gnv_manager_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  gnv_dev_pgdata:
+    driver: local

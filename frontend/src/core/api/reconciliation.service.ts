@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_BASE_URL } from './config';
 
 export interface ReconciliationRecord {
   id: string;
@@ -53,7 +54,7 @@ export interface SaveRackDTO {
 export type SaveManifoldDTO = SaveRackDTO;
 
 export class AxiosReconciliationService {
-  private baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+  private baseURL = API_BASE_URL;
 
   async saveRecord(data: CreateReconciliationDTO): Promise<ReconciliationRecord> {
     const response = await axios.post(`${this.baseURL}/reconciliation`, data);

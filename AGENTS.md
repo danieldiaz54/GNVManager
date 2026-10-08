@@ -20,10 +20,10 @@ Este archivo gobierna la interacción de Antigravity con el proyecto **GNV Manag
 ## 1. El Rol del Agente Principal: Lead Orchestrator
 
 El agente principal **NO** realiza cambios monolíticos sin planificar ni asume todos los roles a la vez. Su responsabilidad es:
-1. **Analizar y Descomponer**: Interpretar los requerimientos del usuario y dividirlos en fases de dominio (Dominio, Persistencia, API/Integración, UI/UX, QA).
+1. **Analizar y Descomponer**: Interpretar los requerimientos del usuario y dividirlos en fases de dominio (Dominio, Persistencia, API/Integración, UI/UX, QA, Seguridad).
 2. **Gobernar el Flujo (SDD)**: Garantizar que ninguna implementación ocurra sin su especificación técnica correspondiente (`.spec.md`) y que toda rama se desprenda de `dev`.
 3. **Instanciar y Delegar**: Registrar e invocar a los subagentes correspondientes utilizando `define_subagent` e `invoke_subagent` con sus roles y directivas específicas.
-4. **Verificar y Consolidar**: Asegurar que el `qa-verifier` audite las pruebas antes de dar una tarea por completada.
+4. **Verificar y Consolidar**: Asegurar que el `qa-verifier` audite las pruebas y el `security-auditor` certifique las políticas de seguridad antes de dar una tarea por completada.
 
 ---
 
@@ -80,6 +80,13 @@ Cada subagente tiene un alcance estricto y un conjunto de reglas inquebrantables
   - **Consumo Local y Sanitización**: Actuar como puente de conocimiento. Al redactar `.spec.md` o alimentar a otros subagentes (`domain-architect`, `data-architect`), debe extraer fórmulas, parámetros y constantes numéricas sin duplicar archivos confidenciales ni información sensible innecesaria en el repositorio.
   - **Inmutabilidad de Fuentes**: La carpeta `Docs/` es fuente de verdad de solo lectura. Queda prohibido alterar o eliminar los documentos originales.
 
+### 🛡️ 7. `security-auditor` (Auditor de Seguridad y Compliance)
+- **Alcance**: Revisión transversal de arquitecturas, `backend/src/infrastructure/`, variables de entorno y ejecución de herramientas seguras.
+- **Responsabilidad**: Prevención de vulnerabilidades OWASP, validación de sanitización de inputs y control de acceso (RBAC).
+- **Reglas Críticas**:
+  - Bloquear cualquier commit o herramienta que exponga secrets o ejecute comandos destructivos.
+  - Asegurar que todo endpoint de dominio expuesto esté protegido en su integración y autenticado con JWT/RBAC.
+
 ---
 
 ## 3. Protocolo de Ejecución del Orquestador
@@ -96,10 +103,28 @@ flowchart TD
     Data --> Integration
     Integration --> UI["Subagente: designer"]
     Integration --> QA["Subagente: qa-verifier"]
+    Integration --> Sec["Subagente: security-auditor"]
     UI --> QA
-    QA --> Review["Lead Orchestrator valida pruebas y entrega al usuario"]
+    Sec --> Review["Lead Orchestrator valida pruebas y entrega al usuario"]
+    QA --> Review
 ```
 
 1. **Definición**: El orquestador registra o prepara los subagentes con sus system prompts especializados.
 2. **Despacho Concurrente/Secuencial**: Si una tarea requiere frontend y backend, puede invocar en paralelo o en secuencia a los agentes mediante `invoke_subagent`.
 3. **Consolidación**: El orquestador resume los hallazgos y artefactos generados.
+
+---
+
+## 4. Mejora Continua y Optimización del Workflow (Agentic Optimization)
+
+Para garantizar un ecosistema de agentes saludable, proactivo y escalable:
+1. **Auditoría Periódica de Agentes**: La rama `sdd/agentic-optimization` se utiliza para refinar y calibrar los system prompts (`persona.md`), `AGENTS.md` y `.specs/`.
+2. **Registro de Cambios**: Cualquier modificación a la arquitectura de agentes, roles o reglas maestras DEBE ser registrada en `AGENTIC_CHANGELOG.md`.
+
+---
+
+## 5. Agentic Hooks y Automatización de Ciclo de Vida (Safety Gate)
+
+Se implementa una arquitectura reactiva impulsada por eventos usando `.agents/hooks.json`:
+- **Safety Gate (`PreToolUse`)**: Intercepta comandos potencialmente destructivos (`DROP DATABASE`, `TRUNCATE`, `rm -rf /`) antes de que `run_command` se ejecute, protegiendo las bases de datos y el sistema de archivos de ejecuciones erróneas accidentales.
+- **Reglas Contextuales Dinámicas**: Progressive disclosure de directivas de calidad (`.agents/rules/ui-strict-types.md` y `.agents/rules/domain-purity.md`) para mantener altos estándares de tipado y separación de capas sin saturar la ventana de contexto.

@@ -9,39 +9,41 @@ export default function SaaSLayout() {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const menuItems = [
-    { path: '/app/thermodynamics', label: 'Consola de Despacho', icon: LayoutDashboard },
+    { path: '/app/home', label: 'Inicio', icon: LayoutDashboard },
+    { path: '/app/thermodynamics', label: 'Consola de Despacho', icon: BarChart3 },
     { path: '/app/gas-profiles', label: 'Perfiles de Gas', icon: Database },
   ];
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[var(--color-canvas)] font-sans">
       
-      {/* 1. Header & Navbar Superior Unificada (100% Ancho Horizontal) */}
-      <header className="h-16 shrink-0 border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 sm:px-8 flex items-center justify-between gap-4 z-30">
+      {/* 1. Header & Navbar Superior */}
+      <header className="h-16 shrink-0 border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 sm:px-8 flex items-center justify-between gap-3 z-30">
         
         {/* Izquierda: Identidad de Marca */}
-        <Link to="/app/home" className="flex items-center gap-3 shrink-0 hover:opacity-80 transition-opacity">
-          <GasFlame size={26} />
+        <Link to="/app/home" className="flex items-center gap-2.5 shrink-0 hover:opacity-80 transition-opacity">
+          <GasFlame size={24} />
           <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="text-base font-serif font-bold tracking-tight text-[var(--color-text-primary)]">
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm sm:text-base font-serif font-bold tracking-tight text-[var(--color-text-primary)]">
                 GNV Manager
               </span>
-              <span className="hidden sm:inline-block text-[9px] font-mono tracking-widest uppercase px-1.5 py-0.5 rounded-xs bg-[var(--color-canvas)] text-[var(--color-text-secondary)] border border-[var(--color-border)]">
+              <span className="hidden md:inline-block text-[9px] font-mono tracking-widest uppercase px-1.5 py-0.5 rounded-xs bg-[var(--color-canvas)] text-[var(--color-text-secondary)] border border-[var(--color-border)]">
                 v2.0 PRO
               </span>
             </div>
-            <span className="text-[10px] font-mono tracking-wider text-[var(--color-text-secondary)] uppercase">
+            <span className="text-[9px] sm:text-[10px] font-mono tracking-wider text-[var(--color-text-secondary)] uppercase">
               Ingeniería y Control
             </span>
           </div>
         </Link>
 
-        {/* Centro: Navegación Principal Horizontal */}
-        <nav className="flex items-center gap-1 overflow-x-auto py-1">
-          {menuItems.map((item) => {
+        {/* Centro: Navegación Principal Horizontal (Visible solo en desktop) */}
+        <nav className="hidden md:flex items-center gap-1 overflow-x-auto py-1">
+          {menuItems.slice(1).map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname.startsWith(item.path);
             return (
@@ -63,11 +65,11 @@ export default function SaaSLayout() {
           })}
         </nav>
 
-        {/* Derecha: Indicador de Motor, Tema y Perfil de Usuario */}
-        <div className="flex items-center gap-3 shrink-0">
+        {/* Derecha: Acciones, Perfil y Menú Móvil */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           
           {/* Badge de Telemetría Térmica En Vivo */}
-          <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-[var(--color-canvas)] border border-[var(--color-border)] text-[11px] font-mono">
+          <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-full bg-[var(--color-canvas)] border border-[var(--color-border)] text-[11px] font-mono">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -91,26 +93,91 @@ export default function SaaSLayout() {
           <div className="h-4 w-px bg-[var(--color-border)] hidden sm:block" />
 
           {/* Tarjeta de Usuario Compacta */}
-          <div className="flex items-center gap-2.5 pl-1">
-            <div className="w-7 h-7 rounded-full bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)] flex items-center justify-center font-bold text-xs uppercase">
+          <div className="flex items-center gap-2 pl-0.5 sm:pl-1">
+            <div className="w-7 h-7 shrink-0 rounded-full bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)] flex items-center justify-center font-bold text-xs uppercase">
               {(user?.fullName || user?.username || 'U').charAt(0)}
             </div>
-            <div className="flex flex-col text-left max-w-[150px] sm:max-w-[200px]">
-              <p className="text-xs font-semibold leading-tight text-[var(--color-text-primary)] truncate" title={user?.fullName || user?.username}>{user?.fullName || user?.username}</p>
-              <p className="text-[10px] text-[var(--color-text-secondary)] leading-tight">{user?.role === 'admin' ? 'Administrador' : 'Operador'}</p>
+            <div className="hidden sm:flex flex-col text-left max-w-[120px] lg:max-w-[180px]">
+              <p className="text-xs font-semibold leading-tight text-[var(--color-text-primary)] truncate" title={user?.fullName || user?.username}>
+                {user?.fullName || user?.username}
+              </p>
+              <p className="text-[10px] text-[var(--color-text-secondary)] leading-tight">
+                {user?.role === 'admin' ? 'Administrador' : 'Operador'}
+              </p>
             </div>
             <button
               onClick={logout}
-              className="p-1.5 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer"
+              className="hidden sm:block p-1.5 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer"
               title="Cerrar Sesión"
             >
               <LogOut className="w-4 h-4 stroke-[1.8px]" />
             </button>
           </div>
 
+          {/* Botón Hamburguesa para Mobile */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer"
+            aria-label="Abrir menú"
+          >
+            <Menu className="w-4 h-4" />
+          </button>
+
         </div>
 
       </header>
+
+      {/* Menú Desplegable Móvil (Drawer / Dropdown) */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4 space-y-3 z-20 shadow-md animate-in slide-in-from-top-2">
+          <div className="pb-3 border-b border-[var(--color-border)]">
+            <p className="text-xs font-bold text-[var(--color-text-primary)]">
+              {user?.fullName || user?.username}
+            </p>
+            <p className="text-[11px] text-[var(--color-text-secondary)]">
+              {user?.role === 'admin' ? 'Administrador del Sistema' : 'Operador'}
+            </p>
+          </div>
+
+          <nav className="flex flex-col gap-1.5">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname.startsWith(item.path);
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`
+                    flex items-center gap-3 px-3 py-2.5 rounded-md text-xs font-medium transition-all border
+                    ${isActive 
+                      ? 'bg-[var(--color-canvas)] text-[var(--color-text-primary)] font-bold border-[var(--color-border)] shadow-xs' 
+                      : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]'
+                    }
+                  `}
+                >
+                  <Icon className="w-4 h-4 stroke-[1.8px]" />
+                  <span>{item.label}</span>
+                </NavLink>
+              );
+            })}
+          </nav>
+
+          <div className="pt-2 border-t border-[var(--color-border)]">
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                logout();
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-xs font-medium text-[var(--color-alert-red-text)] bg-[var(--color-alert-red-bg)] border border-[var(--color-alert-red-border)] cursor-pointer"
+            >
+              <LogOut className="w-4 h-4 stroke-[1.8px]" />
+              <span>Cerrar Sesión</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 2. Área de Contenido Principal (100% Widescreen) */}
       <main className="flex-1 overflow-auto py-6 px-4 sm:px-8 lg:px-12 relative animate-in fade-in duration-300">

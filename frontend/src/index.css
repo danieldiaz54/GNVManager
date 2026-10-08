@@ -57,17 +57,31 @@
   --color-text-primary: #fafafa;
   --color-text-secondary: #a1a1aa;
   
-  /* Tactical Alerts */
-  --color-alert-red-bg: rgba(153, 27, 27, 0.2);
-  --color-alert-red-text: #f87171;
-  --color-alert-red-border: rgba(153, 27, 27, 0.4);
+  /* Dark Mode Accents */
+  --color-accent: #fafafa;
+  --color-accent-hover: #e4e4e7;
+  --color-accent-glow: transparent;
+  --color-accent-glow-strong: transparent;
   
-  --color-alert-green-bg: rgba(22, 101, 52, 0.2);
+  /* Tactical Alerts in Dark Mode */
+  --color-alert-red-bg: rgba(153, 27, 27, 0.25);
+  --color-alert-red-text: #f87171;
+  --color-alert-red-border: rgba(248, 113, 113, 0.2);
+  
+  --color-alert-green-bg: rgba(22, 101, 52, 0.25);
   --color-alert-green-text: #4ade80;
-  --color-alert-green-border: rgba(22, 101, 52, 0.4);
+  --color-alert-green-border: rgba(74, 222, 128, 0.2);
+
+  --color-alert-blue-bg: rgba(30, 58, 138, 0.25);
+  --color-alert-blue-text: #60a5fa;
+  --color-alert-blue-border: rgba(96, 165, 250, 0.2);
+
+  --color-alert-yellow-bg: rgba(113, 63, 18, 0.25);
+  --color-alert-yellow-text: #facc15;
+  --color-alert-yellow-border: rgba(250, 204, 21, 0.2);
 
   /* Grid Blueprint */
-  --grid-line: rgba(255, 255, 255, 0.02);
+  --grid-line: rgba(255, 255, 255, 0.03);
 }
 
 @layer base {
@@ -92,11 +106,11 @@
   }
   
   .ui-input {
-    @apply bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md px-4 py-3 text-[var(--color-text-primary)] font-sans focus:outline-none focus:border-[#111111] focus:ring-1 focus:ring-[#111111] transition-all w-full;
+    @apply bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md px-4 py-3 text-[var(--color-text-primary)] font-sans focus:outline-none focus:border-[var(--color-text-primary)] focus:ring-1 focus:ring-[var(--color-text-primary)] transition-all w-full;
   }
   
   .ui-button {
-    @apply bg-[var(--color-text-primary)] text-white font-sans py-3 px-6 rounded-md hover:bg-[var(--color-accent-hover)] active:scale-[0.98] transition-all cursor-pointer inline-flex items-center justify-center border-none shadow-none;
+    @apply bg-[var(--color-text-primary)] text-[var(--color-canvas)] font-sans font-medium py-3 px-6 rounded-md hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer inline-flex items-center justify-center border-none shadow-none;
   }
   
   .ui-button-secondary {

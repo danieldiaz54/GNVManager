@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert, Sun, Moon } from 'lucide-react';
 import GasFlame from '../components/GasFlame';
 import { authService } from '../core/api/auth.service';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -12,6 +13,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +32,17 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-canvas)] flex flex-col items-center justify-center p-6 font-sans">
+    <div className="min-h-screen bg-[var(--color-canvas)] flex flex-col items-center justify-center p-6 font-sans relative">
+      
+      {/* Botón flotante para alternar tema Claro / Oscuro en Login */}
+      <button
+        type="button"
+        onClick={toggleTheme}
+        className="absolute top-6 right-6 p-2.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
+        title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+      >
+        {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+      </button>
       
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-10 text-center">

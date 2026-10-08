@@ -98,7 +98,7 @@ export default function ThermodynamicsModule() {
               {records.length}
             </span>
             {pendingSalesCount > 0 && (
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold border border-amber-200">
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-[var(--color-alert-yellow-bg)] text-[var(--color-alert-yellow-text)] font-bold border border-[var(--color-alert-yellow-border)]">
                 {pendingSalesCount} pend.
               </span>
             )}

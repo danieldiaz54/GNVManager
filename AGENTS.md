@@ -118,8 +118,13 @@ flowchart TD
 ## 4. Mejora Continua y Optimización del Workflow (Agentic Optimization)
 
 Para garantizar un ecosistema de agentes saludable, proactivo y escalable:
-1. **Auditoría Periódica de Agentes**: La rama `sdd/agentic-optimization` se utiliza para refinar y calibrar los system prompts (`persona.md`), `AGENTS.md` y `.specs/`.
-2. **Registro de Cambios**: Cualquier modificación a la arquitectura de agentes, roles o reglas maestras DEBE ser registrada en `AGENTIC_CHANGELOG.md`.
+1. **Rama Persistente de Auditoría (`sdd/agentic-optimization`)**:
+   - Esta rama permanece abierta de manera permanente como espacio de calibración y gobernanza agéntica.
+   - **Disparador Post-Merge a `dev`**: Cada vez que se integra una funcionalidad a `dev` (`feat/*`, `fix/*`, etc.), se activa el ciclo de optimización agéntica:
+     1. Sincronización o rebase de `sdd/agentic-optimization` sobre el nuevo HEAD de `dev`.
+     2. Auditoría de los cambios integrados frente a los system prompts (`persona.md`), `.specs/` y reglas de calidad.
+     3. Actualización de `.agents/last_dev_commit.txt` con el hash del commit de `dev` auditado.
+2. **Registro de Cambios**: Cualquier modificación a la arquitectura de agentes, roles, prompts o reglas maestras DEBE ser registrada en `AGENTIC_CHANGELOG.md`.
 
 ---
 

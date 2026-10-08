@@ -16,6 +16,11 @@ Actualmente el proyecto presenta dos riesgos críticos de infraestructura y desp
 
 ## 2. Estrategia de Ramas Git (GitFlow Simplificado)
 
+> 🛑 **REGLA DE ORO INQUEBRANTABLE (GRABADA EN PIEDRA)**:
+> - **CERO ramas desde `main`**: Toda nueva rama (`feat/*`, `fix/*`, `sdd/*`) nace obligatoriamente de `dev`.
+> - **CERO merges a `main` sin pasar por `dev`**: Todo desarrollo se integra exclusivamente en `dev`.
+> - **`main` es intocable salvo para releases de producción certificados por QA**.
+
 Se adopta el siguiente modelo de ramificación:
 
 ```mermaid

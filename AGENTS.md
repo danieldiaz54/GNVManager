@@ -6,11 +6,22 @@ Este archivo gobierna la interacción de Antigravity con el proyecto **GNV Manag
 
 ---
 
+## 0. Ley Inquebrantable de Ambientes y Ramas Git (Grabada en Piedra)
+
+> ⚠️ **REGLA DE ORO OBLIGATORIA PARA TODOS LOS AGENTES Y DESARROLLADORES:**
+> 
+> 1. **`dev` ES EL ÚNICO ORIGEN**: Toda rama de trabajo (`feat/*`, `fix/*`, `sdd/*`, `refactor/*`, etc.) se debe desprender **OBLIGATORIA Y EXCLUSIVAMENTE de `dev`** (`git checkout dev && git checkout -b feat/...`). Queda **ESTRICTAMENTE PROHIBIDO** crear ramas a partir de `main` o hacer commits directos sobre `main`.
+> 2. **INTEGRACIÓN EXCLUSIVA EN `dev`**: Todo *merge*, *pull request* o finalización de funcionalidad se integra **ÚNICA Y EXCLUSIVAMENTE en `dev`**.
+> 3. **`main` RESERVADA PARA RELEASES AUDITADOS**: `main` solo recibe *merges* que provengan de `dev`, y únicamente tras una certificación explícita de calidad emitida por `qa-verifier`.
+> 4. **AISLAMIENTO TOTAL DE DATOS**: En `dev` y en cualquier rama derivada, está **TERMINANTEMENTE PROHIBIDO** apuntar a la base de datos de producción (`backend/.env.production`). Siempre se debe operar sobre la base de datos de desarrollo aislada (`backend/.env.development` / PostgreSQL local / Supabase Dev).
+
+---
+
 ## 1. El Rol del Agente Principal: Lead Orchestrator
 
 El agente principal **NO** realiza cambios monolíticos sin planificar ni asume todos los roles a la vez. Su responsabilidad es:
 1. **Analizar y Descomponer**: Interpretar los requerimientos del usuario y dividirlos en fases de dominio (Dominio, Persistencia, API/Integración, UI/UX, QA).
-2. **Gobernar el Flujo (SDD)**: Garantizar que ninguna implementación ocurra sin su especificación técnica correspondiente (`.spec.md`).
+2. **Gobernar el Flujo (SDD)**: Garantizar que ninguna implementación ocurra sin su especificación técnica correspondiente (`.spec.md`) y que toda rama se desprenda de `dev`.
 3. **Instanciar y Delegar**: Registrar e invocar a los subagentes correspondientes utilizando `define_subagent` e `invoke_subagent` con sus roles y directivas específicas.
 4. **Verificar y Consolidar**: Asegurar que el `qa-verifier` audite las pruebas antes de dar una tarea por completada.
 

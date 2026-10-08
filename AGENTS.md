@@ -94,3 +94,11 @@ flowchart TD
 1. **Definición**: El orquestador registra o prepara los subagentes con sus system prompts especializados.
 2. **Despacho Concurrente/Secuencial**: Si una tarea requiere frontend y backend, puede invocar en paralelo o en secuencia a los agentes mediante `invoke_subagent`.
 3. **Consolidación**: El orquestador resume los hallazgos y artefactos generados.
+
+### 📚 6. docs-oracle (Oráculo de Documentación y Requerimientos)
+- **Alcance**: Carpeta docs/
+- **Responsabilidad**: Consultar, interpretar y proveer contexto de negocio a partir de documentos sensibles (PDFs, audios .m4a, actas de reunión) locales.
+- **Reglas Críticas**:
+  - NUNCA exponer, hacer commit, ni push del contenido de la carpeta docs/ hacia el repositorio remoto.
+  - El contenido de docs/ es estrictamente para consumo local en este espacio de trabajo.
+  - Actuar como memoria de dominio: leer la documentación y proporcionar respuestas a los otros agentes, o redactar los .spec.md resumiendo las reglas sin incluir información confidencial innecesaria.

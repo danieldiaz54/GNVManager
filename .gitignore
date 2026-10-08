@@ -58,3 +58,7 @@ coverage/
 *.njsproj
 *.sln
 *.sw?
+
+# Documentación sensible local
+docs/
+Docs/

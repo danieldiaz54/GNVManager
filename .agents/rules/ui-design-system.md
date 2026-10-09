@@ -120,4 +120,16 @@
 - **Prohibición de Animaciones de Opacidad en Dropdowns**:
   - Queda prohibido aplicar `animate-fade-in` u otras animaciones con transición de `opacity: 0` a `1` en menús desplegables o selectores de formulario. Los dropdowns deben abrirse de manera inmediata y completamente opacos.
 
+---
+
+## 8. Protocolo de Versionamiento y Badges de Release (Estricto)
+- **Prohibición de Etiquetas Comerciales "PRO"**:
+  - Queda **terminantemente prohibido** usar la etiqueta `"PRO"`, `"v2.0 PRO"` o cualquier sufijo comercial similar en la interfaz de usuario, header superior o badges de versión.
+- **Numeración Beta Pre-Lanzamiento**:
+  - Antes del lanzamiento oficial a producción, se debe emplear **estricta y obligatoriamente** la nomenclatura beta con numeración decimal incremental (ejemplo: **`beta 0.2`**).
+- **Reserva Exclusiva de la Versión 1.0**:
+  - La numeración **`1.0`** (o `v1.0`) está **reservada exclusivamente para el lanzamiento oficial a producción**.
+  - Queda prohibido saltar a `2.0` o asignar versiones mayores antes del despliegue oficial auditado 1.0.
+
+
 

@@ -32,8 +32,8 @@ export default function SaaSLayout() {
               <span className="text-sm sm:text-base font-sans font-bold tracking-tight text-[var(--color-text-primary)]">
                 GNV Manager
               </span>
-              <span className="inline-block max-md:hidden text-[9px] font-mono tracking-widest uppercase px-1.5 py-0.5 rounded-xs bg-[var(--color-canvas)] text-[var(--color-text-secondary)] border border-[var(--color-border)]">
-                v2.0 PRO
+              <span className="inline-block max-md:hidden text-[9px] font-mono tracking-wider px-1.5 py-0.5 rounded-xs bg-[var(--color-canvas)] text-[var(--color-text-secondary)] border border-[var(--color-border)]">
+                beta 0.2
               </span>
             </div>
             <span className="text-[9px] sm:text-[10px] font-mono tracking-wider text-[var(--color-text-secondary)] uppercase">

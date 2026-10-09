@@ -41,4 +41,10 @@
   - Grabada la regla en `ui-design-system.md`, `persona.md` y `AGENTS.md`.
   - Reemplazadas todas las referencias a *"certificar"*, *"certificado"* o *"Aforo Cert"* por **`estimar`**, **`estimado`** y **`Aforo Est.`** en `DispatchConsole.tsx`, `ReconciliationLedger.tsx`, `GasProfilesModule.tsx` y `HomeModule.tsx`.
 
+### Added (Beta Versioning Protocol)
+- **Protocolo de Versionamiento Beta y Prohibición de Etiqueta "PRO"**:
+  - Eliminada la etiqueta comercial `"v2.0 PRO"` del header principal ([`SaaSLayout.tsx`](file:///c:/Users/DesarrolloIT%20Android/Desktop/Daniel/GNV/GNV%20Manager/frontend/src/layouts/SaaSLayout.tsx)) e implementada la nomenclatura decimal `beta 0.2`.
+  - Grabada la regla en `AGENTS.md`, `ui-design-system.md` (Sec. 8) y `persona.md` (Regla 9): las fases pre-lanzamiento usan estrictamente numeraciones `beta 0.X`, y la versión `1.0` queda reservada exclusivamente para el lanzamiento oficial a producción.
+
+
 

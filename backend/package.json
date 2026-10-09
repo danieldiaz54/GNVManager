@@ -10,6 +10,8 @@
     "db:migrate:dev": "dotenv -e .env.development -- prisma migrate dev",
     "db:studio:dev": "dotenv -e .env.development -- prisma studio",
     "db:migrate:prod": "dotenv -e .env.production -- prisma migrate deploy",
+    "db:push:prod": "dotenv -e .env.production -- prisma db push",
+    "db:seed:prod": "dotenv -e .env.production -- tsx prisma/seed.ts && dotenv -e .env.production -- tsx prisma/seed-storage.ts",
     "test": "vitest run",
     "postinstall": "prisma generate"
   },

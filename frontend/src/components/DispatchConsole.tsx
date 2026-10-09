@@ -433,10 +433,10 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
       </div>
 
       {/* 2. Díptico de Control Ejecutivo: Distribución Asimétrica de Jerarquía */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-stretch anim-slide-up">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-stretch relative z-30">
         
         {/* TARJETA 1: Parámetros de Operación y Condiciones de Despacho */}
-        <div className="lg:col-span-7 xl:col-span-7 2xl:col-span-8 p-4 sm:p-6 lg:p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col justify-between space-y-6 shadow-none transition-all duration-300">
+        <div className="lg:col-span-7 xl:col-span-7 2xl:col-span-8 p-4 sm:p-6 lg:p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col justify-between space-y-6 shadow-none transition-colors duration-300 relative z-30">
           
           <div className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-[var(--color-border)]">
@@ -574,10 +574,10 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
             </div>
 
             {/* Selectores Instrumentales: Módulo de Almacenamiento y Fuente de Gas en 2 Columnas */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1 relative z-30">
               
               {/* Selector de Módulo de Almacenamiento */}
-              <div className="p-4 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-border)] space-y-2 flex flex-col justify-between">
+              <div className="p-4 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-border)] space-y-2 flex flex-col justify-between relative z-40">
                 <div>
                   <div className="flex items-center justify-between gap-1 mb-1.5">
                     <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider flex items-center gap-1.5">
@@ -589,7 +589,7 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
                     </span>
                   </div>
                   {/* Selector Jerárquico por Categorías (No muestra todo de golpe) */}
-                  <div className="relative" ref={moduleDropdownRef}>
+                  <div className="relative z-50" ref={moduleDropdownRef}>
                     <button
                       type="button"
                       onClick={() => {
@@ -617,7 +617,7 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
                     </button>
 
                     {isModuleDropdownOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-white dark:bg-[#18181b] border border-[var(--color-border)] rounded-md shadow-xl overflow-hidden">
+                      <div className="absolute top-full left-0 right-0 mt-1 z-[100] bg-white dark:bg-[#18181b] border border-[var(--color-border)] rounded-md shadow-2xl overflow-hidden">
                         
                         {/* Categoría 1: Cascadas Estacionarias */}
                         <div className="border-b border-[var(--color-border)]">
@@ -857,7 +857,7 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
       </div>
 
       {/* Botón de Asentamiento en Cuenta de Balance */}
-      <div className="pt-2">
+      <div className="pt-2 relative z-10">
         <button
           type="button"
           onClick={handleSave}
@@ -865,7 +865,7 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
           className={`w-full py-4 px-4 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-sm ${
             isSavedFeedback
               ? 'bg-emerald-600 text-white'
-              : 'bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white disabled:opacity-40 cursor-pointer shadow-xs'
+              : 'bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white disabled:bg-stone-300 dark:disabled:bg-zinc-800 disabled:text-stone-500 dark:disabled:text-zinc-500 disabled:cursor-not-allowed cursor-pointer shadow-xs'
           }`}
         >
           {isSaving ? (
@@ -885,7 +885,7 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
       </div>
 
       {/* Monitoreo de Cilindros y Ajuste Operativo */}
-      <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 shadow-none mt-8">
+      <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 shadow-none mt-8 relative z-0">
           
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--color-border)]">
             <span className="text-xs font-bold text-[var(--color-text-primary)] uppercase tracking-wider">

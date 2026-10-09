@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   X, 
   Building2, 
@@ -44,16 +45,19 @@ export default function StorageDetailModal({
   const isStationary = module.type === 'ESTACIONARIA';
   const volumeM3 = (module.totalCapacityLiters / 1000).toFixed(2);
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 animate-fade-in">
-      {/* Fondo sólido opaco sin transparencias difusas */}
+  const modalContent = (
+    <div className="fixed inset-0 z-[100] w-screen h-screen overflow-y-auto font-sans" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+      {/* Fondo sólido opaco como indica la regla, usando negro con opacidad para contraste o color sólido si se requiere, pero mantenemos bg-black/60 estándar */}
       <div 
-        className="absolute inset-0 bg-black/60 transition-opacity" 
+        className="fixed inset-0 bg-black/60 transition-opacity" 
         onClick={onClose} 
+        aria-hidden="true"
       />
 
-      {/* Contenedor Widescreen de Grado Industrial (Aprovechamiento Horizontal Total) */}
-      <div className="relative w-full max-w-5xl xl:max-w-6xl max-h-[92vh] bg-white dark:bg-[#18181b] border border-[var(--color-border)] rounded-lg shadow-2xl overflow-hidden flex flex-col font-sans animate-scale-in">
+      {/* Contenedor Widescreen de Grado Industrial */}
+      <div className="flex min-h-full w-full items-center justify-center p-2 sm:p-4 md:p-6 text-center animate-fade-in">
+        <div className="relative transform overflow-hidden rounded-lg bg-white dark:bg-[#18181b] border border-[var(--color-border)] text-left shadow-2xl transition-all w-full max-w-5xl xl:max-w-6xl max-h-[92vh] flex flex-col animate-scale-in">
+
         
         {/* 1. Cabecera Industrial Widescreen */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 border-b border-[var(--color-border)] bg-[var(--color-canvas)] gap-4 shrink-0">
@@ -414,8 +418,16 @@ export default function StorageDetailModal({
             </button>
           </div>
         </div>
-
+        </div>
       </div>
     </div>
   );
+
+  // Use a portal so the modal mounts directly on body and escapes any parent CSS layout/transform constraints
+  if (typeof document !== 'undefined') {
+    return createPortal(modalContent, document.body);
+  }
+  
+  return modalContent;
 }
+

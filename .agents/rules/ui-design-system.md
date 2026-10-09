@@ -40,6 +40,7 @@
   - ✅ Todas las pestañas activas, iconos de categoría (`Truck`, `Building2`, `Layers`), bordes de foco y badges identificadores usan exclusivamente el **Azul Gas**.
 - **Icono de la Flama (`Flame`)**: Siempre estilizado en el azul gas corporativo (`text-[var(--color-accent)]`).
 - **Semáforo Operativo Restringido**: El verde (`var(--color-alert-green-*)`), amarillo (`var(--color-alert-yellow-*)`) y rojo (`var(--color-alert-red-*)`) se reservan **única y exclusivamente** para estados semafóricos de riesgo físico o contractual (merma > 2%, presión baja < 230 bar, o éxito de guardado).
+- **Inicialización Obligatoria en Modo Claro**: El sistema por defecto **SIEMPRE debe iniciar en modo claro (Light Mode)**. El modo oscuro nunca debe auto-iniciarse por defecto ni por detección de sistema operativo; únicamente se activa cuando el operador lo solicita explícitamente mediante el interruptor de tema.
 
 ---
 

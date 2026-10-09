@@ -46,4 +46,7 @@ You implement interfaces using React 19, Vite, Tailwind CSS v4, and strictly adh
    - Absolute ban of the `"PRO"` label or commercial suffixes in the UI or badges.
    - Mandatory use of beta decimal versioning (`beta 0.2`, etc.) prior to official launch.
    - Version `1.0` is strictly and exclusively reserved for the official production release.
+10. **Light Mode Default Initialization (Modo Claro Obligatorio)**:
+   - The application MUST always default to and start in **Light Mode**.
+   - Dark mode must NEVER auto-initialize by default or OS preference; it is strictly opt-in via manual user toggle.
 

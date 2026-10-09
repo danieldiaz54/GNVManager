@@ -10,17 +10,18 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Default to dark theme as requested
+  // El sistema por defecto SIEMPRE se inicia en modo claro (Light Mode).
+  // El modo oscuro únicamente se habilita si el usuario lo activa de forma explícita.
   const [theme, setTheme] = useState<Theme>(() => {
-    const savedTheme = localStorage.getItem('gnv-theme');
-    if (savedTheme === 'light' || savedTheme === 'dark') {
-      return savedTheme;
+    // Limpieza de clave heredada que forzaba modo oscuro por defecto
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('gnv-theme');
+      const savedTheme = localStorage.getItem('gnv-theme-preference');
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        return savedTheme;
+      }
     }
-    // Si no hay preferencia guardada, pero el sistema es oscuro, o por defecto dark.
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
-    return 'dark';
+    return 'light';
   });
 
   useEffect(() => {
@@ -30,7 +31,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } else {
       root.classList.remove('dark');
     }
-    localStorage.setItem('gnv-theme', theme);
+    localStorage.setItem('gnv-theme-preference', theme);
   }, [theme]);
 
   const toggleTheme = () => {

@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { thermodynamicsService, TransferResult, GasProfileDTO } from '../core/api/thermodynamic.service';
+import { StorageService, StorageModuleDTO } from '../core/api/storage.service';
 import { psiToBar, celsiusToKelvin, barToPsi } from '../core/utils/UnitConversion';
 import { MODULE_PRESETS } from '../domain/modulePresets';
 import { DEFAULT_GAS_PROFILES, GasProfilePreset } from '../domain/gasPresets';
@@ -10,10 +11,13 @@ import {
   Check, 
   ChevronDown, 
   ChevronUp, 
+  ChevronRight,
   Sliders, 
   RotateCcw, 
   Layers, 
   Box, 
+  Building2,
+  Truck,
   ArrowRight, 
   Award, 
   AlertTriangle, 
@@ -44,28 +48,57 @@ interface DispatchConsoleProps {
 }
 
 export default function DispatchConsole({ onSaveOperation, isSaving = false }: DispatchConsoleProps) {
-  // 1. Capacidad Geométrica Desacoplada
-  const [totalCapacity, setTotalCapacity] = useState<number>(13497);
+  // 1. Almacenamientos Dinámicos
+  const [storageModules, setStorageModules] = useState<StorageModuleDTO[]>([]);
+  const [selectedModuleId, setSelectedModuleId] = useState<string>('');
+
   const [flowType, setFlowType] = useState<FlowType>('CARGUE');
   const [pressureUnit, setPressureUnit] = useState<'bar' | 'psi'>('bar');
-  const [identifier, setIdentifier] = useState('RACK-12P');
 
   // 2. Cromatografía Dinámica Surtigas
   const [gasProfiles, setGasProfiles] = useState<GasProfileDTO[] | GasProfilePreset[]>(DEFAULT_GAS_PROFILES);
   const [selectedGasProfileId, setSelectedGasProfileId] = useState<string>(DEFAULT_GAS_PROFILES[0].id);
 
-  // 3. Parámetros del Manifold / Cabezal
-  const [headerPi, setHeaderPi] = useState(50);
-  const [headerPf, setHeaderPf] = useState(250);
-  const [headerTi, setHeaderTi] = useState(25);
-  const [headerTf, setHeaderTf] = useState(45);
+  // 3. Parámetros del Manifold / Cabezal (Inicializados en 0)
+  const [headerPi, setHeaderPi] = useState(0);
+  const [headerPf, setHeaderPf] = useState(0);
+  const [headerTi, setHeaderTi] = useState(0);
+  const [headerTf, setHeaderTf] = useState(0);
+
+  const [piStr, setPiStr] = useState('0');
+  const [pfStr, setPfStr] = useState('0');
+  const [tiStr, setTiStr] = useState('0');
+  const [tfStr, setTfStr] = useState('0');
 
   // 5. Estados UI
   const [showTuning, setShowTuning] = useState(false);
   const [isSavedFeedback, setIsSavedFeedback] = useState(false);
 
-  // Cargar cromatografías desde el backend
+  // Estados para el Selector Jerárquico de Módulo
+  const [isModuleDropdownOpen, setIsModuleDropdownOpen] = useState(false);
+  const [openModuleCategory, setOpenModuleCategory] = useState<'ESTACIONARIA' | 'TRANSPORTE' | null>(null);
+  const moduleDropdownRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (moduleDropdownRef.current && !moduleDropdownRef.current.contains(event.target as Node)) {
+        setIsModuleDropdownOpen(false);
+        setOpenModuleCategory(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Cargar módulos y cromatografías desde el backend
+  useEffect(() => {
+    StorageService.getModules().then(modules => {
+      if (modules && modules.length > 0) {
+        setStorageModules(modules);
+        setSelectedModuleId(modules[0].id);
+      }
+    }).catch(err => console.warn('Error cargando almacenamientos:', err));
+
     thermodynamicsService.getGasProfiles().then(profiles => {
       if (profiles && profiles.length > 0) {
         setGasProfiles(profiles);
@@ -80,16 +113,32 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
     return DEFAULT_GAS_PROFILES[0];
   }, [gasProfiles, selectedGasProfileId]);
 
-  const totalCylindersCount = 12;
+  const activeModule = useMemo(() => {
+    return storageModules.find(m => m.id === selectedModuleId);
+  }, [storageModules, selectedModuleId]);
 
-  // Posiciones del Rack
+  const stationaryModules = useMemo(() => 
+    storageModules.filter(m => m.type === 'ESTACIONARIA'), 
+    [storageModules]
+  );
+
+  const transportModules = useMemo(() => 
+    storageModules.filter(m => m.type === 'TRANSPORTE'), 
+    [storageModules]
+  );
+
+  const totalCapacity = activeModule ? activeModule.totalCapacityLiters : 0;
+  const totalCylindersCount = activeModule ? activeModule.cylinderCount : 12;
+  const identifier = activeModule ? activeModule.name : 'RACK-12P';
+
+  // Posiciones del Rack (Inicializadas en 0)
   const [positions, setPositions] = useState<PositionState[]>(() =>
     Array.from({ length: 12 }, (_, i) => ({
       id: i + 1,
       label: `POS-${String(i + 1).padStart(2, '0')}`,
       active: true,
-      pi: 50,
-      pf: 250,
+      pi: 0,
+      pf: 0,
     }))
   );
 
@@ -126,15 +175,11 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
   const handleFlowSwitch = (newFlow: FlowType) => {
     if (newFlow === flowType) return;
     setFlowType(newFlow);
-    if (newFlow === 'CARGUE') {
-      setHeaderPi(50);
-      setHeaderPf(250);
-      applyHeaderToPositions(50, 250);
-    } else {
-      setHeaderPi(250);
-      setHeaderPf(30);
-      applyHeaderToPositions(250, 30);
-    }
+    setHeaderPi(0);
+    setHeaderPf(0);
+    setPiStr('0');
+    setPfStr('0');
+    applyHeaderToPositions(0, 0);
   };
 
   // Ejecución del Motor Termodinámico AGA-8
@@ -142,7 +187,7 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
     let isCancelled = false;
 
     const timer = setTimeout(async () => {
-      const activeToCompute = positions.filter(p => p.active);
+      const activeToCompute = positions.filter(p => p.active && (p.pi > 0 || p.pf > 0));
       if (activeToCompute.length === 0) {
         setPositions(prev => prev.map(p => ({ ...p, result: undefined })));
         return;
@@ -209,8 +254,13 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
   const deltaPressure = headerPf - headerPi;
   const absDeltaPressureBar = Math.abs(pressureUnit === 'psi' ? psiToBar(deltaPressure) : deltaPressure);
 
-  // Certificación de Aforo: Regla de Sabanas (P_reposo >= 230 bar)
-  const isAforoCertified = avgStabilizedPressureBar >= 230;
+  // Verificación de estado en reposo con valores en 0
+  const hasZeroPressures = useMemo(() => {
+    return activePositions.length === 0 || activePositions.every(p => p.pi === 0 && p.pf === 0);
+  }, [activePositions]);
+
+  // Estimación de Aforo: Condición de Entrega (P_reposo >= 230 bar)
+  const isAforoConforme = avgStabilizedPressureBar >= 230;
   const aforoConstant = absDeltaPressureBar > 0 ? (totalVolume_Sm3 / absDeltaPressureBar) : 0;
 
   // Toggle de cilindros individuales
@@ -230,6 +280,11 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
   const handleSave = async () => {
     if (activePositions.length === 0) {
       alert('Debes tener al menos una posición activa en la operación.');
+      return;
+    }
+
+    if (hasZeroPressures) {
+      alert('Debes ingresar presiones operativas mayores a 0 para asentar el movimiento.');
       return;
     }
 
@@ -278,26 +333,26 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
   return (
     <div className="space-y-8 w-full anim-fade-in font-sans">
       
-      {/* 1. Barra Ejecutiva de Control Operacional */}
-      <div className="p-6 sm:p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col xl:flex-row xl:items-center justify-between gap-6 shadow-none transition-colors duration-300">
+      {/* 1. Barra Ejecutiva de Control Operacional Adaptable */}
+      <div className="p-4 sm:p-6 lg:p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 shadow-none transition-colors duration-300">
         
         {/* Lado Izquierdo: Selección de Flota y Flujo */}
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4">
           
 
           {/* Conmutador Operativo: Cargue vs Descargue */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">
-              Flujo:
+              Tipo de operación:
             </span>
             <div className="flex bg-[var(--color-canvas)] border border-[var(--color-border)] p-0.5 rounded-md text-xs">
               <button
                 type="button"
                 onClick={() => handleFlowSwitch('CARGUE')}
-                className={`px-3.5 py-1.5 font-bold uppercase tracking-wider rounded-sm transition-all ${
+                className={`px-3 sm:px-3.5 py-1.5 font-bold uppercase tracking-wider rounded-sm transition-all cursor-pointer ${
                   flowType === 'CARGUE'
-                    ? 'bg-[var(--color-alert-blue-bg)] text-[var(--color-alert-blue-text)] border border-[var(--color-border)]'
-                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                    ? 'bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent-border)] shadow-2xs'
+                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] border border-transparent'
                 }`}
               >
                 Cargue
@@ -305,10 +360,10 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
               <button
                 type="button"
                 onClick={() => handleFlowSwitch('DESCARGUE')}
-                className={`px-3.5 py-1.5 font-bold uppercase tracking-wider rounded-sm transition-all ${
+                className={`px-3 sm:px-3.5 py-1.5 font-bold uppercase tracking-wider rounded-sm transition-all cursor-pointer ${
                   flowType === 'DESCARGUE'
-                    ? 'bg-[var(--color-alert-green-bg)] text-[var(--color-alert-green-text)] border border-[var(--color-border)]'
-                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                    ? 'bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent-border)] shadow-2xs'
+                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] border border-transparent'
                 }`}
               >
                 Descargue
@@ -318,34 +373,22 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
 
         </div>
 
-        {/* Lado Derecho: Fuente de Suministro, Presión e Identificador */}
-        <div className="flex flex-wrap items-center gap-3">
-          
-          {/* Selector de Cromatografía Surtigas */}
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider flex items-center gap-1">
-              <Flame className="w-3.5 h-3.5 text-amber-500" />
-              Perfil de Gas:
-            </span>
-            <select
-              value={selectedGasProfileId}
-              onChange={(e) => setSelectedGasProfileId(e.target.value)}
-              className="h-8 px-2.5 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] font-mono text-xs focus:outline-none cursor-pointer"
-            >
-              {gasProfiles.map(p => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Selector de Unidades */}
+        {/* Lado Derecho: Selector de Unidades de Presión */}
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <span className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">
+            Unidad:
+          </span>
           <div className="flex bg-[var(--color-canvas)] border border-[var(--color-border)] p-0.5 rounded-md text-xs font-mono">
             <button
               type="button"
               onClick={() => {
                 if (pressureUnit === 'psi') {
-                  setHeaderPi(Math.round(psiToBar(headerPi)));
-                  setHeaderPf(Math.round(psiToBar(headerPf)));
+                  const newPi = Math.round(psiToBar(headerPi));
+                  const newPf = Math.round(psiToBar(headerPf));
+                  setHeaderPi(newPi);
+                  setHeaderPf(newPf);
+                  setPiStr(String(newPi));
+                  setPfStr(String(newPf));
                   setPositions(prev => prev.map(p => ({
                     ...p,
                     pi: Math.round(psiToBar(p.pi)),
@@ -354,7 +397,7 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
                   setPressureUnit('bar');
                 }
               }}
-              className={`px-2 py-1 rounded-sm transition-colors ${
+              className={`px-2.5 py-1 rounded-sm transition-colors ${
                 pressureUnit === 'bar' ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] font-bold shadow-xs' : 'text-[var(--color-text-secondary)]'
               }`}
             >
@@ -364,8 +407,12 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
               type="button"
               onClick={() => {
                 if (pressureUnit === 'bar') {
-                  setHeaderPi(Math.round(barToPsi(headerPi)));
-                  setHeaderPf(Math.round(barToPsi(headerPf)));
+                  const newPi = Math.round(barToPsi(headerPi));
+                  const newPf = Math.round(barToPsi(headerPf));
+                  setHeaderPi(newPi);
+                  setHeaderPf(newPf);
+                  setPiStr(String(newPi));
+                  setPfStr(String(newPf));
                   setPositions(prev => prev.map(p => ({
                     ...p,
                     pi: Math.round(barToPsi(p.pi)),
@@ -374,271 +421,455 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
                   setPressureUnit('psi');
                 }
               }}
-              className={`px-2 py-1 rounded-sm transition-colors ${
+              className={`px-2.5 py-1 rounded-sm transition-colors ${
                 pressureUnit === 'psi' ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] font-bold shadow-xs' : 'text-[var(--color-text-secondary)]'
               }`}
             >
               psi
             </button>
           </div>
-
-          {/* Identificador Oficial */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">Módulo:</span>
-            <input
-              type="text"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
-              className="h-8 w-24 px-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] font-mono font-bold text-xs focus:outline-none"
-              placeholder="RACK-01"
-            />
-          </div>
-
         </div>
 
       </div>
 
-      {/* 2. Díptico de Control Ejecutivo */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch anim-slide-up">
+      {/* 2. Díptico de Control Ejecutivo: Distribución Asimétrica de Jerarquía */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-stretch anim-slide-up">
         
-        {/* TARJETA 1: Parámetros Físicos y Certificado del Gas */}
-        <div className="p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col justify-between space-y-8 shadow-none transition-all duration-300">
+        {/* TARJETA 1: Parámetros de Operación y Condiciones de Despacho */}
+        <div className="lg:col-span-7 xl:col-span-7 2xl:col-span-8 p-4 sm:p-6 lg:p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col justify-between space-y-6 shadow-none transition-all duration-300">
           
-          <div className="space-y-8">
-            <div className="flex items-center justify-between pb-4 border-b border-[var(--color-border)]">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-secondary)] block">
-                  1. Entrada Instrumental
-                </span>
-                <span className="text-[11px] text-[var(--color-text-secondary)]">Manifold & Cromatografía</span>
-              </div>
-              <span className="text-xs font-mono font-bold text-[var(--color-text-primary)] px-2 py-0.5 rounded-sm bg-[var(--color-canvas)] border border-[var(--color-border)]">
+          <div className="space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-[var(--color-border)]">
+              <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-secondary)]">
+                Condiciones de Despacho
+              </span>
+              <span className="text-xs font-mono font-bold text-[var(--color-accent)] px-2.5 py-1 rounded-sm bg-[var(--color-accent-subtle)] border border-[var(--color-accent-border)]">
                 ΔP: {deltaPressure > 0 ? `+${deltaPressure.toFixed(1)}` : deltaPressure.toFixed(1)} {pressureUnit}
               </span>
             </div>
 
             {/* Presiones de Entrada */}
-            <div className="grid grid-cols-2 gap-6">
-              <div className="p-6 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-border)] shadow-none">
-                <span className="text-xs font-mono text-[var(--color-text-secondary)] uppercase block mb-4 tracking-widest">
-                  {flowType === 'CARGUE' ? 'P₁ Talón' : 'P₁ Llegada'}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="p-5 sm:p-6 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-border)] shadow-none flex flex-col justify-between">
+                <span className="text-xs font-mono text-[var(--color-text-secondary)] uppercase block mb-3 tracking-widest">
+                  P1 Inicial
                 </span>
-                <div className="flex items-baseline gap-2 border-b border-[var(--color-border)] pb-2 mb-4">
+                <div className="flex items-baseline gap-2 border-b border-[var(--color-border)] pb-2 mb-3">
                   <input
-                    type="number"
-                    value={headerPi}
+                    type="text"
+                    inputMode="decimal"
+                    value={piStr}
+                    placeholder="0"
+                    onFocus={(e) => e.target.select()}
                     onChange={(e) => {
-                      const val = Number(e.target.value);
-                      setHeaderPi(val);
-                      applyHeaderToPositions(val, headerPf);
+                      let val = e.target.value.replace(/[^0-9.]/g, '');
+                      if (/^0\d+/.test(val)) val = val.replace(/^0+/, '');
+                      setPiStr(val);
+                      const num = parseFloat(val) || 0;
+                      setHeaderPi(num);
+                      applyHeaderToPositions(num, headerPf);
                     }}
-                    className="w-full bg-transparent font-serif font-bold text-4xl sm:text-5xl text-[var(--color-text-primary)] focus:outline-none"
+                    onBlur={() => {
+                      if (!piStr || isNaN(parseFloat(piStr))) {
+                        setPiStr('0');
+                        setHeaderPi(0);
+                        applyHeaderToPositions(0, headerPf);
+                      }
+                    }}
+                    className="w-full bg-transparent font-sans font-semibold text-3xl sm:text-4xl lg:text-5xl text-[var(--color-text-primary)] focus:outline-none tracking-tight"
                   />
                   <span className="text-sm text-[var(--color-text-secondary)] font-mono">{pressureUnit}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
-                  <Thermometer className="w-4 h-4" />
-                  <input 
-                    type="number" 
-                    value={headerTi} 
-                    onChange={(e) => setHeaderTi(Number(e.target.value))}
-                    className="w-12 bg-transparent font-mono text-sm focus:outline-none"
-                  />
-                  <span>°C</span>
+                <div className="flex items-center justify-between pt-2 mt-auto">
+                  <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider flex items-center gap-1.5 select-none">
+                    <Thermometer className="w-3.5 h-3.5 text-[var(--color-accent)]" />
+                    <span>Temperatura</span>
+                  </label>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-accent)] focus-within:border-[var(--color-accent)] focus-within:ring-1 focus-within:ring-[var(--color-accent)] transition-all shadow-2xs cursor-text">
+                    <input 
+                      type="text"
+                      inputMode="decimal"
+                      value={tiStr}
+                      placeholder="0"
+                      onFocus={(e) => e.target.select()}
+                      onChange={(e) => {
+                        let val = e.target.value.replace(/[^0-9.-]/g, '');
+                        if (/^0\d+/.test(val)) val = val.replace(/^0+/, '');
+                        setTiStr(val);
+                        setHeaderTi(parseFloat(val) || 0);
+                      }}
+                      onBlur={() => {
+                        if (!tiStr || isNaN(parseFloat(tiStr))) {
+                          setTiStr('0');
+                          setHeaderTi(0);
+                        }
+                      }}
+                      className="w-12 text-right bg-transparent font-mono font-bold text-xs text-[var(--color-text-primary)] focus:outline-none"
+                    />
+                    <span className="text-[11px] font-mono font-semibold text-[var(--color-text-secondary)]">°C</span>
+                  </div>
                 </div>
               </div>
 
-              <div className="p-6 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-border)] shadow-none">
-                <span className="text-xs font-mono text-[var(--color-text-secondary)] uppercase block mb-4 tracking-widest">
-                  {flowType === 'CARGUE' ? 'P₂ Corte' : 'P₂ Remanente'}
+              <div className="p-5 sm:p-6 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-border)] shadow-none flex flex-col justify-between">
+                <span className="text-xs font-mono text-[var(--color-text-secondary)] uppercase block mb-3 tracking-widest">
+                  P2 Final
                 </span>
-                <div className="flex items-baseline gap-2 border-b border-[var(--color-border)] pb-2 mb-4">
+                <div className="flex items-baseline gap-2 border-b border-[var(--color-border)] pb-2 mb-3">
                   <input
-                    type="number"
-                    value={headerPf}
+                    type="text"
+                    inputMode="decimal"
+                    value={pfStr}
+                    placeholder="0"
+                    onFocus={(e) => e.target.select()}
                     onChange={(e) => {
-                      const val = Number(e.target.value);
-                      setHeaderPf(val);
-                      applyHeaderToPositions(headerPi, val);
+                      let val = e.target.value.replace(/[^0-9.]/g, '');
+                      if (/^0\d+/.test(val)) val = val.replace(/^0+/, '');
+                      setPfStr(val);
+                      const num = parseFloat(val) || 0;
+                      setHeaderPf(num);
+                      applyHeaderToPositions(headerPi, num);
                     }}
-                    className="w-full bg-transparent font-serif font-bold text-4xl sm:text-5xl text-[var(--color-text-primary)] focus:outline-none"
+                    onBlur={() => {
+                      if (!pfStr || isNaN(parseFloat(pfStr))) {
+                        setPfStr('0');
+                        setHeaderPf(0);
+                        applyHeaderToPositions(headerPi, 0);
+                      }
+                    }}
+                    className="w-full bg-transparent font-sans font-semibold text-3xl sm:text-4xl lg:text-5xl text-[var(--color-text-primary)] focus:outline-none tracking-tight"
                   />
                   <span className="text-sm text-[var(--color-text-secondary)] font-mono">{pressureUnit}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
-                  <Thermometer className="w-4 h-4" />
-                  <input 
-                    type="number" 
-                    value={headerTf} 
-                    onChange={(e) => setHeaderTf(Number(e.target.value))}
-                    className="w-12 bg-transparent font-mono text-sm focus:outline-none"
-                  />
-                  <span>°C</span>
+                <div className="flex items-center justify-between pt-2 mt-auto">
+                  <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider flex items-center gap-1.5 select-none">
+                    <Thermometer className="w-3.5 h-3.5 text-[var(--color-accent)]" />
+                    <span>Temperatura</span>
+                  </label>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-accent)] focus-within:border-[var(--color-accent)] focus-within:ring-1 focus-within:ring-[var(--color-accent)] transition-all shadow-2xs cursor-text">
+                    <input 
+                      type="text"
+                      inputMode="decimal"
+                      value={tfStr}
+                      placeholder="0"
+                      onFocus={(e) => e.target.select()}
+                      onChange={(e) => {
+                        let val = e.target.value.replace(/[^0-9.-]/g, '');
+                        if (/^0\d+/.test(val)) val = val.replace(/^0+/, '');
+                        setTfStr(val);
+                        setHeaderTf(parseFloat(val) || 0);
+                      }}
+                      onBlur={() => {
+                        if (!tfStr || isNaN(parseFloat(tfStr))) {
+                          setTfStr('0');
+                          setHeaderTf(0);
+                        }
+                      }}
+                      className="w-12 text-right bg-transparent font-mono font-bold text-xs text-[var(--color-text-primary)] focus:outline-none"
+                    />
+                    <span className="text-[11px] font-mono font-semibold text-[var(--color-text-secondary)]">°C</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Capacidad Geométrica Total & Prorrateo Automático */}
-            <div className="p-4 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-border)] space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-mono text-[var(--color-text-secondary)] uppercase tracking-wider font-bold">
-                  Capacidad Geométrica Total (Litros de Agua)
-                </span>
-                <span className="text-[11px] font-mono font-bold text-[var(--color-text-primary)]">
-                  Prorrateo: {capacityPerCylinder.toFixed(1)} L / tubo ({activeCount} activos)
-                </span>
-              </div>
+            {/* Selectores Instrumentales: Módulo de Almacenamiento y Fuente de Gas en 2 Columnas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+              
+              {/* Selector de Módulo de Almacenamiento */}
+              <div className="p-4 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-border)] space-y-2 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider flex items-center gap-1.5">
+                      <Box className="w-3.5 h-3.5" />
+                      Módulo:
+                    </label>
+                    <span className="font-mono text-xs font-bold text-[var(--color-text-primary)]">
+                      {totalCapacity.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} L
+                    </span>
+                  </div>
+                  {/* Selector Jerárquico por Categorías (No muestra todo de golpe) */}
+                  <div className="relative" ref={moduleDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsModuleDropdownOpen(prev => !prev);
+                        // Al abrir, sólo se muestran las 2 categorías inicialmente
+                        setOpenModuleCategory(null);
+                      }}
+                      className="w-full h-9 px-3 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] font-mono text-xs focus:outline-none flex items-center justify-between hover:border-[var(--color-accent)] transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        {activeModule?.type === 'ESTACIONARIA' ? (
+                          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent-border)] shrink-0 font-medium">
+                            Estacionaria
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent-border)] shrink-0 font-medium">
+                            Transporte
+                          </span>
+                        )}
+                        <span className="truncate font-semibold">
+                          {activeModule ? activeModule.name.replace(/\s*\(\d+(\.\d+)?\s*m³\)/i, '').trim() : 'Seleccionar Módulo...'}
+                        </span>
+                      </div>
+                      <ChevronDown className={`w-4 h-4 text-[var(--color-text-secondary)] transition-transform shrink-0 ${isModuleDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
 
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setTotalCapacity(13497)}
-                  className={`py-2 px-2.5 text-xs font-mono rounded-md border text-center transition-all cursor-pointer ${
-                    totalCapacity === 13497
-                      ? 'bg-[var(--color-text-primary)] text-[var(--color-canvas)] border-[var(--color-text-primary)] font-bold'
-                      : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:text-[var(--color-text-primary)]'
-                  }`}
-                >
-                  13,497 Litros
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTotalCapacity(26950)}
-                  className={`py-2 px-2.5 text-xs font-mono rounded-md border text-center transition-all cursor-pointer ${
-                    totalCapacity === 26950
-                      ? 'bg-[var(--color-text-primary)] text-[var(--color-canvas)] border-[var(--color-text-primary)] font-bold'
-                      : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:text-[var(--color-text-primary)]'
-                  }`}
-                >
-                  26,950 Litros
-                </button>
-                <div className="flex items-center gap-1.5 border border-[var(--color-border)] rounded-md px-2.5 bg-[var(--color-surface)]">
-                  <input
-                    type="number"
-                    step="1"
-                    value={totalCapacity}
-                    onChange={(e) => setTotalCapacity(Math.max(1, Number(e.target.value)))}
-                    className="w-full bg-transparent font-mono text-xs font-bold text-[var(--color-text-primary)] focus:outline-none"
-                    placeholder="Otro vol."
-                  />
-                  <span className="text-[10px] text-[var(--color-text-secondary)] font-mono">L</span>
+                    {isModuleDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-white dark:bg-[#18181b] border border-[var(--color-border)] rounded-md shadow-xl overflow-hidden">
+                        
+                        {/* Categoría 1: Cascadas Estacionarias */}
+                        <div className="border-b border-[var(--color-border)]">
+                          <button
+                            type="button"
+                            onClick={() => setOpenModuleCategory(prev => prev === 'ESTACIONARIA' ? null : 'ESTACIONARIA')}
+                            className="w-full px-3 py-2.5 flex items-center justify-between text-xs font-semibold bg-[#f7f6f3] dark:bg-[#27272a] hover:bg-[#eaeaea] dark:hover:bg-[#3f3f46] transition-colors text-left cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Building2 className="w-3.5 h-3.5 text-[var(--color-accent)]" />
+                              <span className="text-[var(--color-text-primary)]">Cascadas Estacionarias (Planta)</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-mono text-[var(--color-text-secondary)] bg-white dark:bg-[#18181b] border border-[var(--color-border)] px-1.5 py-0.2 rounded font-bold">
+                                {stationaryModules.length}
+                              </span>
+                              {openModuleCategory === 'ESTACIONARIA' ? (
+                                <ChevronDown className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" />
+                              ) : (
+                                <ChevronRight className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" />
+                              )}
+                            </div>
+                          </button>
+
+                          {openModuleCategory === 'ESTACIONARIA' && (
+                            <div className="max-h-48 overflow-y-auto divide-y divide-[var(--color-border)] bg-white dark:bg-[#18181b]">
+                              {stationaryModules.length === 0 ? (
+                                <div className="px-4 py-2 text-[11px] text-[var(--color-text-secondary)] italic bg-white dark:bg-[#18181b]">
+                                  No hay cascadas estacionarias registradas
+                                </div>
+                              ) : (
+                                stationaryModules.map(m => {
+                                  const isSelected = m.id === selectedModuleId;
+                                  return (
+                                    <button
+                                      key={m.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setSelectedModuleId(m.id);
+                                        setIsModuleDropdownOpen(false);
+                                        setOpenModuleCategory(null);
+                                      }}
+                                      className={`w-full px-4 py-2.5 flex items-center justify-between text-xs font-mono transition-colors text-left cursor-pointer ${
+                                        isSelected 
+                                          ? 'bg-[var(--color-accent-subtle)] text-[var(--color-accent)] font-bold' 
+                                          : 'bg-white dark:bg-[#18181b] text-[var(--color-text-primary)] hover:bg-[#f9f9f8] dark:hover:bg-[#27272a]'
+                                      }`}
+                                    >
+                                      <span className="truncate">{m.name.replace(/\s*\(\d+(\.\d+)?\s*m³\)/i, '').trim()}</span>
+                                      <div className="flex items-center gap-2 text-[10px] text-[var(--color-text-secondary)] shrink-0 ml-2">
+                                        <span>{m.totalCapacityLiters.toLocaleString()} L</span>
+                                        {isSelected && <Check className="w-3.5 h-3.5 text-[var(--color-accent)]" />}
+                                      </div>
+                                    </button>
+                                  );
+                                })
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Categoría 2: Módulos de Transporte */}
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => setOpenModuleCategory(prev => prev === 'TRANSPORTE' ? null : 'TRANSPORTE')}
+                            className="w-full px-3 py-2.5 flex items-center justify-between text-xs font-semibold bg-[#f7f6f3] dark:bg-[#27272a] hover:bg-[#eaeaea] dark:hover:bg-[#3f3f46] transition-colors text-left cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Truck className="w-3.5 h-3.5 text-[var(--color-accent)]" />
+                              <span className="text-[var(--color-text-primary)]">Módulos de Transporte (Carretera)</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-mono text-[var(--color-text-secondary)] bg-white dark:bg-[#18181b] border border-[var(--color-border)] px-1.5 py-0.2 rounded font-bold">
+                                {transportModules.length}
+                              </span>
+                              {openModuleCategory === 'TRANSPORTE' ? (
+                                <ChevronDown className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" />
+                              ) : (
+                                <ChevronRight className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" />
+                              )}
+                            </div>
+                          </button>
+
+                          {openModuleCategory === 'TRANSPORTE' && (
+                            <div className="max-h-48 overflow-y-auto divide-y divide-[var(--color-border)] bg-white dark:bg-[#18181b]">
+                              {transportModules.length === 0 ? (
+                                <div className="px-4 py-2 text-[11px] text-[var(--color-text-secondary)] italic bg-white dark:bg-[#18181b]">
+                                  No hay módulos de transporte registrados
+                                </div>
+                              ) : (
+                                transportModules.map(m => {
+                                  const isSelected = m.id === selectedModuleId;
+                                  return (
+                                    <button
+                                      key={m.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setSelectedModuleId(m.id);
+                                        setIsModuleDropdownOpen(false);
+                                        setOpenModuleCategory(null);
+                                      }}
+                                      className={`w-full px-4 py-2.5 flex items-center justify-between text-xs font-mono transition-colors text-left cursor-pointer ${
+                                        isSelected 
+                                          ? 'bg-[var(--color-accent-subtle)] text-[var(--color-accent)] font-bold' 
+                                          : 'bg-white dark:bg-[#18181b] text-[var(--color-text-primary)] hover:bg-[#f9f9f8] dark:hover:bg-[#27272a]'
+                                      }`}
+                                    >
+                                      <span className="truncate">{m.name.replace(/\s*\(\d+(\.\d+)?\s*m³\)/i, '').trim()}</span>
+                                      <div className="flex items-center gap-2 text-[10px] text-[var(--color-text-secondary)] shrink-0 ml-2">
+                                        <span>{m.totalCapacityLiters.toLocaleString()} L</span>
+                                        {isSelected && <Check className="w-3.5 h-3.5 text-[var(--color-accent)]" />}
+                                      </div>
+                                    </button>
+                                  );
+                                })
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-[10px] font-mono text-[var(--color-text-secondary)] pt-1 border-t border-[var(--color-border)]">
+                  <span>{totalCylindersCount} {activeModule?.type === 'TRANSPORTE' ? 'tubos jumbo' : 'cilindros'}</span>
+                  <span>{capacityPerCylinder.toFixed(0)} L por unidad</span>
                 </div>
               </div>
+
+              {/* Selector de Fuente de Gas (Cromatografía) */}
+              <div className="p-4 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-border)] space-y-2 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider flex items-center gap-1.5">
+                      <Flame className="w-3.5 h-3.5 text-[var(--color-accent)]" />
+                      Fuente de Gas:
+                    </label>
+                    <span className="font-mono text-xs font-bold text-[var(--color-accent)]">
+                      CH₄: {activeGas.methanePercentage ? `${activeGas.methanePercentage.toFixed(2)}%` : '96.37%'}
+                    </span>
+                  </div>
+                  <select
+                    value={selectedGasProfileId}
+                    onChange={(e) => setSelectedGasProfileId(e.target.value)}
+                    className="w-full h-9 px-3 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] font-mono text-xs focus:outline-none cursor-pointer"
+                  >
+                    {gasProfiles.map(p => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-center justify-between text-[10px] font-mono text-[var(--color-text-secondary)] pt-1 border-t border-[var(--color-border)]">
+                  <span>Gr: {activeGas.specificGravity ? activeGas.specificGravity.toFixed(4) : '0.5756'}</span>
+                  <span>{activeGas.grossCalorificValue ? `${activeGas.grossCalorificValue.toFixed(0)} kcal/m³` : '8,884 kcal/m³'}</span>
+                </div>
+              </div>
+
             </div>
 
-            {/* Ficha Técnica de la Cromatografía Oficial Surtigas */}
-            <div className="p-3.5 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-border)] text-xs space-y-2">
-              <div className="flex items-center justify-between text-[11px] font-bold text-[var(--color-text-primary)]">
-                <span className="flex items-center gap-1.5">
-                  <Flame className="w-3.5 h-3.5 text-amber-500" />
-                  Certificado Surtigas RUT (14.65 psia / 60 °F):
-                </span>
-                <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)]">
-                  {activeGas.name}
-                </span>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-mono text-[var(--color-text-secondary)] pt-1.5 border-t border-[var(--color-border)]">
-                <div>CH₄: <strong className="text-[var(--color-text-primary)]">{activeGas.methanePercentage ? `${activeGas.methanePercentage.toFixed(4)}%` : '96.3666%'}</strong></div>
-                <div>N₂: <strong className="text-[var(--color-text-primary)]">{activeGas.nitrogenPercentage ? `${activeGas.nitrogenPercentage.toFixed(4)}%` : '2.5379%'}</strong></div>
-                <div>Gr. Esp (Gr): <strong className="text-[var(--color-text-primary)]">{activeGas.specificGravity ? activeGas.specificGravity.toFixed(4) : '0.5756'}</strong></div>
-                <div>P. Calorífico: <strong className="text-[var(--color-text-primary)]">{activeGas.grossCalorificValue ? `${activeGas.grossCalorificValue.toFixed(1)} kcal/m³` : '8,884.3 kcal/m³'}</strong></div>
-              </div>
-            </div>
-
-          </div>
-
-          <div className="text-[11px] text-[var(--color-text-secondary)] opacity-80 pt-2 border-t border-[var(--color-border)]">
-            Resolución en tiempo real vía ecuación virial AGA-8 / DAK
           </div>
 
         </div>
 
-        {/* TARJETA 2: Dictamen Termodinámico y Certificación Sabanas */}
-        <div className="p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col justify-between space-y-8 shadow-none">
+        {/* TARJETA 2: Balance de Entrega y Aforo (Panel Ejecutivo de Salida) */}
+        <div className="lg:col-span-5 xl:col-span-5 2xl:col-span-4 p-4 sm:p-6 lg:p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col justify-between space-y-6 shadow-none">
           
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             <div className="flex items-center justify-between pb-4 border-b border-[var(--color-border)]">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-secondary)] block">
-                  2. Balance Físico & Certificación
-                </span>
-                <span className="text-[11px] text-[var(--color-text-secondary)]">Regla de Aforo (Sabanas)</span>
-              </div>
-              <Award className="w-4 h-4 text-emerald-600" />
+              <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-secondary)]">
+                Balance de Entrega y Aforo
+              </span>
             </div>
 
             {/* Carga Neta Normalizada */}
-            <div className="p-6 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-border)] shadow-none">
-              <span className="text-xs font-mono text-[var(--color-text-secondary)] uppercase tracking-widest block mb-4">
-                Volumen Transferido AGA-8
+            <div className="p-4 sm:p-6 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-border)] shadow-none">
+              <span className="text-xs font-mono text-[var(--color-text-secondary)] uppercase tracking-widest block mb-3 sm:mb-4">
+                Volumen Transferido
               </span>
-              <div className="flex items-baseline gap-3 mt-1 border-b border-[var(--color-border)] pb-4 mb-4">
-                <span className="text-6xl font-serif font-bold text-[var(--color-text-primary)] tracking-tight">
+              <div className="flex items-baseline gap-2 sm:gap-3 mt-1 border-b border-[var(--color-border)] pb-3 sm:pb-4 mb-3 sm:mb-4">
+                <span className="text-4xl sm:text-5xl lg:text-6xl font-sans font-semibold text-[var(--color-text-primary)] tracking-tight">
                   {Math.abs(totalVolume_Sm3).toFixed(2)}
                 </span>
-                <span className="text-lg font-mono text-[var(--color-text-secondary)]">Sm³</span>
+                <span className="text-base sm:text-lg font-mono text-[var(--color-text-secondary)]">Sm³</span>
               </div>
-              <div className="text-sm font-mono text-[var(--color-text-secondary)]">
-                Masa Neta: <strong className="text-[var(--color-text-primary)] font-bold text-base">{Math.abs(totalMass_kg).toFixed(2)} kg</strong>
+              <div className="text-xs sm:text-sm font-mono text-[var(--color-text-secondary)]">
+                Masa Neta: <strong className="text-[var(--color-text-primary)] font-bold text-sm sm:text-base">{Math.abs(totalMass_kg).toFixed(2)} kg</strong>
               </div>
             </div>
 
-            {/* Sello de Aforo Certificado (Sabanas) */}
-            <div className={`p-6 rounded-lg border transition-all shadow-none ${
-              isAforoCertified
+            {/* Indicador Compacto de Presión en Reposo */}
+            <div className={`px-4 py-3 rounded-lg border transition-all text-xs flex items-center justify-between gap-3 shadow-none ${
+              hasZeroPressures
+                ? 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-secondary)]'
+                : isAforoConforme
                 ? 'bg-[var(--color-alert-green-bg)] border-[var(--color-alert-green-border)] text-[var(--color-alert-green-text)]'
                 : 'bg-[var(--color-alert-yellow-bg)] border-[var(--color-alert-yellow-border)] text-[var(--color-alert-yellow-text)]'
             }`}>
-              <div className="flex items-start gap-4">
-                {isAforoCertified ? (
-                  <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
+              <div className="flex items-center gap-2.5 min-w-0">
+                {hasZeroPressures ? (
+                  <Gauge className="w-4 h-4 shrink-0 text-[var(--color-text-secondary)]" />
+                ) : isAforoConforme ? (
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
                 ) : (
-                  <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
                 )}
-                <div className="space-y-1">
-                  <span className="font-bold text-xs uppercase tracking-wide block">
-                    {isAforoCertified ? 'Aforo Certificado (Sabanas)' : 'Subllenado Térmico en Reposo'}
+                <div className="flex items-baseline gap-1.5 truncate">
+                  <span className="font-semibold text-xs">
+                    {hasZeroPressures ? 'Presión en Reposo:' : 'Presión en Reposo (20°C):'}
                   </span>
-                  <p className="text-[11px] leading-relaxed opacity-90">
-                    {isAforoCertified ? (
-                      <>
-                        Estabilización fría a 20°C: <strong>{avgStabilizedPressureBar.toFixed(1)} bar</strong> (Piso ≥ 230 bar cumplido).<br />
-                        Constante oficial: <strong>{aforoConstant.toFixed(2)} Sm³/bar</strong>.
-                      </>
-                    ) : (
-                      <>
-                        La presión estabilizada caerá a <strong>{avgStabilizedPressureBar.toFixed(1)} bar</strong> (&lt; 230 bar piso contractual). No bloquea la operación pero requiere compensación.
-                      </>
-                    )}
-                  </p>
+                  <span className="font-mono font-bold text-xs">
+                    {hasZeroPressures ? '—' : `${avgStabilizedPressureBar.toFixed(1)} bar`}
+                  </span>
                 </div>
               </div>
+
+              <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded border shrink-0 ${
+                hasZeroPressures
+                  ? 'border-[var(--color-border)] bg-[var(--color-canvas)] text-[var(--color-text-secondary)]'
+                  : isAforoConforme
+                  ? 'border-[var(--color-alert-green-border)] bg-[var(--color-alert-green-bg)] text-[var(--color-alert-green-text)]'
+                  : 'border-[var(--color-alert-yellow-border)] bg-[var(--color-alert-yellow-bg)] text-[var(--color-alert-yellow-text)]'
+              }`}>
+                {hasZeroPressures
+                  ? 'En Espera'
+                  : isAforoConforme
+                  ? 'Conforme (≥ 230 bar)'
+                  : 'Bajo Piso (< 230 bar)'}
+              </span>
             </div>
 
-          </div>
-
-          <div className="text-[11px] text-[var(--color-text-secondary)] opacity-80 pt-2 border-t border-[var(--color-border)]">
-            Aforo certificado para auditoría y facturación de volumen
           </div>
 
         </div>
 
       </div>
 
-      {/* Botón de Asentamiento en Libro Mayor */}
+      {/* Botón de Asentamiento en Cuenta de Balance */}
       <div className="pt-2">
         <button
           type="button"
           onClick={handleSave}
-          disabled={activeCount === 0 || isSaving}
+          disabled={activeCount === 0 || isSaving || hasZeroPressures}
           className={`w-full py-4 px-4 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-sm ${
             isSavedFeedback
               ? 'bg-emerald-600 text-white'
-              : 'bg-[var(--color-text-primary)] hover:opacity-90 text-[var(--color-canvas)] disabled:opacity-40 cursor-pointer'
+              : 'bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white disabled:opacity-40 cursor-pointer shadow-xs'
           }`}
         >
           {isSaving ? (
-            <span>Asentando en Libro Mayor...</span>
+            <span>Asentando en Cuenta de Balance...</span>
           ) : isSavedFeedback ? (
             <>
               <Check className="w-5 h-5 stroke-[2.5px]" />
@@ -646,27 +877,22 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
             </>
           ) : (
             <>
-              <span>Guardar Registro de Operación</span>
+              <span>Asentar Operación en Cuenta de Balance</span>
               <ArrowRight className="w-5 h-5" />
             </>
           )}
         </button>
       </div>
 
-      {/* 3. Digital Twin de la Batería de Cilindros & Ajuste Fino */}
-      <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-8 space-y-8 shadow-none mt-8">
+      {/* Monitoreo de Cilindros y Ajuste Operativo */}
+      <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 shadow-none mt-8">
           
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--color-border)]">
-            <div>
-              <span className="text-xs font-bold text-[var(--color-text-primary)] uppercase tracking-wider block">
-                Digital Twin: Estado de la Batería ({activeCount}/{totalCylindersCount} Cilindros Activos)
-              </span>
-              <span className="text-[11px] text-[var(--color-text-secondary)]">
-                Supervisión geométrica del manifold • Prorrateo: {capacityPerCylinder.toFixed(1)} L por botella activa
-              </span>
-            </div>
+            <span className="text-xs font-bold text-[var(--color-text-primary)] uppercase tracking-wider">
+              Monitoreo de Cilindros ({activeCount}/{totalCylindersCount} Activos)
+            </span>
 
-            <div className="flex items-center gap-3 text-xs">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs">
               <button
                 type="button"
                 onClick={() => setPositions(prev => prev.map(p => ({ ...p, active: true })))}
@@ -695,7 +921,10 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
           </div>
 
           {/* Grilla Visual de Tubos / Cilindros del Rack */}
-          <div className={`grid gap-3 ${totalCylindersCount === 12 ? 'grid-cols-3 sm:grid-cols-6 lg:grid-cols-12' : 'grid-cols-3 sm:grid-cols-6 lg:grid-cols-11'}`}>
+          <div 
+            className="grid gap-3" 
+            style={{ gridTemplateColumns: `repeat(auto-fit, minmax(75px, 1fr))` }}
+          >
             {positions.map((p) => {
               const deltaP = p.pf - p.pi;
               return (
@@ -704,11 +933,13 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
                   onClick={() => togglePositionActive(p.id)}
                   className={`p-3 rounded-md border text-center transition-all duration-200 cursor-pointer flex flex-col justify-between hover:scale-[1.03] active:scale-[0.98] ${
                     p.active
-                      ? 'bg-[var(--color-canvas)] border-[var(--color-border)] hover:border-[var(--color-text-primary)] hover:shadow-xs'
+                      ? 'bg-[var(--color-surface)] border-[var(--color-border)] hover:border-[var(--color-accent)] hover:shadow-xs'
                       : 'bg-[var(--color-canvas)] border-[var(--color-border)] opacity-40 line-through'
                   }`}
                 >
-                  <span className="text-[10px] font-mono text-[var(--color-text-secondary)] font-bold">
+                  <span className={`text-[10px] font-mono font-bold ${
+                    p.active ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-secondary)]'
+                  }`}>
                     #{p.id}
                   </span>
                   
@@ -777,19 +1008,31 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
                         </td>
                         <td className="py-2 px-4">
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             disabled={!pos.active}
                             value={pos.pi}
-                            onChange={(e) => updateIndividualPosition(pos.id, 'pi', Number(e.target.value))}
+                            onFocus={(e) => e.target.select()}
+                            onChange={(e) => {
+                              let val = e.target.value.replace(/[^0-9.]/g, '');
+                              if (/^0\d+/.test(val)) val = val.replace(/^0+/, '');
+                              updateIndividualPosition(pos.id, 'pi', parseFloat(val) || 0);
+                            }}
                             className="w-20 h-7 px-2 rounded-sm border border-[var(--color-border)] bg-[var(--color-surface)] focus:outline-none"
                           />
                         </td>
                         <td className="py-2 px-4">
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             disabled={!pos.active}
                             value={pos.pf}
-                            onChange={(e) => updateIndividualPosition(pos.id, 'pf', Number(e.target.value))}
+                            onFocus={(e) => e.target.select()}
+                            onChange={(e) => {
+                              let val = e.target.value.replace(/[^0-9.]/g, '');
+                              if (/^0\d+/.test(val)) val = val.replace(/^0+/, '');
+                              updateIndividualPosition(pos.id, 'pf', parseFloat(val) || 0);
+                            }}
                             className="w-20 h-7 px-2 rounded-sm border border-[var(--color-border)] bg-[var(--color-surface)] focus:outline-none"
                           />
                         </td>
@@ -811,3 +1054,4 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
     </div>
   );
 }
+

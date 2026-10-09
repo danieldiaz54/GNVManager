@@ -56,12 +56,17 @@ Cada subagente tiene un alcance estricto y un conjunto de reglas inquebrantables
   - Mapeo de errores de dominio (ej. `DivergenceException`) a códigos HTTP semánticos (400 Bad Request o 422 Unprocessable Entity con mensajes comprensibles).
 
 ### 🎨 4. `designer` (Ingeniero UI/UX y Frontend)
-- **Alcance**: `frontend/src/components/`, `frontend/src/pages/`, `frontend/src/styles/`
-- **Responsabilidad**: Interfaz de usuario en React + Vite con Tailwind CSS v4, respetando el sistema de diseño minimalista industrial.
+- **Alcance**: `frontend/src/components/`, `frontend/src/pages/`, `frontend/src/styles/`, `.agents/rules/ui-design-system.md`
+- **Responsabilidad**: Interfaz de usuario en React + Vite con Tailwind CSS v4, respetando el sistema de diseño minimalista industrial y el lenguaje de negocio puro.
 - **Reglas Críticas**:
-  - Seguir estrictamente los principios de `minimalist-skill` (diseño plano, tipografía monoespaciada en lecturas numéricas, sin sombras pesadas innecesarias).
-  - Mantener las variables CSS de `index.css` y clases utilitarias existentes (`.ui-card`, `.ui-button`).
-  - Semántica física: Las operaciones de llenado son "Cargue" (el rack entra con menor presión y sale con mayor presión).
+  - Seguir estrictamente el Manifiesto de UI (`.agents/rules/ui-design-system.md`) y `minimalist-skill`.
+  - **Lenguaje de Negocio Puro**: Prohibido usar jerga técnica (AGA-8, perfil de gas, etc.) o localismos ("Sabanas"). Prohibición absoluta del término "certificar" (usar siempre "estimar" / "estimado"), del carácter `&` (usar siempre `y`) y de numeraciones artificiales ("1.", "2."). Cero definiciones obvias o tarjetas de relleno.
+  - **Acento Único Azul Gas**: Toda interacción, pestaña activa, icono de categoría y foco usa el azul gas (`var(--color-accent)`). Prohibidos acentos arbitrarios por categoría (ámbar, celeste). Colores rojo/amarillo/verde estrictamente reservados para semáforos de riesgo operativo.
+  - **Espacio y Proporciones**: Prohibidas tarjetas gigantes de estado; usar barras estilizadas compactas de fila única (~40px alto). Progressive disclosure en selectores jerárquicos (categorías primero, desglose bajo demanda).
+  - **Inicialización en Reposo**: Telemetría y presiones arrancan siempre en 0 (sin valores por defecto). Auto-selección y sanitización contra ceros a la izquierda en inputs numéricos.
+  - **Tipografía**: Inter con cifras tabulares (`tnum`) para lectura extendida; JetBrains Mono para lecturas métricas. Cero serifas.
+  - **Diseño Responsive de Grado Industrial**: Mobile-first a monitores industriales. Cero anchos fijos sin `max-w-full`. Tablas envueltas obligatoriamente en `overflow-x-auto`. Botones táctiles extendidos en móvil (`w-full sm:w-auto`). Modales acotados a `max-h-[90vh]` con scroll vertical interno.
+  - **Superficies 100% Sólidas (Cero Transparencias)**: Prohibición absoluta de transparencias, opacidades parciales (`/40`, `/60`, `/80`), `backdrop-blur` o animaciones de opacidad en dropdowns. Todos los menús desplegables y sus filas deben poseer fondo sólido opaco (`bg-white dark:bg-[#18181b]`).
 
 ### 🧪 5. `qa-verifier` (Ingeniero de Calidad y TDD)
 - **Alcance**: `backend/tests/`, `frontend/tests/`, scripts de verificación
@@ -132,4 +137,4 @@ Para garantizar un ecosistema de agentes saludable, proactivo y escalable:
 
 Se implementa una arquitectura reactiva impulsada por eventos usando `.agents/hooks.json`:
 - **Safety Gate (`PreToolUse`)**: Intercepta comandos potencialmente destructivos (`DROP DATABASE`, `TRUNCATE`, `rm -rf /`) antes de que `run_command` se ejecute, protegiendo las bases de datos y el sistema de archivos de ejecuciones erróneas accidentales.
-- **Reglas Contextuales Dinámicas**: Progressive disclosure de directivas de calidad (`.agents/rules/ui-strict-types.md` y `.agents/rules/domain-purity.md`) para mantener altos estándares de tipado y separación de capas sin saturar la ventana de contexto.
+- **Reglas Contextuales Dinámicas**: Progressive disclosure de directivas de calidad y diseño (`.agents/rules/ui-design-system.md`, `.agents/rules/ui-strict-types.md` y `.agents/rules/domain-purity.md`) para mantener altos estándares de tipado, UX y separación de capas sin saturar la ventana de contexto.

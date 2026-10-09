@@ -26,6 +26,7 @@ import authRoutes from './routes/auth.routes';
 import thermodynamicRoutes from './routes/thermodynamic.routes';
 import reconciliationRoutes from './routes/reconciliation.routes';
 import { gasProfileRoutes } from './routes/gas-profile.routes';
+import { storageModuleRoutes } from './routes/storage-module.routes';
 
 const app = express();
 
@@ -80,6 +81,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/thermodynamics', thermodynamicRoutes);
 app.use('/api/v1/reconciliation', reconciliationRoutes);
 app.use('/api/v1/gas-profiles', gasProfileRoutes);
+app.use('/api/v1/storage-modules', storageModuleRoutes);
 
 // Ruta base para Health Check
 app.get('/api/v1/health', (req: Request, res: Response) => {

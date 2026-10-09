@@ -68,32 +68,34 @@ export default function ThermodynamicsModule() {
       {/* Barra de Navegación Operacional Unificada (2 Modos Claros) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-3 border-b border-[var(--color-border)]">
         
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           
           <button
             type="button"
             onClick={() => setActiveMode('console')}
-            className={`flex items-center gap-2 py-2 px-4 rounded-md text-sm transition-all font-medium border ${
+            className={`flex items-center gap-2 py-2 px-3 sm:px-4 rounded-md text-xs sm:text-sm transition-all font-medium border cursor-pointer ${
               activeMode === 'console'
-                ? 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-primary)] font-bold shadow-xs'
+                ? 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-accent)] font-bold shadow-xs'
                 : 'bg-transparent border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
             }`}
           >
             <Layers className="w-4 h-4 stroke-[1.8px]" />
-            <span>Consola de Operaciones & Despacho</span>
+            <span className="hidden sm:inline">Consola de Operaciones y Despacho</span>
+            <span className="sm:hidden">Consola de Despacho</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveMode('ledger')}
-            className={`flex items-center gap-2 py-2 px-4 rounded-md text-sm transition-all font-medium border ${
+            className={`flex items-center gap-2 py-2 px-3 sm:px-4 rounded-md text-xs sm:text-sm transition-all font-medium border cursor-pointer ${
               activeMode === 'ledger'
-                ? 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-primary)] font-bold shadow-xs'
+                ? 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-accent)] font-bold shadow-xs'
                 : 'bg-transparent border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
             }`}
           >
             <History className="w-4 h-4 stroke-[1.8px]" />
-            <span>Libro Mayor & Conciliación</span>
+            <span className="hidden sm:inline">Cuenta de Balance y Conciliación</span>
+            <span className="sm:hidden">Cuenta de Balance</span>
             <span className="ml-1 text-xs font-mono px-2 py-0.5 rounded-full bg-[var(--color-canvas)] text-[var(--color-text-primary)] border border-[var(--color-border)] font-bold">
               {records.length}
             </span>

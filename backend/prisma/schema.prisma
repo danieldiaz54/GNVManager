@@ -116,3 +116,16 @@ model GasProfile {
 
   @@map("gas_profiles")
 }
+
+// Módulo de Almacenamientos
+model StorageModule {
+  id                     String   @id @default(uuid())
+  name                   String   @unique
+  type                   String // "ESTACIONARIA" o "TRANSPORTE"
+  cylinderCount          Int
+  cylinderCapacityLiters Float
+  totalCapacityLiters    Float
+  createdAt              DateTime @default(now())
+
+  @@map("storage_modules")
+}

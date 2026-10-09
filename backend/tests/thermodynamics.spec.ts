@@ -27,7 +27,7 @@ describe('CalculateThermodynamicTransferUseCase', () => {
     });
   });
 
-  describe('Sabanas & Módulos Flexibles rule (PressureExceededException)', () => {
+  describe('Módulos Flexibles rule (PressureExceededException)', () => {
     it('should throw PressureExceededException when initial pressure > 260 bar', () => {
       const initial: ThermodynamicState = { pressureBar: 261, temperatureK: 300 };
       const final: ThermodynamicState = { pressureBar: 200, temperatureK: 320 };

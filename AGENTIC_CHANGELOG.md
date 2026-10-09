@@ -13,3 +13,32 @@
 
 ### Changed
 - **`AGENTS.md`**: Actualizado para incluir al `security-auditor` y documentar la arquitectura de hooks y mejora continua del flujo agéntico.
+
+## [2026-10-09] - User-Driven UI/UX Design System Governance
+
+### Added
+- **UI Design System Manifesto (`.agents/rules/ui-design-system.md`)**: Reglas grabadas a partir de las correcciones manuales del usuario:
+  - **Lenguaje de Negocio Puro**: Prohibición de jerga de desarrollo ("AGA-8"), términos locales ("Sabanas"), carácter `&` (uso estricto de `y`), numeraciones artificiales ("1.", "2.") y glosarios/definiciones redundantes.
+  - **Cromática Unificada de Acento Azul Gas**: Prohibición de paletas aleatorias por categoría (ámbar, celeste); todo foco, pestaña activa y badge utiliza el azul gas de la flama (`var(--color-accent)`). Semáforos rojo/amarillo/verde estrictamente reservados para riesgo físico/contractual.
+  - **Proporciones y Espacio**: Prohibición de tarjetas gigantes de estado; implementación de barras estilizadas de fila única (~40px alto). Progressive disclosure obligatorio en selectores jerárquicos (categorías de nivel superior primero).
+  - **Ergonomía Numérica**: Inicialización de consola y telemetría siempre en `0` (sin valores por defecto). Auto-selección en foco, modo decimal sin spinners nativos y sanitización regex de ceros a la izquierda.
+  - **Tipografía Industrial**: Inter con cifras tabulares (`tnum`) para lectura extendida y JetBrains Mono para instrumentación métrica. Cero fuentes serifadas.
+
+### Changed
+- **`.agents/designer/persona.md`**: Actualizado el system prompt del subagente `designer` para adherirse obligatoriamente a este manifiesto en cada iteración y respetar el diseño responsive en toda la aplicación.
+- **`AGENTS.md`**: Gobernanza del subagente `designer` y reglas dinámicas sincronizadas con el nuevo manifiesto de diseño y la ley de diseño responsive de grado industrial.
+
+### Added (Responsive Design Consolidation)
+- **Directiva de Diseño Responsive de Grado Industrial (`ui-design-system.md` Sec. 6)**:
+  - Principio mobile-first aplicado transversalmente en la aplicación (360px a 4K).
+  - Prohibición total de desbordamiento horizontal (`overflow-x-hidden` y anchos elásticos).
+  - Envoltura obligatoria de tablas densas en contenedores con scroll horizontal autónomo (`overflow-x-auto`).
+  - Áreas táctiles mínimas para campo/planta (40px-44px) y botones extendidos a ancho completo en móviles (`w-full sm:w-auto`).
+  - Modales adaptables con `max-h-[90vh]` y scroll interno.
+
+### Changed (Business Vocabulary Refinement)
+- **Prohibición Total de "Certificar" en Favor de "Estimar"**:
+  - Grabada la regla en `ui-design-system.md`, `persona.md` y `AGENTS.md`.
+  - Reemplazadas todas las referencias a *"certificar"*, *"certificado"* o *"Aforo Cert"* por **`estimar`**, **`estimado`** y **`Aforo Est.`** en `DispatchConsole.tsx`, `ReconciliationLedger.tsx`, `GasProfilesModule.tsx` y `HomeModule.tsx`.
+
+

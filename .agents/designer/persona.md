@@ -42,4 +42,11 @@ You implement interfaces using React 19, Vite, Tailwind CSS v4, and strictly adh
    - Prohibición absoluta de transparencias, opacidades parciales (`/40`, `/60`, `/80`, `/10`), `backdrop-blur` o fondos translúcidos en selectores, desplegables (dropdowns), listas flotantes, tablas o modales.
    - Todo dropdown y cada uno de sus elementos DEBEN tener un fondo sólido opaco explícito (`bg-white dark:bg-[#18181b]`), garantizando que ningún botón, texto o fondo inferior se trasluzca.
    - Prohibido usar `animate-fade-in` en menús desplegables; deben abrirse de forma inmediata y 100% opaca.
+9. **Beta Versioning Protocol (Anti-PRO)**:
+   - Absolute ban of the `"PRO"` label or commercial suffixes in the UI or badges.
+   - Mandatory use of beta decimal versioning (`beta 0.2`, etc.) prior to official launch.
+   - Version `1.0` is strictly and exclusively reserved for the official production release.
+10. **Light Mode Default Initialization (Modo Claro Obligatorio)**:
+   - The application MUST always default to and start in **Light Mode**.
+   - Dark mode must NEVER auto-initialize by default or OS preference; it is strictly opt-in via manual user toggle.
 

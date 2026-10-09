@@ -1,20 +1,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { StorageService, StorageModuleDTO } from '../core/api/storage.service';
+import { StorageService, StorageModuleDTO, CreateStorageModuleDTO } from '../core/api/storage.service';
+import StorageDetailModal from '../components/StorageDetailModal';
 import { 
   Plus, 
   Search, 
-  Check, 
   X, 
   AlertCircle, 
   Box, 
   Building2, 
   Truck, 
   Edit2, 
-  Trash2,
-  ChevronDown,
-  ChevronRight,
-  ChevronsUpDown,
-  Layers
+  Trash2, 
+  ChevronDown, 
+  ChevronRight, 
+  Layers,
+  Eye,
+  Sliders
 } from 'lucide-react';
 
 type MainTab = 'ESTACIONARIA' | 'TRANSPORTE';
@@ -30,18 +31,39 @@ export default function StorageModulesModule() {
   // Buscador
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Estado de grupos expandidos (por defecto todas cerradas/colapsadas)
+  // Estado de grupos expandidos (inician cerrados por defecto / progressive disclosure)
   const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({});
 
-  // Formulario de Creación / Edición Inline
+  // Modal de Detalle / Ficha Técnica Completa
+  const [selectedModuleForDetail, setSelectedModuleForDetail] = useState<StorageModuleDTO | null>(null);
+
+  // Formulario de Creación / Edición
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showAdvancedSpecs, setShowAdvancedSpecs] = useState(false);
 
-  const [formData, setFormData] = useState<Omit<StorageModuleDTO, 'id' | 'totalCapacityLiters' | 'createdAt'>>({
+  const [formData, setFormData] = useState<CreateStorageModuleDTO>({
     name: '',
     type: 'ESTACIONARIA',
     cylinderCount: 12,
-    cylinderCapacityLiters: 150.0
+    cylinderCapacityLiters: 150.0,
+    workingPressureBar: 250.0,
+    testPressureBar: 375.0,
+    safetyReliefPressureBar: 273.0,
+    minOperatingTempC: -40.0,
+    maxOperatingTempC: 60.0,
+    tareWeightKg: 2940.0,
+    maxPayloadKg: 405.0,
+    grossWeightKg: 3345.0,
+    chassisType: 'Batería Estacionaria Vertical',
+    tubeMaterial: '34CrMo4',
+    tubeOuterDiameterMm: 356.0,
+    tubeLengthMm: 1890.0,
+    plugConfiguration: 'SINGLE_PLUG',
+    valveManufacturer: 'DK-Lok',
+    manufacturingStandard: 'ISO 9809-1:1999',
+    certificationAgency: 'Bureau Veritas (BV)',
+    designLifeYears: 15
   });
 
   const fetchModules = async () => {
@@ -49,6 +71,7 @@ export default function StorageModulesModule() {
       setLoading(true);
       const data = await StorageService.getModules();
       setModules(data);
+      // Los grupos permanecen cerrados por defecto al cargar
       setError(null);
     } catch (err) {
       setError('Error al conectar con el inventario de almacenamientos');
@@ -73,7 +96,7 @@ export default function StorageModulesModule() {
     [modules]
   );
 
-  // Subcategorías de Cascadas Estacionarias agrupadas por calibre de cilindro (150L, 125L, etc.)
+  // Subcategorías de Cascadas Estacionarias agrupadas por calibre de cilindro
   const stationaryGroups = useMemo(() => {
     const groups: { [key: number]: StorageModuleDTO[] } = {};
     stationaryModules.forEach(mod => {
@@ -96,7 +119,6 @@ export default function StorageModulesModule() {
     });
   }, [stationaryModules]);
 
-  // Toggle de expansión por grupo
   const toggleGroup = (groupKey: string) => {
     setExpandedGroups(prev => ({
       ...prev,
@@ -104,50 +126,80 @@ export default function StorageModulesModule() {
     }));
   };
 
-  const expandAll = () => {
-    const next: { [key: string]: boolean } = {};
-    stationaryGroups.forEach(g => { next[g.key] = true; });
-    next['transporte'] = true;
-    setExpandedGroups(next);
-  };
-
-  const collapseAll = () => {
-    setExpandedGroups({});
-  };
-
   // Manejo de formulario
   const handleOpenCreate = () => {
+    const isStat = activeTab === 'ESTACIONARIA';
     setFormData({
-      name: activeTab === 'ESTACIONARIA' ? 'Cascada Estacionaria ' : 'Tráiler Transporte ',
+      name: isStat ? 'Cascada Estacionaria ' : 'Tráiler Transporte ',
       type: activeTab,
-      cylinderCount: activeTab === 'ESTACIONARIA' ? 12 : 11,
-      cylinderCapacityLiters: activeTab === 'ESTACIONARIA' ? 150.0 : 2450.0
+      cylinderCount: isStat ? 12 : 11,
+      cylinderCapacityLiters: isStat ? 150.0 : 2450.0,
+      workingPressureBar: 250.0,
+      testPressureBar: 375.0,
+      safetyReliefPressureBar: isStat ? 273.0 : 375.0,
+      minOperatingTempC: isStat ? -40.0 : -50.0,
+      maxOperatingTempC: 60.0,
+      tareWeightKg: isStat ? 2940.0 : 32200.0,
+      maxPayloadKg: isStat ? 405.0 : 6063.0,
+      grossWeightKg: isStat ? 3345.0 : 38263.0,
+      chassisType: isStat ? 'Batería Estacionaria Vertical' : 'Triple eje / Three-axis',
+      tubeMaterial: isStat ? '34CrMo4' : '4130X',
+      tubeOuterDiameterMm: isStat ? 356.0 : 559.0,
+      tubeLengthMm: isStat ? 1890.0 : 11580.0,
+      plugConfiguration: isStat ? 'SINGLE_PLUG' : 'DOUBLE_PLUG',
+      valveManufacturer: 'DK-Lok',
+      manufacturingStandard: isStat ? 'ISO 9809-1:1999' : 'ISO 11120:2015',
+      certificationAgency: 'Bureau Veritas (BV)',
+      designLifeYears: 15
     });
     setEditingId(null);
+    setShowAdvancedSpecs(false);
     setIsFormOpen(true);
   };
 
-  const handleOpenEdit = (mod: StorageModuleDTO) => {
+  const handleOpenEdit = (mod: StorageModuleDTO, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     setFormData({
       name: mod.name,
       type: mod.type,
       cylinderCount: mod.cylinderCount,
-      cylinderCapacityLiters: mod.cylinderCapacityLiters
+      cylinderCapacityLiters: mod.cylinderCapacityLiters,
+      workingPressureBar: mod.workingPressureBar || 250.0,
+      testPressureBar: mod.testPressureBar || 375.0,
+      safetyReliefPressureBar: mod.safetyReliefPressureBar || 273.0,
+      minOperatingTempC: mod.minOperatingTempC ?? -50.0,
+      maxOperatingTempC: mod.maxOperatingTempC ?? 60.0,
+      tareWeightKg: mod.tareWeightKg,
+      maxPayloadKg: mod.maxPayloadKg,
+      grossWeightKg: mod.grossWeightKg,
+      chassisType: mod.chassisType,
+      tubeMaterial: mod.tubeMaterial,
+      tubeOuterDiameterMm: mod.tubeOuterDiameterMm,
+      tubeLengthMm: mod.tubeLengthMm,
+      plugConfiguration: mod.plugConfiguration,
+      valveManufacturer: mod.valveManufacturer,
+      manufacturingStandard: mod.manufacturingStandard,
+      certificationAgency: mod.certificationAgency,
+      designLifeYears: mod.designLifeYears || 15
     });
     setEditingId(mod.id);
     setIsFormOpen(true);
+    setSelectedModuleForDetail(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleCloseForm = () => {
     setIsFormOpen(false);
     setEditingId(null);
+    setShowAdvancedSpecs(false);
   };
 
-  const handleDeleteModule = async (id: string, name: string) => {
+  const handleDeleteModule = async (id: string, name: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     if (!window.confirm(`¿Estás seguro de que deseas eliminar el módulo "${name}"?`)) return;
     try {
       await StorageService.deleteModule(id);
+      setSelectedModuleForDetail(null);
       await fetchModules();
     } catch (err) {
       alert('No se pudo eliminar el módulo. Puede estar referenciado en operaciones.');
@@ -167,6 +219,7 @@ export default function StorageModulesModule() {
       }
       setIsFormOpen(false);
       setEditingId(null);
+      setShowAdvancedSpecs(false);
       await fetchModules();
     } catch (err: any) {
       alert(err.response?.data?.error || 'Error al guardar el módulo');
@@ -190,9 +243,12 @@ export default function StorageModulesModule() {
                 Almacenamientos
               </h1>
               <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-secondary)] font-bold">
-                {modules.length} Registros
+                {modules.length} Registros Activos
               </span>
             </div>
+            <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+              Gestione cascadas estacionarias y tráilers de transporte. Haga clic en cualquier equipo para consultar su información completa.
+            </p>
           </div>
         </div>
         
@@ -214,203 +270,268 @@ export default function StorageModulesModule() {
         </div>
       )}
 
-      {/* 2. Formulario Inline Integrado (Solo cuando se activa) */}
+      {/* 2. Formulario Inline Integrado (Esencial con Parámetros Avanzados Opcionales) */}
       {isFormOpen && (
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-6 space-y-5 animate-fade-in shadow-xs">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-5 sm:p-6 space-y-5 animate-fade-in shadow-xs">
           <div className="flex items-center justify-between pb-4 border-b border-[var(--color-border)]">
-            <div>
-              <h3 className="text-base font-sans font-semibold text-[var(--color-text-primary)] tracking-tight">
-                {editingId ? 'Editar Almacenamiento' : 'Registrar Nuevo Almacenamiento'}
-              </h3>
-            </div>
-            <button 
-              onClick={handleCloseForm} 
+            <span className="text-xs font-bold text-[var(--color-text-primary)] uppercase tracking-wider">
+              {editingId ? 'Editar Almacenamiento' : 'Registrar Nuevo Equipo de Almacenamiento'}
+            </span>
+            <button
+              onClick={handleCloseForm}
               className="p-1 rounded text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] cursor-pointer"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider mb-1.5">
-                Nombre del Módulo
+          {/* Campos Principales y Esenciales */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs font-sans">
+            
+            {/* Nombre */}
+            <div className="space-y-1.5 sm:col-span-2">
+              <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
+                Identificación / Nombre del Equipo
               </label>
               <input
                 type="text"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full h-9 px-3 text-xs border border-[var(--color-border)] bg-[var(--color-canvas)] font-mono text-[var(--color-text-primary)] rounded focus:outline-none focus:border-[var(--color-text-primary)]"
-                placeholder="Ej: Cascada 12x150L"
+                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Ej: Cascada Estacionaria 16x150L"
+                className="w-full px-3 py-2 rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-semibold focus:outline-none focus:border-[var(--color-accent)]"
               />
             </div>
 
-            <div>
-              <label className="block text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider mb-1.5">
-                Categoría
+            {/* Tipo */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
+                Tipo
               </label>
               <select
                 value={formData.type}
-                onChange={(e) => {
-                  const newType = e.target.value as 'ESTACIONARIA' | 'TRANSPORTE';
-                  setFormData({
-                    ...formData,
+                onChange={e => {
+                  const newType = e.target.value as MainTab;
+                  setFormData({ 
+                    ...formData, 
                     type: newType,
-                    cylinderCapacityLiters: newType === 'ESTACIONARIA' ? 150 : 2450,
-                    cylinderCount: newType === 'ESTACIONARIA' ? 12 : 11
+                    cylinderCapacityLiters: newType === 'ESTACIONARIA' ? 150.0 : 2450.0
                   });
                 }}
-                className="w-full h-9 px-3 text-xs border border-[var(--color-border)] bg-[var(--color-canvas)] font-mono text-[var(--color-text-primary)] rounded focus:outline-none focus:border-[var(--color-text-primary)] cursor-pointer"
+                className="w-full px-3 py-2 rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-semibold focus:outline-none focus:border-[var(--color-accent)] cursor-pointer"
               >
-                <option value="ESTACIONARIA">Cascada Estacionaria (Planta)</option>
-                <option value="TRANSPORTE">Módulo de Transporte (Carretera)</option>
+                <option value="ESTACIONARIA">Cascada Estacionaria</option>
+                <option value="TRANSPORTE">Módulo de Transporte</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider mb-1.5">
-                N° Cilindros / Tubos
+            {/* Número de Cilindros */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
+                Cantidad de Tubos
               </label>
               <input
                 type="number"
                 min="1"
-                step="1"
                 value={formData.cylinderCount}
-                onFocus={(e) => e.target.select()}
-                onChange={(e) => {
-                  let val = e.target.value;
-                  if (/^0\d+/.test(val)) val = val.replace(/^0+/, '');
-                  setFormData({ ...formData, cylinderCount: val === '' ? 1 : Math.max(1, Number(val)) });
-                }}
-                className="w-full h-9 px-3 text-xs border border-[var(--color-border)] bg-[var(--color-canvas)] font-mono text-[var(--color-text-primary)] rounded focus:outline-none focus:border-[var(--color-text-primary)]"
+                onChange={e => setFormData({ ...formData, cylinderCount: parseInt(e.target.value) || 1 })}
+                className="w-full px-3 py-2 rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-mono font-semibold focus:outline-none focus:border-[var(--color-accent)]"
               />
             </div>
 
-            <div>
-              <label className="block text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider mb-1.5">
-                Capacidad por Cilindro (Litros)
+            {/* Capacidad por Cilindro */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
+                Litros por Tubo
               </label>
               <input
                 type="number"
-                min="1"
                 step="0.1"
                 value={formData.cylinderCapacityLiters}
-                onFocus={(e) => e.target.select()}
-                onChange={(e) => {
-                  let val = e.target.value;
-                  if (/^0\d+/.test(val)) val = val.replace(/^0+/, '');
-                  setFormData({ ...formData, cylinderCapacityLiters: val === '' ? 1 : Math.max(0.1, Number(val)) });
-                }}
-                className="w-full h-9 px-3 text-xs border border-[var(--color-border)] bg-[var(--color-canvas)] font-mono text-[var(--color-text-primary)] rounded focus:outline-none focus:border-[var(--color-text-primary)]"
+                onChange={e => setFormData({ ...formData, cylinderCapacityLiters: parseFloat(e.target.value) || 0 })}
+                className="w-full px-3 py-2 rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-mono font-semibold focus:outline-none focus:border-[var(--color-accent)]"
               />
             </div>
+
           </div>
 
-          <div className="flex justify-end gap-2.5 pt-3 border-t border-[var(--color-border)]">
+          {/* Toggle para Especificaciones Técnicas Avanzadas */}
+          <div className="pt-2 border-t border-[var(--color-border)]">
             <button
-              onClick={handleCloseForm}
-              className="px-4 py-1.5 text-xs font-bold border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] rounded cursor-pointer"
+              type="button"
+              onClick={() => setShowAdvancedSpecs(!showAdvancedSpecs)}
+              className="text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] flex items-center gap-1.5 cursor-pointer select-none"
             >
-              Cancelar
+              <Sliders className="w-3.5 h-3.5 text-[var(--color-accent)]" />
+              <span>{showAdvancedSpecs ? 'Ocultar Parámetros Avanzados' : 'Especificaciones Técnicas Avanzadas (Opcional)'}</span>
             </button>
-            <button
-              onClick={handleSaveForm}
-              className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] rounded cursor-pointer transition-colors shadow-xs"
-            >
-              <Check className="w-4 h-4" />
-              Guardar Módulo
-            </button>
+
+            {showAdvancedSpecs && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs font-sans mt-3 p-4 rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)]">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
+                    Presión Trabajo (bar)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.workingPressureBar || 250}
+                    onChange={e => setFormData({ ...formData, workingPressureBar: parseFloat(e.target.value) || 250 })}
+                    className="w-full px-3 py-2 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-mono font-semibold focus:outline-none focus:border-[var(--color-accent)]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
+                    Presión Prueba (bar)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.testPressureBar || 375}
+                    onChange={e => setFormData({ ...formData, testPressureBar: parseFloat(e.target.value) || 375 })}
+                    className="w-full px-3 py-2 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-mono font-semibold focus:outline-none focus:border-[var(--color-accent)]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
+                    Tara Vacío (kg)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.tareWeightKg ?? ''}
+                    onChange={e => setFormData({ ...formData, tareWeightKg: parseFloat(e.target.value) || null })}
+                    placeholder="Ej: 32200"
+                    className="w-full px-3 py-2 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-mono font-semibold focus:outline-none focus:border-[var(--color-accent)]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
+                    Carga Máx. GNV (kg)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.maxPayloadKg ?? ''}
+                    onChange={e => setFormData({ ...formData, maxPayloadKg: parseFloat(e.target.value) || null })}
+                    placeholder="Ej: 6063"
+                    className="w-full px-3 py-2 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-mono font-semibold focus:outline-none focus:border-[var(--color-accent)]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
+                    Material del Tubo
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.tubeMaterial ?? ''}
+                    onChange={e => setFormData({ ...formData, tubeMaterial: e.target.value })}
+                    placeholder="Ej: 4130X o 34CrMo4"
+                    className="w-full px-3 py-2 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-semibold focus:outline-none focus:border-[var(--color-accent)]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
+                    Norma Técnica
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.manufacturingStandard ?? ''}
+                    onChange={e => setFormData({ ...formData, manufacturingStandard: e.target.value })}
+                    placeholder="Ej: ISO 11120:2015"
+                    className="w-full px-3 py-2 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-semibold focus:outline-none focus:border-[var(--color-accent)]"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Resumen Calculado */}
+          <div className="p-3 bg-[var(--color-canvas)] border border-[var(--color-border)] rounded-md flex flex-wrap items-center justify-between text-xs font-mono">
+            <span className="text-[var(--color-text-secondary)]">
+              Capacidad Estimada: <strong className="text-[var(--color-text-primary)]">{calculatedTotalLiters.toLocaleString()} Litros</strong> ({(calculatedTotalLiters / 1000).toFixed(2)} m³)
+            </span>
+            <div className="flex items-center gap-2 mt-2 sm:mt-0">
+              <button
+                type="button"
+                onClick={handleCloseForm}
+                className="px-3 py-1.5 rounded border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveForm}
+                className="px-4 py-1.5 rounded bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-semibold cursor-pointer shadow-xs"
+              >
+                {editingId ? 'Actualizar Ficha' : 'Guardar Almacenamiento'}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* 3. Barra de Control Widescreen: Pestañas + Buscador + Control de Expansión */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--color-border)] pb-3">
+      {/* 3. Selector de Categoría Principal y Buscador */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2">
         
-        {/* Pestañas de Categoría Principal */}
-        <div className="flex items-center gap-2">
+        {/* Pestañas Principales con Acento Azul Gas */}
+        <div className="inline-flex rounded-lg border border-[var(--color-border)] bg-[var(--color-canvas)] p-1 text-xs font-semibold">
           <button
-            onClick={() => {
-              setActiveTab('ESTACIONARIA');
-              setExpandedGroups({});
-            }}
-            className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer border ${
+            type="button"
+            onClick={() => setActiveTab('ESTACIONARIA')}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
               activeTab === 'ESTACIONARIA'
-                ? 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-accent)] font-bold shadow-2xs'
-                : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
+                ? 'bg-white dark:bg-[#18181b] text-[var(--color-accent)] shadow-xs font-bold'
+                : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
             }`}
           >
-            <Building2 className="w-3.5 h-3.5" />
+            <Building2 className="w-4 h-4 stroke-[2px]" />
             <span>Cascadas Estacionarias</span>
-            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-secondary)]">
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-[var(--color-surface)] border border-[var(--color-border)]">
               {stationaryModules.length}
             </span>
           </button>
 
           <button
-            onClick={() => {
-              setActiveTab('TRANSPORTE');
-              setExpandedGroups({});
-            }}
-            className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer border ${
+            type="button"
+            onClick={() => setActiveTab('TRANSPORTE')}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
               activeTab === 'TRANSPORTE'
-                ? 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-accent)] font-bold shadow-2xs'
-                : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
+                ? 'bg-white dark:bg-[#18181b] text-[var(--color-accent)] shadow-xs font-bold'
+                : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
             }`}
           >
-            <Truck className="w-3.5 h-3.5" />
+            <Truck className="w-4 h-4 stroke-[2px]" />
             <span>Módulos de Transporte</span>
-            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-secondary)]">
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-[var(--color-surface)] border border-[var(--color-border)]">
               {transportModules.length}
             </span>
           </button>
         </div>
 
-        {/* Acciones de Expansión y Buscador */}
-        <div className="flex items-center gap-3">
-          
-          {/* Botones de Colapsar / Expandir Todos */}
-          <div className="hidden md:flex items-center gap-1.5 text-xs font-mono text-[var(--color-text-secondary)]">
-            <button
-              onClick={expandAll}
-              className="px-2 py-1 rounded hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
+        {/* Buscador Rápido */}
+        <div className="relative w-full sm:w-72">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Buscar por nombre o tubos..."
+            className="w-full pl-9 pr-8 py-2 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-border)] text-xs text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:border-[var(--color-accent)]"
+          />
+          {searchQuery && (
+            <button 
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
             >
-              Expandir todo
+              <X className="w-3.5 h-3.5" />
             </button>
-            <span>·</span>
-            <button
-              onClick={collapseAll}
-              className="px-2 py-1 rounded hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
-            >
-              Colapsar todo
-            </button>
-          </div>
-
-          {/* Buscador Rápido */}
-          <div className="relative w-full sm:w-60">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar por nombre o tubos..."
-              className="w-full h-8 pl-8 pr-3 text-xs border border-[var(--color-border)] bg-[var(--color-canvas)] rounded font-mono text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-text-primary)]"
-            />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            )}
-          </div>
-
+          )}
         </div>
 
       </div>
 
-      {/* 4. Tablas Expandibles sin Columnas Redundantes */}
+      {/* 4. Tablas Esenciales y Limpias (Clic en fila abre Ficha Técnica Completa) */}
       <div className="space-y-4">
         {loading ? (
           <div className="py-24 text-center text-[var(--color-text-secondary)] text-xs font-mono animate-pulse border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)]">
@@ -418,12 +539,11 @@ export default function StorageModulesModule() {
           </div>
         ) : (
           <>
-            {/* VISTA A: CASCADAS ESTACIONARIAS (Subcategorías Expandibles) */}
+            {/* VISTA A: CASCADAS ESTACIONARIAS */}
             {activeTab === 'ESTACIONARIA' && (
               stationaryGroups.map(group => {
                 const isExpanded = !!expandedGroups[group.key];
                 
-                // Filtrado por buscador
                 const filteredModules = group.modules.filter(m => {
                   if (!searchQuery.trim()) return true;
                   const q = searchQuery.toLowerCase();
@@ -437,29 +557,28 @@ export default function StorageModulesModule() {
                     key={group.key}
                     className="border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] overflow-hidden shadow-2xs transition-all"
                   >
-                    {/* Barra de Cabecera de Subcategoría Expandible */}
+                    {/* Barra de Cabecera */}
                     <button
                       type="button"
                       onClick={() => toggleGroup(group.key)}
-                      className="w-full flex items-center justify-between px-5 py-3.5 bg-[var(--color-canvas)] hover:bg-[var(--color-surface-hover)] border-b border-[var(--color-border)] transition-colors text-left cursor-pointer select-none"
+                      className={`w-full flex items-center justify-between px-4 sm:px-5 py-3.5 bg-[var(--color-canvas)] hover:bg-[var(--color-surface-hover)] ${isExpanded ? 'border-b border-[var(--color-border)]' : ''} transition-colors text-left cursor-pointer select-none`}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
                         <span className="text-[var(--color-text-secondary)]">
                           {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                         </span>
-                        <div className="flex items-center gap-2">
-                          <Layers className="w-4 h-4 text-[var(--color-accent)]" />
-                          <h3 className="font-sans font-semibold text-sm text-[var(--color-text-primary)]">
+                        <div className="flex items-center gap-2 min-w-0 truncate">
+                          <Layers className="w-4 h-4 text-[var(--color-accent)] shrink-0" />
+                          <h3 className="font-sans font-semibold text-sm text-[var(--color-text-primary)] truncate">
                             {group.label}
                           </h3>
                         </div>
-                        {/* Especificación técnica de la subcategoría (elimina redundancia en cada fila) */}
-                        <span className="hidden sm:inline-block text-[11px] font-mono px-2 py-0.5 rounded bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent-border)] font-medium">
+                        <span className="hidden sm:inline-block text-[11px] font-mono px-2 py-0.5 rounded bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent-border)] font-medium shrink-0">
                           {group.unitCapText}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-4 font-mono text-xs text-[var(--color-text-secondary)]">
+                      <div className="flex items-center gap-4 font-mono text-xs text-[var(--color-text-secondary)] shrink-0">
                         <span>{filteredModules.length} equipos</span>
                         <span className="hidden md:inline font-bold text-[var(--color-text-primary)]">
                           {group.totalCapacityLiters.toLocaleString()} L
@@ -467,7 +586,7 @@ export default function StorageModulesModule() {
                       </div>
                     </button>
 
-                    {/* Tabla de Módulos (Solo visible cuando está expandido) */}
+                    {/* Tabla Esencial: Clic en cualquier fila abre la información completa */}
                     {isExpanded && (
                       <div className="w-full overflow-x-auto">
                         <table className="w-full text-left border-collapse text-xs font-sans">
@@ -486,11 +605,15 @@ export default function StorageModulesModule() {
                               return (
                                 <tr 
                                   key={mod.id} 
-                                  className="hover:bg-[var(--color-surface-hover)] transition-colors"
+                                  onClick={() => setSelectedModuleForDetail(mod)}
+                                  className="hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer group"
+                                  title="Haga clic para ver la información técnica completa"
                                 >
-                                  {/* Nombre directo sin prefijos redundantes */}
-                                  <td className="py-3 px-5 font-sans font-semibold text-sm text-[var(--color-text-primary)]">
-                                    {mod.name}
+                                  {/* Nombre con feedback visual de enlace al modal */}
+                                  <td className="py-3 px-5 font-sans font-semibold text-sm text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors">
+                                    <div className="flex items-center gap-2">
+                                      <span>{mod.name}</span>
+                                    </div>
                                   </td>
 
                                   {/* Conteo de tubos */}
@@ -509,17 +632,24 @@ export default function StorageModulesModule() {
                                   </td>
 
                                   {/* Acciones */}
-                                  <td className="py-3 px-5 text-center">
+                                  <td className="py-3 px-5 text-center" onClick={e => e.stopPropagation()}>
                                     <div className="flex items-center justify-center gap-1.5">
                                       <button
-                                        onClick={() => handleOpenEdit(mod)}
+                                        onClick={() => setSelectedModuleForDetail(mod)}
+                                        className="p-1.5 rounded text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] hover:bg-[var(--color-canvas)] transition-colors cursor-pointer"
+                                        title="Ver Información Completa"
+                                      >
+                                        <Eye className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button
+                                        onClick={(e) => handleOpenEdit(mod, e)}
                                         className="p-1.5 rounded text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-canvas)] transition-colors cursor-pointer"
                                         title="Editar"
                                       >
                                         <Edit2 className="w-3.5 h-3.5" />
                                       </button>
                                       <button
-                                        onClick={() => handleDeleteModule(mod.id, mod.name)}
+                                        onClick={(e) => handleDeleteModule(mod.id, mod.name, e)}
                                         className="p-1.5 rounded text-[var(--color-alert-red-text)] hover:bg-[var(--color-alert-red-bg)] transition-colors cursor-pointer"
                                         title="Eliminar"
                                       >
@@ -539,31 +669,31 @@ export default function StorageModulesModule() {
               })
             )}
 
-            {/* VISTA B: MÓDULOS DE TRANSPORTE (Tráilers Móviles Expandibles) */}
+            {/* VISTA B: MÓDULOS DE TRANSPORTE */}
             {activeTab === 'TRANSPORTE' && (
               <div className="border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] overflow-hidden shadow-2xs">
-                {/* Cabecera Expandible de Transporte */}
+                {/* Cabecera de Transporte */}
                 <button
                   type="button"
                   onClick={() => toggleGroup('transporte')}
-                  className="w-full flex items-center justify-between px-5 py-3.5 bg-[var(--color-canvas)] hover:bg-[var(--color-surface-hover)] border-b border-[var(--color-border)] transition-colors text-left cursor-pointer select-none"
+                  className={`w-full flex items-center justify-between px-4 sm:px-5 py-3.5 bg-[var(--color-canvas)] hover:bg-[var(--color-surface-hover)] ${expandedGroups['transporte'] ? 'border-b border-[var(--color-border)]' : ''} transition-colors text-left cursor-pointer select-none`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <span className="text-[var(--color-text-secondary)]">
                       {expandedGroups['transporte'] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                     </span>
-                    <div className="flex items-center gap-2">
-                      <Truck className="w-4 h-4 text-[var(--color-accent)]" />
-                      <h3 className="font-sans font-semibold text-sm text-[var(--color-text-primary)]">
+                    <div className="flex items-center gap-2 min-w-0 truncate">
+                      <Truck className="w-4 h-4 text-[var(--color-accent)] shrink-0" />
+                      <h3 className="font-sans font-semibold text-sm text-[var(--color-text-primary)] truncate">
                         Semirremolques y Tráilers de Transporte Carretero
                       </h3>
                     </div>
-                    <span className="hidden sm:inline-block text-[11px] font-mono px-2 py-0.5 rounded bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent-border)] font-medium">
+                    <span className="hidden sm:inline-block text-[11px] font-mono px-2 py-0.5 rounded bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent-border)] font-medium shrink-0">
                       Tubos Jumbo 40 ft
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-4 font-mono text-xs text-[var(--color-text-secondary)]">
+                  <div className="flex items-center gap-4 font-mono text-xs text-[var(--color-text-secondary)] shrink-0">
                     <span>{transportModules.length} tráilers</span>
                     <span className="hidden md:inline font-bold text-[var(--color-text-primary)]">
                       {transportModules.reduce((acc, m) => acc + m.totalCapacityLiters, 0).toLocaleString()} L
@@ -571,7 +701,7 @@ export default function StorageModulesModule() {
                   </div>
                 </button>
 
-                {/* Tabla de Tráilers (Solo visible cuando el usuario le da clic para abrirla) */}
+                {/* Tabla Esencial: Clic en fila abre la ficha técnica completa */}
                 {!!expandedGroups['transporte'] && (
                   <div className="w-full overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs font-sans">
@@ -596,9 +726,11 @@ export default function StorageModulesModule() {
                             return (
                               <tr 
                                 key={mod.id} 
-                                className="hover:bg-[var(--color-surface-hover)] transition-colors"
+                                onClick={() => setSelectedModuleForDetail(mod)}
+                                className="hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer group"
+                                title="Haga clic para ver la información técnica completa"
                               >
-                                <td className="py-3 px-5 font-sans font-semibold text-sm text-[var(--color-text-primary)]">
+                                <td className="py-3 px-5 font-sans font-semibold text-sm text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors">
                                   {mod.name.replace(/\s*\(\d+(\.\d+)?\s*m³\)/i, '').trim()}
                                 </td>
 
@@ -614,17 +746,24 @@ export default function StorageModulesModule() {
                                   {volumeM3} m³
                                 </td>
 
-                                <td className="py-3 px-5 text-center">
+                                <td className="py-3 px-5 text-center" onClick={e => e.stopPropagation()}>
                                   <div className="flex items-center justify-center gap-1.5">
                                     <button
-                                      onClick={() => handleOpenEdit(mod)}
+                                      onClick={() => setSelectedModuleForDetail(mod)}
+                                      className="p-1.5 rounded text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] hover:bg-[var(--color-canvas)] transition-colors cursor-pointer"
+                                      title="Ver Información Completa"
+                                    >
+                                      <Eye className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      onClick={(e) => handleOpenEdit(mod, e)}
                                       className="p-1.5 rounded text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-canvas)] transition-colors cursor-pointer"
                                       title="Editar"
                                     >
                                       <Edit2 className="w-3.5 h-3.5" />
                                     </button>
                                     <button
-                                      onClick={() => handleDeleteModule(mod.id, mod.name)}
+                                      onClick={(e) => handleDeleteModule(mod.id, mod.name, e)}
                                       className="p-1.5 rounded text-[var(--color-alert-red-text)] hover:bg-[var(--color-alert-red-bg)] transition-colors cursor-pointer"
                                       title="Eliminar"
                                     >
@@ -644,6 +783,14 @@ export default function StorageModulesModule() {
           </>
         )}
       </div>
+
+      {/* 5. Modal de Ficha Técnica Completa (Al hacer clic en cualquier fila o botón) */}
+      <StorageDetailModal
+        module={selectedModuleForDetail}
+        onClose={() => setSelectedModuleForDetail(null)}
+        onEdit={(m) => handleOpenEdit(m)}
+        onDelete={(id, name) => handleDeleteModule(id, name)}
+      />
 
     </div>
   );

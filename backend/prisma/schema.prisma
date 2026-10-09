@@ -117,15 +117,41 @@ model GasProfile {
   @@map("gas_profiles")
 }
 
-// Módulo de Almacenamientos
+// Módulo de Almacenamientos (Ficha Técnica Industrial)
 model StorageModule {
   id                     String   @id @default(uuid())
   name                   String   @unique
-  type                   String // "ESTACIONARIA" o "TRANSPORTE"
+  type                   String   // "ESTACIONARIA" o "TRANSPORTE"
   cylinderCount          Int
   cylinderCapacityLiters Float
   totalCapacityLiters    Float
-  createdAt              DateTime @default(now())
+
+  // Parámetros Operativos y de Seguridad
+  workingPressureBar      Float    @default(250.0)
+  testPressureBar         Float    @default(375.0)
+  safetyReliefPressureBar Float    @default(273.0)
+  minOperatingTempC       Float    @default(-50.0)
+  maxOperatingTempC       Float    @default(60.0)
+
+  // Pesaje y Logística Vial
+  tareWeightKg            Float?
+  maxPayloadKg            Float?
+  grossWeightKg           Float?
+  chassisType             String?  // Ej: "Triple eje / Three-axis", "Estacionario"
+
+  // Especificaciones Físicas y del Tubo
+  tubeMaterial            String?  // Ej: "4130X", "34CrMo4"
+  tubeOuterDiameterMm     Float?   // Ej: 559.0 (Jumbo), 356.0
+  tubeLengthMm            Float?   // Ej: 11580.0, 10975.0, 1890.0
+  plugConfiguration       String?  // "SINGLE_PLUG", "DOUBLE_PLUG"
+  valveManufacturer       String?  // "DK-Lok", "Parker", "Swagelok"
+
+  // Trazabilidad Normativa y Vida Útil
+  manufacturingStandard   String?  // "ISO 11120:2015", "ISO 9809-1:1999"
+  certificationAgency     String?  // "Bureau Veritas (BV)", "ISO, CE"
+  designLifeYears         Int?     @default(15)
+
+  createdAt               DateTime @default(now())
 
   @@map("storage_modules")
 }

@@ -24,6 +24,7 @@
 - **Sin Numeraciones Artificiales**: No colocar *"1."*, *"2."* en títulos de tarjetas o paneles ejecutivos.
   - ❌ *"1. Condiciones de Despacho"*, *"2. Balance de Entrega y Aforo"* ➔ ✅ **`Condiciones de Despacho`**, **`Balance de Entrega y Aforo`**
 - **Limpieza de "Definiciones" y Glosarios**: No colocar tarjetas explicativas obvias (*"¿Qué es compresibilidad?"*, *"Operación Nominal"*, etc.). La herramienta es de uso profesional diario por operadores que ya conocen el negocio y requieren cero ruido visual.
+- **Prohibición de Indicadores y Badges Decorativos**: Queda terminantemente prohibido incluir insignias, estados parpadeantes simulados (*"Telemetría en Vivo"*, *"Modo Seguro"*, etc.) o elementos meramente ornamentales que no aporten datos funcionales reales al operador.
 
 ---
 
@@ -39,6 +40,7 @@
   - ✅ Todas las pestañas activas, iconos de categoría (`Truck`, `Building2`, `Layers`), bordes de foco y badges identificadores usan exclusivamente el **Azul Gas**.
 - **Icono de la Flama (`Flame`)**: Siempre estilizado en el azul gas corporativo (`text-[var(--color-accent)]`).
 - **Semáforo Operativo Restringido**: El verde (`var(--color-alert-green-*)`), amarillo (`var(--color-alert-yellow-*)`) y rojo (`var(--color-alert-red-*)`) se reservan **única y exclusivamente** para estados semafóricos de riesgo físico o contractual (merma > 2%, presión baja < 230 bar, o éxito de guardado).
+- **Inicialización Obligatoria en Modo Claro**: El sistema por defecto **SIEMPRE debe iniciar en modo claro (Light Mode)**. El modo oscuro nunca debe auto-iniciarse por defecto ni por detección de sistema operativo; únicamente se activa cuando el operador lo solicita explícitamente mediante el interruptor de tema.
 
 ---
 
@@ -119,5 +121,17 @@
   - Las listas y cada uno de los botones/filas de opciones deben declarar su propio color de fondo sólido explícito para impedir que hereden transparencias del árbol DOM.
 - **Prohibición de Animaciones de Opacidad en Dropdowns**:
   - Queda prohibido aplicar `animate-fade-in` u otras animaciones con transición de `opacity: 0` a `1` en menús desplegables o selectores de formulario. Los dropdowns deben abrirse de manera inmediata y completamente opacos.
+
+---
+
+## 8. Protocolo de Versionamiento y Badges de Release (Estricto)
+- **Prohibición de Etiquetas Comerciales "PRO"**:
+  - Queda **terminantemente prohibido** usar la etiqueta `"PRO"`, `"v2.0 PRO"` o cualquier sufijo comercial similar en la interfaz de usuario, header superior o badges de versión.
+- **Numeración Beta Pre-Lanzamiento**:
+  - Antes del lanzamiento oficial a producción, se debe emplear **estricta y obligatoriamente** la nomenclatura beta con numeración decimal incremental (ejemplo: **`beta 0.2`**).
+- **Reserva Exclusiva de la Versión 1.0**:
+  - La numeración **`1.0`** (o `v1.0`) está **reservada exclusivamente para el lanzamiento oficial a producción**.
+  - Queda prohibido saltar a `2.0` o asignar versiones mayores antes del despliegue oficial auditado 1.0.
+
 
 

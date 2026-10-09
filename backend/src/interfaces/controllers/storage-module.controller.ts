@@ -9,6 +9,27 @@ const storageModuleSchema = z.object({
   type: z.enum(['ESTACIONARIA', 'TRANSPORTE']),
   cylinderCount: z.number().int().positive(),
   cylinderCapacityLiters: z.number().positive(),
+  // Parámetros Operativos
+  workingPressureBar: z.number().positive().default(250.0),
+  testPressureBar: z.number().positive().default(375.0),
+  safetyReliefPressureBar: z.number().positive().default(273.0),
+  minOperatingTempC: z.number().default(-50.0),
+  maxOperatingTempC: z.number().default(60.0),
+  // Pesaje y Logística
+  tareWeightKg: z.number().positive().optional().nullable(),
+  maxPayloadKg: z.number().positive().optional().nullable(),
+  grossWeightKg: z.number().positive().optional().nullable(),
+  chassisType: z.string().optional().nullable(),
+  // Especificaciones Mecánicas
+  tubeMaterial: z.string().optional().nullable(),
+  tubeOuterDiameterMm: z.number().positive().optional().nullable(),
+  tubeLengthMm: z.number().positive().optional().nullable(),
+  plugConfiguration: z.string().optional().nullable(),
+  valveManufacturer: z.string().optional().nullable(),
+  // Normativa
+  manufacturingStandard: z.string().optional().nullable(),
+  certificationAgency: z.string().optional().nullable(),
+  designLifeYears: z.number().int().positive().optional().default(15),
 });
 
 export const storageModuleController = {

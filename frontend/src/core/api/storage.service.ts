@@ -7,6 +7,27 @@ export interface StorageModuleDTO {
   cylinderCount: number;
   cylinderCapacityLiters: number;
   totalCapacityLiters: number;
+  // Parámetros Operativos y Seguridad
+  workingPressureBar: number;
+  testPressureBar: number;
+  safetyReliefPressureBar: number;
+  minOperatingTempC: number;
+  maxOperatingTempC: number;
+  // Pesaje y Logística
+  tareWeightKg?: number | null;
+  maxPayloadKg?: number | null;
+  grossWeightKg?: number | null;
+  chassisType?: string | null;
+  // Mecánica y Tubo
+  tubeMaterial?: string | null;
+  tubeOuterDiameterMm?: number | null;
+  tubeLengthMm?: number | null;
+  plugConfiguration?: string | null;
+  valveManufacturer?: string | null;
+  // Normativa
+  manufacturingStandard?: string | null;
+  certificationAgency?: string | null;
+  designLifeYears?: number | null;
   createdAt: string;
 }
 
@@ -15,6 +36,23 @@ export interface CreateStorageModuleDTO {
   type: 'ESTACIONARIA' | 'TRANSPORTE';
   cylinderCount: number;
   cylinderCapacityLiters: number;
+  workingPressureBar?: number;
+  testPressureBar?: number;
+  safetyReliefPressureBar?: number;
+  minOperatingTempC?: number;
+  maxOperatingTempC?: number;
+  tareWeightKg?: number | null;
+  maxPayloadKg?: number | null;
+  grossWeightKg?: number | null;
+  chassisType?: string | null;
+  tubeMaterial?: string | null;
+  tubeOuterDiameterMm?: number | null;
+  tubeLengthMm?: number | null;
+  plugConfiguration?: string | null;
+  valveManufacturer?: string | null;
+  manufacturingStandard?: string | null;
+  certificationAgency?: string | null;
+  designLifeYears?: number | null;
 }
 
 export const StorageService = {

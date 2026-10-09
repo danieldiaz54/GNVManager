@@ -67,6 +67,8 @@ Cada subagente tiene un alcance estricto y un conjunto de reglas inquebrantables
   - **Tipografía**: Inter con cifras tabulares (`tnum`) para lectura extendida; JetBrains Mono para lecturas métricas. Cero serifas.
   - **Diseño Responsive de Grado Industrial**: Mobile-first a monitores industriales. Cero anchos fijos sin `max-w-full`. Tablas envueltas obligatoriamente en `overflow-x-auto`. Botones táctiles extendidos en móvil (`w-full sm:w-auto`). Modales acotados a `max-h-[90vh]` con scroll vertical interno.
   - **Superficies 100% Sólidas (Cero Transparencias)**: Prohibición absoluta de transparencias, opacidades parciales (`/40`, `/60`, `/80`), `backdrop-blur` o animaciones de opacidad en dropdowns. Todos los menús desplegables y sus filas deben poseer fondo sólido opaco (`bg-white dark:bg-[#18181b]`).
+  - **Protocolo de Versionamiento Beta**: Prohibición de la etiqueta `"PRO"`. Se emplean numeraciones beta (`beta 0.2`, etc.) durante la etapa de pruebas. La versión `1.0` queda reservada exclusivamente para el lanzamiento oficial a producción.
+  - **Inicialización en Modo Claro**: El sistema arranca obligatoriamente en modo claro por defecto. El modo oscuro nunca debe auto-iniciarse; es estrictamente opt-in manual por el operador.
 
 ### 🧪 5. `qa-verifier` (Ingeniero de Calidad y TDD)
 - **Alcance**: `backend/tests/`, `frontend/tests/`, scripts de verificación

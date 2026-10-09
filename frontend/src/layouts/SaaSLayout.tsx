@@ -32,8 +32,8 @@ export default function SaaSLayout() {
               <span className="text-sm sm:text-base font-sans font-bold tracking-tight text-[var(--color-text-primary)]">
                 GNV Manager
               </span>
-              <span className="inline-block max-md:hidden text-[9px] font-mono tracking-widest uppercase px-1.5 py-0.5 rounded-xs bg-[var(--color-canvas)] text-[var(--color-text-secondary)] border border-[var(--color-border)]">
-                v2.0 PRO
+              <span className="inline-block max-md:hidden text-[9px] font-mono tracking-wider px-1.5 py-0.5 rounded-xs bg-[var(--color-canvas)] text-[var(--color-text-secondary)] border border-[var(--color-border)]">
+                beta 0.2
               </span>
             </div>
             <span className="text-[9px] sm:text-[10px] font-mono tracking-wider text-[var(--color-text-secondary)] uppercase">
@@ -68,15 +68,6 @@ export default function SaaSLayout() {
 
         {/* Derecha: Acciones, Perfil y Menú Móvil */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          
-          {/* Badge de Telemetría Térmica En Vivo */}
-          <div className="flex max-lg:hidden items-center gap-2 px-2.5 py-1 rounded-full bg-[var(--color-canvas)] border border-[var(--color-border)] text-[11px] font-mono">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="text-[var(--color-text-secondary)] font-medium">Telemetría en Vivo</span>
-          </div>
 
           {/* Toggle Modo Oscuro / Claro */}
           <button

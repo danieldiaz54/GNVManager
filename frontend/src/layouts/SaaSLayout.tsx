@@ -32,7 +32,7 @@ export default function SaaSLayout() {
               <span className="text-sm sm:text-base font-sans font-bold tracking-tight text-[var(--color-text-primary)]">
                 GNV Manager
               </span>
-              <span className="hidden md:inline-block text-[9px] font-mono tracking-widest uppercase px-1.5 py-0.5 rounded-xs bg-[var(--color-canvas)] text-[var(--color-text-secondary)] border border-[var(--color-border)]">
+              <span className="inline-block max-md:hidden text-[9px] font-mono tracking-widest uppercase px-1.5 py-0.5 rounded-xs bg-[var(--color-canvas)] text-[var(--color-text-secondary)] border border-[var(--color-border)]">
                 v2.0 PRO
               </span>
             </div>
@@ -42,8 +42,8 @@ export default function SaaSLayout() {
           </div>
         </Link>
 
-        {/* Centro: Navegación Principal Horizontal (Visible en md+) */}
-        <nav className="hidden md:flex items-center gap-1 overflow-x-auto py-1">
+        {/* Centro: Navegación Principal Horizontal (Visible en desktop) */}
+        <nav className="flex max-md:hidden items-center gap-1 py-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname.startsWith(item.path);
@@ -70,7 +70,7 @@ export default function SaaSLayout() {
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           
           {/* Badge de Telemetría Térmica En Vivo */}
-          <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-full bg-[var(--color-canvas)] border border-[var(--color-border)] text-[11px] font-mono">
+          <div className="flex max-lg:hidden items-center gap-2 px-2.5 py-1 rounded-full bg-[var(--color-canvas)] border border-[var(--color-border)] text-[11px] font-mono">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -91,14 +91,14 @@ export default function SaaSLayout() {
             )}
           </button>
 
-          <div className="h-4 w-px bg-[var(--color-border)] hidden sm:block" />
+          <div className="h-4 w-px bg-[var(--color-border)] max-sm:hidden" />
 
           {/* Tarjeta de Usuario Compacta */}
           <div className="flex items-center gap-2 pl-0.5 sm:pl-1">
             <div className="w-7 h-7 shrink-0 rounded-full bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)] flex items-center justify-center font-bold text-xs uppercase">
               {(user?.fullName || user?.username || 'U').charAt(0)}
             </div>
-            <div className="hidden sm:flex flex-col text-left max-w-[120px] lg:max-w-[180px]">
+            <div className="flex max-sm:hidden flex-col text-left max-w-[120px] lg:max-w-[180px]">
               <p className="text-xs font-semibold leading-tight text-[var(--color-text-primary)] truncate" title={user?.fullName || user?.username}>
                 {user?.fullName || user?.username}
               </p>
@@ -108,7 +108,7 @@ export default function SaaSLayout() {
             </div>
             <button
               onClick={logout}
-              className="hidden sm:block p-1.5 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer"
+              className="max-sm:hidden p-1.5 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer"
               title="Cerrar Sesión"
             >
               <LogOut className="w-4 h-4 stroke-[1.8px]" />

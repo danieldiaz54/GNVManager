@@ -334,7 +334,7 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
     <div className="space-y-8 w-full anim-fade-in font-sans">
       
       {/* 1. Barra Ejecutiva de Control Operacional Adaptable */}
-      <div className="p-4 sm:p-6 lg:p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 shadow-none transition-colors duration-300">
+      <div className="p-4 sm:p-5 lg:px-6 lg:py-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 shadow-none transition-colors duration-300">
         
         {/* Lado Izquierdo: Selección de Flota y Flujo */}
         <div className="flex flex-wrap items-center gap-3 sm:gap-4">

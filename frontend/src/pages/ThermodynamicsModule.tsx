@@ -80,8 +80,7 @@ export default function ThermodynamicsModule() {
             }`}
           >
             <Layers className="w-4 h-4 stroke-[1.8px]" />
-            <span className="hidden sm:inline">Consola de Operaciones y Despacho</span>
-            <span className="sm:hidden">Consola de Despacho</span>
+            <span>Consola de Operaciones y Despacho</span>
           </button>
 
           <button
@@ -94,8 +93,7 @@ export default function ThermodynamicsModule() {
             }`}
           >
             <History className="w-4 h-4 stroke-[1.8px]" />
-            <span className="hidden sm:inline">Cuenta de Balance y Conciliación</span>
-            <span className="sm:hidden">Cuenta de Balance</span>
+            <span>Cuenta de Balance y Conciliación</span>
             <span className="ml-1 text-xs font-mono px-2 py-0.5 rounded-full bg-[var(--color-canvas)] text-[var(--color-text-primary)] border border-[var(--color-border)] font-bold">
               {records.length}
             </span>

@@ -1,14 +1,32 @@
+import path from 'path';
+import fs from 'fs';
+import dotenv from 'dotenv';
+
+// Carga dinámica de variables de entorno según NODE_ENV con fallback a .env
+const envFileName = process.env.NODE_ENV === 'production'
+  ? '.env.production'
+  : '.env.development';
+
+const specificEnvPath = path.resolve(process.cwd(), envFileName);
+const fallbackEnvPath = path.resolve(process.cwd(), '.env');
+
+if (fs.existsSync(specificEnvPath)) {
+  dotenv.config({ path: specificEnvPath, override: true });
+} else if (fs.existsSync(fallbackEnvPath)) {
+  dotenv.config({ path: fallbackEnvPath });
+} else {
+  dotenv.config();
+}
+
 import express, { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
-import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
 import thermodynamicRoutes from './routes/thermodynamic.routes';
 import reconciliationRoutes from './routes/reconciliation.routes';
 import { gasProfileRoutes } from './routes/gas-profile.routes';
-
-dotenv.config();
+import { storageModuleRoutes } from './routes/storage-module.routes';
 
 const app = express();
 
@@ -63,6 +81,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/thermodynamics', thermodynamicRoutes);
 app.use('/api/v1/reconciliation', reconciliationRoutes);
 app.use('/api/v1/gas-profiles', gasProfileRoutes);
+app.use('/api/v1/storage-modules', storageModuleRoutes);
 
 // Ruta base para Health Check
 app.get('/api/v1/health', (req: Request, res: Response) => {

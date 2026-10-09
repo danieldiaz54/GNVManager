@@ -34,7 +34,7 @@ export class GetReconciliationSummary {
 
     const aforoSm3PerBar = calculatedVolumeSm3 / pressureDelta;
 
-    // Sabanas Rule: If variance is within 2%, it is certified
+    // Certification Rule: If variance is within 2%, it is certified
     const variancePercentage = calculatedVolumeSm3 !== 0 
       ? Math.abs(variationSm3 / calculatedVolumeSm3) 
       : 0;

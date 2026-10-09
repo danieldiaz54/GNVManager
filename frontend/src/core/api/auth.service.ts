@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_BASE_URL } from './config';
 
 export const setupAxiosInterceptors = () => {
   axios.interceptors.request.use(
@@ -16,7 +17,7 @@ export const setupAxiosInterceptors = () => {
 };
 
 export class AuthService {
-  private baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+  private baseURL = API_BASE_URL;
 
   async login(username: string, passwordPlain: string) {
     const response = await axios.post(`${this.baseURL}/auth/login`, {

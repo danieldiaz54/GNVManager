@@ -100,16 +100,16 @@ export default function ReconciliationLedger({
   return (
     <div className="space-y-8 animate-fade-in w-full font-sans">
       
-      {/* 1. Tarjetas Ejecutivas FinOps (Bento Cards de Control Operacional) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+      {/* 1. Tarjetas Ejecutivas FinOps (Bento Cards de Control Operacional Adaptables) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         
         {/* Card 1: Volumen Consolidado Despachado */}
-        <div className="p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-none">
+        <div className="p-5 sm:p-6 lg:p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-none">
           <span className="text-[11px] font-mono text-[var(--color-text-secondary)] uppercase tracking-wider block">
             Volumen Físico Despachado
           </span>
           <div className="flex items-baseline gap-2 mt-4">
-            <span className="text-4xl font-serif font-bold text-[var(--color-text-primary)] tracking-tight">
+            <span className="text-3xl sm:text-4xl font-sans font-semibold text-[var(--color-text-primary)] tracking-tight">
               {totalDispatchedSm3.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
             </span>
             <span className="text-sm font-mono text-[var(--color-text-secondary)]">Sm³</span>
@@ -120,12 +120,12 @@ export default function ReconciliationLedger({
         </div>
 
         {/* Card 2: Ventas Registradas en Estación */}
-        <div className="p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-none">
+        <div className="p-5 sm:p-6 lg:p-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-none">
           <span className="text-[11px] font-mono text-[var(--color-text-secondary)] uppercase tracking-wider block">
             Ventas Registradas
           </span>
           <div className="flex items-baseline gap-2 mt-4">
-            <span className="text-4xl font-serif font-bold text-[var(--color-text-primary)] tracking-tight">
+            <span className="text-3xl sm:text-4xl font-sans font-semibold text-[var(--color-text-primary)] tracking-tight">
               {totalDispensedSm3.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
             </span>
             <span className="text-sm font-mono text-[var(--color-text-secondary)]">Sm³</span>
@@ -136,7 +136,7 @@ export default function ReconciliationLedger({
         </div>
 
         {/* Card 3: Variación Operativa / Merma */}
-        <div className={`p-8 rounded-lg border shadow-none transition-all ${
+        <div className={`p-5 sm:p-6 lg:p-8 rounded-lg border shadow-none transition-all sm:col-span-2 lg:col-span-1 ${
           isNormalTolerance 
             ? 'bg-[var(--color-alert-green-bg)] border-[var(--color-alert-green-border)] text-[var(--color-alert-green-text)]'
             : 'bg-[var(--color-alert-red-bg)] border-[var(--color-alert-red-border)] text-[var(--color-alert-red-text)]'
@@ -145,12 +145,12 @@ export default function ReconciliationLedger({
             <span className="text-[11px] font-mono uppercase tracking-wider block opacity-90 font-bold">
               Variación Neta / Merma
             </span>
-            <span className="text-[10px] font-mono px-2.5 py-1 rounded-sm bg-white/50 font-bold border border-current">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-sm bg-white/50 font-bold border border-current">
               {isNormalTolerance ? 'En Tolerancia (≤2%)' : 'Alerta de Merma (>2%)'}
             </span>
           </div>
           <div className="flex items-baseline gap-2 mt-4">
-            <span className="text-4xl font-serif font-bold tracking-tight">
+            <span className="text-3xl sm:text-4xl font-sans font-semibold tracking-tight">
               {globalVariationSm3 > 0 ? `+${globalVariationSm3.toFixed(1)}` : globalVariationSm3.toFixed(1)}
             </span>
             <span className="text-sm font-mono">Sm³</span>
@@ -158,35 +158,35 @@ export default function ReconciliationLedger({
               {globalMermaPercent > 0 ? `+${globalMermaPercent.toFixed(2)}` : globalMermaPercent.toFixed(2)}%
             </span>
           </div>
-          <span className="text-[11px] mt-4 block opacity-90 pt-4 border-t border-current">
+          <span className="text-[11px] mt-4 block opacity-90 pt-4 border-t border-current truncate">
             {globalVariationSm3 < 0 ? 'Merma física / Faltante frente a despacho' : globalVariationSm3 > 0 ? 'Sobrante a favor de la estación' : 'Balance exacto (0 Sm³)'}
           </span>
         </div>
 
       </div>
 
-      {/* Barra de Encabezado Minimalista y Filtros */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-[var(--color-border)] mt-8">
+      {/* Barra de Encabezado Minimalista y Filtros Adaptables */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[var(--color-border)] mt-6">
         
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
             <History className="w-5 h-5 text-[var(--color-text-primary)] stroke-[1.8px]" />
-            <h2 className="text-lg font-serif font-bold text-[var(--color-text-primary)]">
-              Libro Mayor
+            <h2 className="text-base sm:text-lg font-sans font-semibold text-[var(--color-text-primary)]">
+              Cuenta de Balance
             </h2>
             <span className="text-xs font-mono px-2 py-0.5 rounded-sm bg-[var(--color-canvas)] text-[var(--color-text-secondary)] border border-[var(--color-border)] font-bold">
               {records.length}
             </span>
           </div>
 
-          {/* Filtros de Pestaña sutiles */}
-          <div className="hidden md:flex items-center gap-2 ml-6 pl-6 border-l border-[var(--color-border)] text-xs font-medium">
+          {/* Filtros de Pestaña (Adaptables en móvil y escritorio) */}
+          <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 md:ml-4 md:pl-4 md:border-l md:border-[var(--color-border)] text-xs font-medium">
             <button
               type="button"
               onClick={() => setFilter('ALL')}
-              className={`px-3 py-1.5 rounded-sm transition-colors cursor-pointer ${
+              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-sm transition-colors cursor-pointer ${
                 filter === 'ALL'
-                  ? 'bg-[var(--color-text-primary)] text-[var(--color-canvas)] font-bold'
+                  ? 'bg-[var(--color-accent-subtle)] text-[var(--color-accent)] font-bold border border-[var(--color-accent-border)]'
                   : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'
               }`}
             >
@@ -195,9 +195,9 @@ export default function ReconciliationLedger({
             <button
               type="button"
               onClick={() => setFilter('RACKS')}
-              className={`px-3 py-1.5 rounded-sm transition-colors cursor-pointer ${
+              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-sm transition-colors cursor-pointer ${
                 filter === 'RACKS'
-                  ? 'bg-[var(--color-alert-blue-bg)] text-[var(--color-alert-blue-text)] font-bold'
+                  ? 'bg-[var(--color-accent-subtle)] text-[var(--color-accent)] font-bold border border-[var(--color-accent-border)]'
                   : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'
               }`}
             >
@@ -206,9 +206,9 @@ export default function ReconciliationLedger({
             <button
               type="button"
               onClick={() => setFilter('INDIVIDUAL')}
-              className={`px-3 py-1.5 rounded-sm transition-colors cursor-pointer ${
+              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-sm transition-colors cursor-pointer ${
                 filter === 'INDIVIDUAL'
-                  ? 'bg-[var(--color-text-primary)] text-[var(--color-canvas)] font-bold'
+                  ? 'bg-[var(--color-accent-subtle)] text-[var(--color-accent)] font-bold border border-[var(--color-accent-border)]'
                   : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'
               }`}
             >
@@ -217,9 +217,9 @@ export default function ReconciliationLedger({
             <button
               type="button"
               onClick={() => setFilter('PENDING')}
-              className={`px-3 py-1.5 rounded-sm transition-colors cursor-pointer ${
+              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-sm transition-colors cursor-pointer ${
                 filter === 'PENDING'
-                  ? 'bg-[var(--color-alert-yellow-bg)] text-[var(--color-alert-yellow-text)] font-bold'
+                  ? 'bg-[var(--color-alert-yellow-bg)] text-[var(--color-alert-yellow-text)] font-bold border border-[var(--color-alert-yellow-border)]'
                   : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'
               }`}
             >
@@ -253,7 +253,7 @@ export default function ReconciliationLedger({
             Sin registros para mostrar
           </p>
           <p className="text-xs text-[var(--color-text-secondary)] mt-2">
-            {searchTerm ? 'No se encontraron resultados con ese criterio' : 'Guarda una carga para verla reflejada en el libro mayor'}
+            {searchTerm ? 'No se encontraron resultados con ese criterio' : 'Guarda una carga para verla reflejada en la Cuenta de Balance'}
           </p>
         </div>
       ) : (
@@ -288,10 +288,10 @@ export default function ReconciliationLedger({
                   const dateStr = dateObj.toLocaleDateString(undefined, { day: '2-digit', month: 'short' });
                   const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-                  // Logic for Sabanas Certification
+                  // Estimación de Aforo / Presión de Entrega
                   const opType = record.operationType || 'CARGUE'; // default to Cargue if missing
                   const isCargue = opType === 'CARGUE';
-                  const isCertified = isCargue ? record.finalPressureBar >= 230 : true;
+                  const isEstimatedConforme = isCargue ? record.finalPressureBar >= 230 : true;
 
                   return (
                     <tr 
@@ -308,21 +308,17 @@ export default function ReconciliationLedger({
                         </span>
                       </td>
 
-                      {/* Operación y Certificación */}
+                      {/* Operación y Estimación de Aforo */}
                       <td className="py-4 px-4 whitespace-nowrap">
                         <div className="flex flex-col gap-1.5">
-                          <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded-sm text-[10px] font-bold font-mono border ${
-                            isCargue 
-                              ? 'bg-[var(--color-alert-blue-bg)] text-[var(--color-alert-blue-text)] border-[var(--color-border)]' 
-                              : 'bg-stone-100 text-stone-600 border-[var(--color-border)]'
-                          }`}>
+                          <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-sm text-[10px] font-bold font-mono border bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border-[var(--color-accent-border)]">
                             {opType}
                           </span>
                           {isCargue && (
                             <span className={`inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest ${
-                              isCertified ? 'text-[var(--color-alert-green-text)]' : 'text-[var(--color-alert-red-text)]'
+                              isEstimatedConforme ? 'text-[var(--color-alert-green-text)]' : 'text-[var(--color-alert-red-text)]'
                             }`}>
-                              {isCertified ? '✓ Aforo Cert' : '⚠ Subllenado'}
+                              {isEstimatedConforme ? '✓ Aforo Est.' : '⚠ Subllenado'}
                             </span>
                           )}
                         </div>
@@ -356,7 +352,7 @@ export default function ReconciliationLedger({
                       </td>
 
                       {/* Volumen Teórico Calculado */}
-                      <td className="py-4 px-4 text-right whitespace-nowrap font-bold text-[var(--color-text-primary)] font-serif text-sm">
+                      <td className="py-4 px-4 text-right whitespace-nowrap font-bold text-[var(--color-text-primary)] font-sans text-sm">
                         {record.calculatedVolumeSm3.toFixed(2)}{' '}
                         <span className="text-[10px] font-sans font-normal text-[var(--color-text-secondary)]">Sm³</span>
                         <span className="block text-[10px] font-sans font-normal text-[var(--color-text-secondary)] mt-0.5">
@@ -405,7 +401,7 @@ export default function ReconciliationLedger({
                             className="group text-right font-bold text-[var(--color-text-primary)] hover:text-[#1F6C9F] cursor-pointer"
                             title="Haz clic para editar la venta"
                           >
-                            <span className="font-serif text-sm">{saleVol!.toFixed(2)}</span>{' '}
+                            <span className="font-sans font-semibold text-sm">{saleVol!.toFixed(2)}</span>{' '}
                             <span className="text-[10px] font-sans font-normal text-[var(--color-text-secondary)]">Sm³</span>
                           </button>
                         ) : (

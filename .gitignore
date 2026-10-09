@@ -10,10 +10,13 @@ node_modules/
 
 # Variables de entorno y Secretos (¡NUNCA SUBIR ESTO AL REPOSITORIO!)
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+*.env
+*.env.*
+!.env.example
+!.env.*.example
+!*.env.example
+!*.env.*.example
 *.pem
 *.key
 *.cert
@@ -55,3 +58,27 @@ coverage/
 *.njsproj
 *.sln
 *.sw?
+
+# Documentación sensible local
+docs/
+Docs/
+
+# Caché y herramientas de empaquetado
+.vite/
+**/.vite/
+
+# Archivos compilados o scripts temporales específicos
+backend/seed.js
+inject-*.js
+patch.js
+patch.ps1
+
+# Carpetas de configuración temporal de editores / asistentes IA en subcarpetas
+.claude/
+.cursor/
+.devin/
+backend/.agents/
+backend/.claude/
+backend/.cursor/
+backend/.devin/
+.agents/.agents/

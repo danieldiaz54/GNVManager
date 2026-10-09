@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import SaaSLayout from './layouts/SaaSLayout';
 import ThermodynamicsModule from './pages/ThermodynamicsModule';
 import GasProfilesModule from './pages/GasProfilesModule';
+import StorageModulesModule from './pages/StorageModulesModule';
 
 import HomeModule from './pages/HomeModule';
 
@@ -36,6 +37,7 @@ function App() {
               <Route path="home" element={<HomeModule />} />
               <Route path="thermodynamics" element={<ThermodynamicsModule />} />
               <Route path="gas-profiles" element={<GasProfilesModule />} />
+              <Route path="storage-modules" element={<StorageModulesModule />} />
               <Route index element={<Navigate to="home" replace />} />
             </Route>
 

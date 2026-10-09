@@ -229,7 +229,7 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[var(--color-border)] gap-4">
         <div>
           <div className="flex items-center gap-4">
-            <h2 className="text-xl font-serif font-bold text-[var(--color-text-primary)]">
+            <h2 className="text-xl font-sans font-semibold text-[var(--color-text-primary)] tracking-tight">
               Operación de Rack
             </h2>
             <div className="flex bg-[var(--color-canvas)] border border-[var(--color-border)] p-0.5">
@@ -248,7 +248,7 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
               </div>
 
               <div className="flex items-center gap-2 ml-4">
-                <span className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">Perfil de Gas:</span>
+                <span className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">Fuente de Gas:</span>
                 <select
                   value={selectedGasProfileId}
                   onChange={(e) => setSelectedGasProfileId(e.target.value)}
@@ -258,8 +258,8 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
                     <option key={profile.id} value={profile.id}>{profile.name}</option>
                   ))}
                   {gasProfiles.length === 0 && (
-                    <option value='' disabled>No hay perfiles</option>
-                  ))}
+                    <option value="" disabled>No hay perfiles</option>
+                  )}
                 </select>
               </div>
           </div>
@@ -334,14 +334,16 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex bg-[var(--color-canvas)] border border-[var(--color-border)] p-0.5">
               <button
+                type="button"
                 onClick={() => handleFlowSwitch('CARGUE')}
-                className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${flowType === 'CARGUE' ? 'bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] shadow-none' : 'text-[var(--color-text-secondary)]'}`}
+                className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer rounded-xs ${flowType === 'CARGUE' ? 'bg-[var(--color-accent-subtle)] border border-[var(--color-accent-border)] text-[var(--color-accent)] shadow-2xs' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] border border-transparent'}`}
               >
                 Cargue
               </button>
               <button
+                type="button"
                 onClick={() => handleFlowSwitch('DESCARGUE')}
-                className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${flowType === 'DESCARGUE' ? 'bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] shadow-none' : 'text-[var(--color-text-secondary)]'}`}
+                className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer rounded-xs ${flowType === 'DESCARGUE' ? 'bg-[var(--color-accent-subtle)] border border-[var(--color-accent-border)] text-[var(--color-accent)] shadow-2xs' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] border border-transparent'}`}
               >
                 Descargue
               </button>
@@ -512,7 +514,7 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
               <div className="p-5 bg-[var(--color-surface)] border border-[var(--color-border)]">
                 <span className="text-[11px] font-mono text-[var(--color-text-secondary)] uppercase tracking-wider">Volumen Transferido</span>
                 <div className="flex items-baseline gap-2 mt-2">
-                  <span className="text-4xl font-serif text-[var(--color-text-primary)] tracking-tight">
+                  <span className="text-4xl font-sans font-semibold text-[var(--color-text-primary)] tracking-tight">
                     {Math.abs(totalVolume_Sm3).toFixed(2)}
                   </span>
                   <span className="text-sm text-[var(--color-text-secondary)] font-medium">Sm³</span>
@@ -525,7 +527,7 @@ export default function RackCalculator({ onSave, isSaving = false }: RackCalcula
               <div className="p-5 bg-[var(--color-surface)] border border-[var(--color-border)]">
                 <span className="text-[11px] font-mono text-[var(--color-text-secondary)] uppercase tracking-wider">Masa Total</span>
                 <div className="flex items-baseline gap-2 mt-2">
-                  <span className="text-3xl font-serif text-[var(--color-text-primary)] tracking-tight">
+                  <span className="text-3xl font-sans font-semibold text-[var(--color-text-primary)] tracking-tight">
                     {Math.abs(totalMass_kg).toFixed(2)}
                   </span>
                   <span className="text-sm text-[var(--color-text-secondary)] font-medium">kg</span>

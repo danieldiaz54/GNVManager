@@ -31,10 +31,8 @@ export default function StorageModulesModule() {
   // Buscador
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Estado de grupos expandidos (por defecto abiertas para navegación directa)
-  const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({
-    transporte: true
-  });
+  // Estado de grupos expandidos (inician cerrados por defecto / progressive disclosure)
+  const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({});
 
   // Modal de Detalle / Ficha Técnica Completa
   const [selectedModuleForDetail, setSelectedModuleForDetail] = useState<StorageModuleDTO | null>(null);
@@ -73,13 +71,7 @@ export default function StorageModulesModule() {
       setLoading(true);
       const data = await StorageService.getModules();
       setModules(data);
-      const initialGroups: { [key: string]: boolean } = { transporte: true };
-      data.forEach(m => {
-        if (m.type === 'ESTACIONARIA') {
-          initialGroups[`${m.cylinderCapacityLiters}`] = true;
-        }
-      });
-      setExpandedGroups(initialGroups);
+      // Los grupos permanecen cerrados por defecto al cargar
       setError(null);
     } catch (err) {
       setError('Error al conectar con el inventario de almacenamientos');
@@ -569,7 +561,7 @@ export default function StorageModulesModule() {
                     <button
                       type="button"
                       onClick={() => toggleGroup(group.key)}
-                      className="w-full flex items-center justify-between px-4 sm:px-5 py-3.5 bg-[var(--color-canvas)] hover:bg-[var(--color-surface-hover)] border-b border-[var(--color-border)] transition-colors text-left cursor-pointer select-none"
+                      className={`w-full flex items-center justify-between px-4 sm:px-5 py-3.5 bg-[var(--color-canvas)] hover:bg-[var(--color-surface-hover)] ${isExpanded ? 'border-b border-[var(--color-border)]' : ''} transition-colors text-left cursor-pointer select-none`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <span className="text-[var(--color-text-secondary)]">
@@ -684,7 +676,7 @@ export default function StorageModulesModule() {
                 <button
                   type="button"
                   onClick={() => toggleGroup('transporte')}
-                  className="w-full flex items-center justify-between px-4 sm:px-5 py-3.5 bg-[var(--color-canvas)] hover:bg-[var(--color-surface-hover)] border-b border-[var(--color-border)] transition-colors text-left cursor-pointer select-none"
+                  className={`w-full flex items-center justify-between px-4 sm:px-5 py-3.5 bg-[var(--color-canvas)] hover:bg-[var(--color-surface-hover)] ${expandedGroups['transporte'] ? 'border-b border-[var(--color-border)]' : ''} transition-colors text-left cursor-pointer select-none`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <span className="text-[var(--color-text-secondary)]">

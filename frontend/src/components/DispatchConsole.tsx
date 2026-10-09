@@ -541,6 +541,12 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
                   />
                   <span className="text-sm text-[var(--color-text-secondary)] font-mono">{pressureUnit}</span>
                 </div>
+                {activeModule?.workingPressureBar && headerPf > activeModule.workingPressureBar && (
+                  <div className="mb-2 p-1.5 rounded bg-[var(--color-alert-red-bg)] border border-[var(--color-alert-red-border)] text-[var(--color-alert-red-text)] text-[10px] font-bold flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                    <span>Supera presión nominal ({activeModule.workingPressureBar} bar)</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between pt-2 mt-auto">
                   <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider flex items-center gap-1.5 select-none">
                     <Thermometer className="w-3.5 h-3.5 text-[var(--color-accent)]" />
@@ -745,7 +751,7 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
                 </div>
                 <div className="flex items-center justify-between text-[10px] font-mono text-[var(--color-text-secondary)] pt-1 border-t border-[var(--color-border)]">
                   <span>{totalCylindersCount} {activeModule?.type === 'TRANSPORTE' ? 'tubos jumbo' : 'cilindros'}</span>
-                  <span>{capacityPerCylinder.toFixed(0)} L por unidad</span>
+                  <span>{activeModule?.workingPressureBar || 250} bar • {capacityPerCylinder.toFixed(0)} L/u</span>
                 </div>
               </div>
 
@@ -804,8 +810,21 @@ export default function DispatchConsole({ onSaveOperation, isSaving = false }: D
                 </span>
                 <span className="text-base sm:text-lg font-mono text-[var(--color-text-secondary)]">Sm³</span>
               </div>
-              <div className="text-xs sm:text-sm font-mono text-[var(--color-text-secondary)]">
-                Masa Neta: <strong className="text-[var(--color-text-primary)] font-bold text-sm sm:text-base">{Math.abs(totalMass_kg).toFixed(2)} kg</strong>
+              <div className="text-xs sm:text-sm font-mono text-[var(--color-text-secondary)] flex flex-col gap-1">
+                <div>
+                  Masa Neta: <strong className="text-[var(--color-text-primary)] font-bold text-sm sm:text-base">{Math.abs(totalMass_kg).toFixed(2)} kg</strong>
+                </div>
+                {activeModule?.type === 'TRANSPORTE' && activeModule?.maxPayloadKg && (
+                  <div className="text-[11px] text-[var(--color-text-secondary)] pt-1 border-t border-[var(--color-border)] flex items-center justify-between">
+                    <span>Capacidad de Carga Vial:</span>
+                    <span className="font-bold text-[var(--color-text-primary)]">
+                      {Math.abs(totalMass_kg).toFixed(1)} / {activeModule.maxPayloadKg.toLocaleString()} kg
+                      {Math.abs(totalMass_kg) > activeModule.maxPayloadKg && (
+                        <span className="ml-1 text-[var(--color-alert-red-text)] font-bold">⚠️ Excede Límite</span>
+                      )}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 

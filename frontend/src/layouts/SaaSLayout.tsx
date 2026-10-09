@@ -68,15 +68,6 @@ export default function SaaSLayout() {
 
         {/* Derecha: Acciones, Perfil y Menú Móvil */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          
-          {/* Badge de Telemetría Térmica En Vivo */}
-          <div className="flex max-lg:hidden items-center gap-2 px-2.5 py-1 rounded-full bg-[var(--color-canvas)] border border-[var(--color-border)] text-[11px] font-mono">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="text-[var(--color-text-secondary)] font-medium">Telemetría en Vivo</span>
-          </div>
 
           {/* Toggle Modo Oscuro / Claro */}
           <button

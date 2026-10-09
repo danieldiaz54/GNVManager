@@ -24,6 +24,7 @@
 - **Sin Numeraciones Artificiales**: No colocar *"1."*, *"2."* en títulos de tarjetas o paneles ejecutivos.
   - ❌ *"1. Condiciones de Despacho"*, *"2. Balance de Entrega y Aforo"* ➔ ✅ **`Condiciones de Despacho`**, **`Balance de Entrega y Aforo`**
 - **Limpieza de "Definiciones" y Glosarios**: No colocar tarjetas explicativas obvias (*"¿Qué es compresibilidad?"*, *"Operación Nominal"*, etc.). La herramienta es de uso profesional diario por operadores que ya conocen el negocio y requieren cero ruido visual.
+- **Prohibición de Indicadores y Badges Decorativos**: Queda terminantemente prohibido incluir insignias, estados parpadeantes simulados (*"Telemetría en Vivo"*, *"Modo Seguro"*, etc.) o elementos meramente ornamentales que no aporten datos funcionales reales al operador.
 
 ---
 

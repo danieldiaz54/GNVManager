@@ -15,7 +15,7 @@ export interface GasProfilePreset {
 export const DEFAULT_GAS_PROFILES: GasProfilePreset[] = [
   { 
     id: 'bonga-mamey', 
-    name: 'EDS GNC La Sabana (Bonga - Mamey)',
+    name: 'EDS GNC Bonga - Mamey',
     methanePercentage: 96.3666,
     nitrogenPercentage: 2.5379,
     co2Percentage: 0.0074,

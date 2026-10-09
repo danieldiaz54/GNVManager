@@ -31,7 +31,7 @@ async function main() {
   // Seed Gas Profiles con datos oficiales de los certificados Surtigas 2026
   const profiles = [
     {
-      name: 'EDS GNC La Sabana (Bonga - Mamey)',
+      name: 'EDS GNC Bonga - Mamey',
       methanePercentage: 96.3666,
       nitrogenPercentage: 2.5379,
       grossCalorificValue: 8884.2562,

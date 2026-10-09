@@ -88,26 +88,26 @@ export default function RackDetailModal({ record, onClose, onBackToLedger, onAdd
       <div className="relative w-full max-w-[95vw] xl:max-w-[90vw] 2xl:max-w-[85vw] max-h-[92vh] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg shadow-none flex flex-col overflow-hidden">
         
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-8 py-6 border-b border-[var(--color-border)] bg-[var(--color-canvas)]">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-md bg-[var(--color-alert-blue-bg)] text-[var(--color-alert-blue-text)] border border-[var(--color-border)]">
-              <Layers className="w-6 h-6 stroke-[1.8px]" />
+        <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-b border-[var(--color-border)] bg-[var(--color-canvas)] shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+            <div className="p-2.5 sm:p-3 rounded-md bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent-border)] shrink-0">
+              <Layers className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8px]" />
             </div>
-            <div>
-              <div className="flex items-center gap-3">
-                <h3 className="text-xl font-serif font-bold text-[var(--color-text-primary)]">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <h3 className="text-base sm:text-xl font-sans font-semibold text-[var(--color-text-primary)] truncate">
                   Detalle de Carga: {record.moduleIdentifier || (isRack ? 'Rack 11P' : 'Módulo')}
                 </h3>
-                <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-sm bg-[var(--color-alert-blue-bg)] text-[var(--color-alert-blue-text)] border border-[var(--color-border)] uppercase">
+                <span className="text-[10px] sm:text-[11px] font-mono font-bold px-2 py-0.5 rounded-sm bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent-border)] uppercase shrink-0">
                   {children.length > 0 ? `${children.length} posiciones` : 'Registro Individual'}
                 </span>
               </div>
-              <div className="flex items-center gap-4 text-xs text-[var(--color-text-secondary)] font-mono mt-1">
+              <div className="flex items-center gap-3 sm:gap-4 text-xs text-[var(--color-text-secondary)] font-mono mt-1">
                 <span className="flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5" />
                   {new Date(record.createdAt).toLocaleString()}
                 </span>
-                <span className="opacity-70">ID: {record.id.slice(0, 8)}...</span>
+                <span className="opacity-70 truncate max-w-[120px] sm:max-w-none">ID: {record.id.slice(0, 8)}...</span>
               </div>
             </div>
           </div>
@@ -144,23 +144,23 @@ export default function RackDetailModal({ record, onClose, onBackToLedger, onAdd
             )}
 
             {/* Export Buttons */}
-            <div className="flex items-center gap-2 mr-2 border-r border-[var(--color-border)] pr-4">
+            <div className="flex items-center gap-1.5 mr-1 sm:mr-2 border-r border-[var(--color-border)] pr-2 sm:pr-4">
               <button
                 type="button"
                 onClick={() => handleExport('pdf')}
-                className="inline-flex items-center justify-center h-10 px-3 text-xs font-bold text-[var(--color-text-primary)] bg-[var(--color-surface)] border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)] rounded-md transition-all cursor-pointer"
+                className="inline-flex items-center justify-center h-8 sm:h-9 px-2.5 sm:px-3 text-xs font-bold text-[var(--color-text-primary)] bg-[var(--color-surface)] border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)] rounded-md transition-all cursor-pointer"
                 title="Exportar Acta (PDF)"
               >
-                <FileText className="w-4 h-4 sm:mr-2" />
+                <FileText className="w-4 h-4 sm:mr-1.5" />
                 <span className="hidden sm:inline uppercase tracking-wider">PDF</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleExport('csv')}
-                className="inline-flex items-center justify-center h-10 px-3 text-xs font-bold text-[var(--color-text-primary)] bg-[var(--color-surface)] border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)] rounded-md transition-all cursor-pointer"
+                className="inline-flex items-center justify-center h-8 sm:h-9 px-2.5 sm:px-3 text-xs font-bold text-[var(--color-text-primary)] bg-[var(--color-surface)] border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)] rounded-md transition-all cursor-pointer"
                 title="Exportar Datos (CSV)"
               >
-                <FileSpreadsheet className="w-4 h-4 sm:mr-2" />
+                <FileSpreadsheet className="w-4 h-4 sm:mr-1.5" />
                 <span className="hidden sm:inline uppercase tracking-wider">CSV</span>
               </button>
             </div>
@@ -168,32 +168,32 @@ export default function RackDetailModal({ record, onClose, onBackToLedger, onAdd
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer"
+              className="p-1.5 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer"
               title="Cerrar (Esc)"
             >
-              <X className="w-6 h-6 stroke-[1.8px]" />
+              <X className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8px]" />
             </button>
           </div>
         </div>
 
         {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
           
           {/* KPI Summary Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             
             {/* Total Sm3 */}
-            <div className="p-6 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] shadow-none">
+            <div className="p-4 sm:p-6 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] shadow-none">
               <div className="flex items-center justify-between text-[var(--color-text-secondary)] text-xs font-bold uppercase tracking-wider mb-2">
                 <span>Volumen Consolidado</span>
-                <Fuel className="w-4 h-4 text-[var(--color-alert-blue-text)]" />
+                <Fuel className="w-4 h-4 text-[var(--color-accent)]" />
               </div>
-              <p className="text-3xl font-serif font-bold text-[var(--color-text-primary)]">
+              <p className="text-2xl sm:text-3xl font-sans font-semibold text-[var(--color-text-primary)]">
                 {record.calculatedVolumeSm3.toFixed(2)}{' '}
                 <span className="text-sm font-sans font-normal text-[var(--color-text-secondary)]">Sm³</span>
               </p>
               <p className="text-xs text-[var(--color-text-secondary)] mt-2 font-mono pt-2 border-t border-[var(--color-border)] opacity-80">
-                Cálculo AGA8 / ISO 6976
+                Volumen Normalizado
               </p>
             </div>
 
@@ -203,7 +203,7 @@ export default function RackDetailModal({ record, onClose, onBackToLedger, onAdd
                 <span>Masa Total de Gas</span>
                 <Scale className="w-4 h-4 text-[var(--color-alert-green-text)]" />
               </div>
-              <p className="text-3xl font-serif font-bold text-[var(--color-text-primary)]">
+              <p className="text-3xl font-sans font-semibold text-[var(--color-text-primary)]">
                 {record.calculatedMassKg.toFixed(1)}{' '}
                 <span className="text-sm font-sans font-normal text-[var(--color-text-secondary)]">kg</span>
               </p>
@@ -218,7 +218,7 @@ export default function RackDetailModal({ record, onClose, onBackToLedger, onAdd
                 <span>Presión Cabezal</span>
                 <Gauge className="w-4 h-4 text-[var(--color-alert-blue-text)]" />
               </div>
-              <p className="text-3xl font-serif font-bold text-[var(--color-text-primary)]">
+              <p className="text-3xl font-sans font-semibold text-[var(--color-text-primary)]">
                 {record.initialPressureBar.toFixed(0)} → {record.finalPressureBar.toFixed(0)}{' '}
                 <span className="text-sm font-sans font-normal text-[var(--color-text-secondary)]">bar</span>
               </p>
@@ -236,7 +236,7 @@ export default function RackDetailModal({ record, onClose, onBackToLedger, onAdd
                   : 'border-[var(--color-alert-green-border)] bg-[var(--color-alert-green-bg)]'
             }`}>
               <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider mb-2">
-                <span className="text-[var(--color-text-primary)] opacity-80">Venta & Conciliación</span>
+                <span className="text-[var(--color-text-primary)] opacity-80">Venta y Conciliación</span>
                 {hasSale ? (
                   isWarning ? <AlertCircle className="w-4 h-4 text-[var(--color-alert-red-text)]" /> : <CheckCircle2 className="w-4 h-4 text-[var(--color-alert-green-text)]" />
                 ) : (
@@ -246,7 +246,7 @@ export default function RackDetailModal({ record, onClose, onBackToLedger, onAdd
               
               {hasSale ? (
                 <div>
-                  <p className="text-3xl font-serif font-bold text-[var(--color-text-primary)]">
+                  <p className="text-3xl font-sans font-semibold text-[var(--color-text-primary)]">
                     {saleVol!.toFixed(2)}{' '}
                     <span className="text-sm font-sans font-normal text-[var(--color-text-secondary)]">Sm³</span>
                   </p>
@@ -289,7 +289,7 @@ export default function RackDetailModal({ record, onClose, onBackToLedger, onAdd
               
               <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-4 mt-6">
                 <div>
-                  <h4 className="text-lg font-serif font-bold text-[var(--color-text-primary)]">
+                  <h4 className="text-lg font-sans font-semibold text-[var(--color-text-primary)] tracking-tight">
                     Desglose Individual de Cilindros ({children.length} Posiciones)
                   </h4>
                   <p className="text-sm text-[var(--color-text-secondary)] mt-1">
@@ -368,7 +368,7 @@ export default function RackDetailModal({ record, onClose, onBackToLedger, onAdd
                               <td className="py-3 px-4 font-bold text-[var(--color-text-primary)]">
                                 {child.calculatedMassKg.toFixed(2)} kg
                               </td>
-                              <td className="py-3 px-6 text-right font-bold text-[var(--color-text-primary)] font-serif text-sm">
+                              <td className="py-3 px-6 text-right font-semibold text-[var(--color-text-primary)] font-sans text-sm">
                                 {child.calculatedVolumeSm3.toFixed(2)} Sm³
                               </td>
                               <td className="py-3 px-6 text-right">
@@ -403,7 +403,7 @@ export default function RackDetailModal({ record, onClose, onBackToLedger, onAdd
                           <td className="py-4 px-4 font-sans text-sm">
                             {children.reduce((acc, c) => acc + c.calculatedMassKg, 0).toFixed(2)} kg
                           </td>
-                          <td className="py-4 px-6 text-right font-serif text-lg">
+                          <td className="py-4 px-6 text-right font-sans font-semibold text-lg">
                             {record.calculatedVolumeSm3.toFixed(2)} Sm³
                           </td>
                           <td className="py-4 px-6 text-right text-[var(--color-text-secondary)] font-sans">
@@ -479,7 +479,7 @@ export default function RackDetailModal({ record, onClose, onBackToLedger, onAdd
                 className="flex items-center gap-2 px-6 py-3 text-xs font-bold rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] transition-colors shadow-none cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Volver al Libro Mayor</span>
+                <span>Volver a la Cuenta de Balance</span>
               </button>
             )}
 

@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, BarChart3, Settings, LogOut, Menu, X, Sun, Moon, Database } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Settings, LogOut, Menu, X, Sun, Moon, Database, Box } from 'lucide-react';
 import GasFlame from '../components/GasFlame';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -14,7 +14,8 @@ export default function SaaSLayout() {
   const menuItems = [
     { path: '/app/home', label: 'Inicio', icon: LayoutDashboard },
     { path: '/app/thermodynamics', label: 'Consola de Despacho', icon: BarChart3 },
-    { path: '/app/gas-profiles', label: 'Perfiles de Gas', icon: Database },
+    { path: '/app/gas-profiles', label: 'Fuentes de Gas', icon: Database },
+    { path: '/app/storage-modules', label: 'Almacenamientos', icon: Box },
   ];
 
   return (
@@ -28,7 +29,7 @@ export default function SaaSLayout() {
           <GasFlame size={24} />
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
-              <span className="text-sm sm:text-base font-serif font-bold tracking-tight text-[var(--color-text-primary)]">
+              <span className="text-sm sm:text-base font-sans font-bold tracking-tight text-[var(--color-text-primary)]">
                 GNV Manager
               </span>
               <span className="hidden md:inline-block text-[9px] font-mono tracking-widest uppercase px-1.5 py-0.5 rounded-xs bg-[var(--color-canvas)] text-[var(--color-text-secondary)] border border-[var(--color-border)]">
@@ -41,9 +42,9 @@ export default function SaaSLayout() {
           </div>
         </Link>
 
-        {/* Centro: Navegación Principal Horizontal (Visible solo en desktop) */}
+        {/* Centro: Navegación Principal Horizontal (Visible en md+) */}
         <nav className="hidden md:flex items-center gap-1 overflow-x-auto py-1">
-          {menuItems.slice(1).map((item) => {
+          {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname.startsWith(item.path);
             return (
@@ -53,12 +54,12 @@ export default function SaaSLayout() {
                 className={`
                   flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium transition-all whitespace-nowrap border
                   ${isActive 
-                    ? 'bg-[var(--color-canvas)] text-[var(--color-text-primary)] font-bold border-[var(--color-border)] shadow-xs' 
+                    ? 'bg-[var(--color-accent-subtle)] text-[var(--color-accent)] font-semibold border-[var(--color-accent-border)] shadow-2xs' 
                     : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]'
                   }
                 `}
               >
-                <Icon className="w-4 h-4 stroke-[1.8px]" />
+                <Icon className={`w-4 h-4 stroke-[1.8px] ${isActive ? 'text-[var(--color-accent)]' : ''}`} />
                 <span>{item.label}</span>
               </NavLink>
             );
@@ -74,7 +75,7 @@ export default function SaaSLayout() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span className="text-[var(--color-text-secondary)] font-medium">AGA-8 / DAK</span>
+            <span className="text-[var(--color-text-secondary)] font-medium">Telemetría en Vivo</span>
           </div>
 
           {/* Toggle Modo Oscuro / Claro */}
@@ -154,12 +155,12 @@ export default function SaaSLayout() {
                   className={`
                     flex items-center gap-3 px-3 py-2.5 rounded-md text-xs font-medium transition-all border
                     ${isActive 
-                      ? 'bg-[var(--color-canvas)] text-[var(--color-text-primary)] font-bold border-[var(--color-border)] shadow-xs' 
+                      ? 'bg-[var(--color-accent-subtle)] text-[var(--color-accent)] font-semibold border-[var(--color-accent-border)] shadow-2xs' 
                       : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]'
                     }
                   `}
                 >
-                  <Icon className="w-4 h-4 stroke-[1.8px]" />
+                  <Icon className={`w-4 h-4 stroke-[1.8px] ${isActive ? 'text-[var(--color-accent)]' : ''}`} />
                   <span>{item.label}</span>
                 </NavLink>
               );
@@ -181,8 +182,8 @@ export default function SaaSLayout() {
         </div>
       )}
 
-      {/* 2. Área de Contenido Principal (100% Widescreen) */}
-      <main className="flex-1 overflow-auto py-6 px-4 sm:px-8 lg:px-12 relative animate-in fade-in duration-300">
+      {/* 2. Área de Contenido Principal (100% Widescreen Adaptable) */}
+      <main className="flex-1 overflow-y-auto overflow-x-hidden py-4 sm:py-6 px-3 sm:px-6 lg:px-8 relative animate-in fade-in duration-300">
         <div className="w-full max-w-[1700px] mx-auto">
           <Outlet />
         </div>

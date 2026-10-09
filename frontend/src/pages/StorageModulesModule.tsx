@@ -15,8 +15,7 @@ import {
   ChevronRight, 
   Layers,
   Eye,
-  Gauge,
-  Scale
+  Sliders
 } from 'lucide-react';
 
 type MainTab = 'ESTACIONARIA' | 'TRANSPORTE';
@@ -32,17 +31,18 @@ export default function StorageModulesModule() {
   // Buscador
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Estado de grupos expandidos (por defecto abiertas para visualización directa)
+  // Estado de grupos expandidos (por defecto abiertas para navegación directa)
   const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({
     transporte: true
   });
 
-  // Modal de Detalle / Ficha Técnica
+  // Modal de Detalle / Ficha Técnica Completa
   const [selectedModuleForDetail, setSelectedModuleForDetail] = useState<StorageModuleDTO | null>(null);
 
   // Formulario de Creación / Edición
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showAdvancedSpecs, setShowAdvancedSpecs] = useState(false);
 
   const [formData, setFormData] = useState<CreateStorageModuleDTO>({
     name: '',
@@ -73,7 +73,6 @@ export default function StorageModulesModule() {
       setLoading(true);
       const data = await StorageService.getModules();
       setModules(data);
-      // Abrir por defecto los grupos presentes
       const initialGroups: { [key: string]: boolean } = { transporte: true };
       data.forEach(m => {
         if (m.type === 'ESTACIONARIA') {
@@ -162,10 +161,12 @@ export default function StorageModulesModule() {
       designLifeYears: 15
     });
     setEditingId(null);
+    setShowAdvancedSpecs(false);
     setIsFormOpen(true);
   };
 
-  const handleOpenEdit = (mod: StorageModuleDTO) => {
+  const handleOpenEdit = (mod: StorageModuleDTO, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     setFormData({
       name: mod.name,
       type: mod.type,
@@ -198,9 +199,11 @@ export default function StorageModulesModule() {
   const handleCloseForm = () => {
     setIsFormOpen(false);
     setEditingId(null);
+    setShowAdvancedSpecs(false);
   };
 
-  const handleDeleteModule = async (id: string, name: string) => {
+  const handleDeleteModule = async (id: string, name: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     if (!window.confirm(`¿Estás seguro de que deseas eliminar el módulo "${name}"?`)) return;
     try {
       await StorageService.deleteModule(id);
@@ -224,6 +227,7 @@ export default function StorageModulesModule() {
       }
       setIsFormOpen(false);
       setEditingId(null);
+      setShowAdvancedSpecs(false);
       await fetchModules();
     } catch (err: any) {
       alert(err.response?.data?.error || 'Error al guardar el módulo');
@@ -251,7 +255,7 @@ export default function StorageModulesModule() {
               </span>
             </div>
             <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-              Inventario de cascadas estacionarias y semirremolques de transporte con fichas técnicas industriales.
+              Gestione cascadas estacionarias y tráilers de transporte. Haga clic en cualquier equipo para consultar su información completa.
             </p>
           </div>
         </div>
@@ -274,15 +278,13 @@ export default function StorageModulesModule() {
         </div>
       )}
 
-      {/* 2. Formulario Inline Integrado (Creación / Edición) */}
+      {/* 2. Formulario Inline Integrado (Esencial con Parámetros Avanzados Opcionales) */}
       {isFormOpen && (
         <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-5 sm:p-6 space-y-5 animate-fade-in shadow-xs">
           <div className="flex items-center justify-between pb-4 border-b border-[var(--color-border)]">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-[var(--color-text-primary)] uppercase tracking-wider">
-                {editingId ? 'Editar Ficha Técnica de Almacenamiento' : 'Registrar Nuevo Equipo de Almacenamiento'}
-              </span>
-            </div>
+            <span className="text-xs font-bold text-[var(--color-text-primary)] uppercase tracking-wider">
+              {editingId ? 'Editar Almacenamiento' : 'Registrar Nuevo Equipo de Almacenamiento'}
+            </span>
             <button
               onClick={handleCloseForm}
               className="p-1 rounded text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] cursor-pointer"
@@ -291,10 +293,11 @@ export default function StorageModulesModule() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs font-sans">
+          {/* Campos Principales y Esenciales */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs font-sans">
             
             {/* Nombre */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 sm:col-span-2">
               <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
                 Identificación / Nombre del Equipo
               </label>
@@ -310,22 +313,29 @@ export default function StorageModulesModule() {
             {/* Tipo */}
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
-                Tipo de Almacenamiento
+                Tipo
               </label>
               <select
                 value={formData.type}
-                onChange={e => setFormData({ ...formData, type: e.target.value as MainTab })}
-                className="w-full px-3 py-2 rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-semibold focus:outline-none focus:border-[var(--color-accent)]"
+                onChange={e => {
+                  const newType = e.target.value as MainTab;
+                  setFormData({ 
+                    ...formData, 
+                    type: newType,
+                    cylinderCapacityLiters: newType === 'ESTACIONARIA' ? 150.0 : 2450.0
+                  });
+                }}
+                className="w-full px-3 py-2 rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-semibold focus:outline-none focus:border-[var(--color-accent)] cursor-pointer"
               >
-                <option value="ESTACIONARIA">Cascada Estacionaria Fija</option>
-                <option value="TRANSPORTE">Módulo de Transporte Carretero</option>
+                <option value="ESTACIONARIA">Cascada Estacionaria</option>
+                <option value="TRANSPORTE">Módulo de Transporte</option>
               </select>
             </div>
 
             {/* Número de Cilindros */}
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
-                Cantidad de Tubos / Cilindros
+                Cantidad de Tubos
               </label>
               <input
                 type="number"
@@ -339,7 +349,7 @@ export default function StorageModulesModule() {
             {/* Capacidad por Cilindro */}
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
-                Capacidad por Cilindro (Litros)
+                Litros por Tubo
               </label>
               <input
                 type="number"
@@ -350,80 +360,104 @@ export default function StorageModulesModule() {
               />
             </div>
 
-            {/* Presión de Trabajo */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
-                Presión de Trabajo (bar)
-              </label>
-              <input
-                type="number"
-                value={formData.workingPressureBar || 250}
-                onChange={e => setFormData({ ...formData, workingPressureBar: parseFloat(e.target.value) || 250 })}
-                className="w-full px-3 py-2 rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-mono font-semibold focus:outline-none focus:border-[var(--color-accent)]"
-              />
-            </div>
+          </div>
 
-            {/* Presión de Prueba */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
-                Presión de Prueba Hidrostática (bar)
-              </label>
-              <input
-                type="number"
-                value={formData.testPressureBar || 375}
-                onChange={e => setFormData({ ...formData, testPressureBar: parseFloat(e.target.value) || 375 })}
-                className="w-full px-3 py-2 rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-mono font-semibold focus:outline-none focus:border-[var(--color-accent)]"
-              />
-            </div>
+          {/* Toggle para Especificaciones Técnicas Avanzadas */}
+          <div className="pt-2 border-t border-[var(--color-border)]">
+            <button
+              type="button"
+              onClick={() => setShowAdvancedSpecs(!showAdvancedSpecs)}
+              className="text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] flex items-center gap-1.5 cursor-pointer select-none"
+            >
+              <Sliders className="w-3.5 h-3.5 text-[var(--color-accent)]" />
+              <span>{showAdvancedSpecs ? 'Ocultar Parámetros Avanzados' : 'Especificaciones Técnicas Avanzadas (Opcional)'}</span>
+            </button>
 
-            {/* Tara (kg) */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
-                Peso Tara en Vacío (kg)
-              </label>
-              <input
-                type="number"
-                value={formData.tareWeightKg ?? ''}
-                onChange={e => setFormData({ ...formData, tareWeightKg: parseFloat(e.target.value) || null })}
-                placeholder="Ej: 32200"
-                className="w-full px-3 py-2 rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-mono font-semibold focus:outline-none focus:border-[var(--color-accent)]"
-              />
-            </div>
+            {showAdvancedSpecs && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs font-sans mt-3 p-4 rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)]">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
+                    Presión Trabajo (bar)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.workingPressureBar || 250}
+                    onChange={e => setFormData({ ...formData, workingPressureBar: parseFloat(e.target.value) || 250 })}
+                    className="w-full px-3 py-2 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-mono font-semibold focus:outline-none focus:border-[var(--color-accent)]"
+                  />
+                </div>
 
-            {/* Carga Máxima (kg) */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
-                Carga Máxima de GNV en Masa (kg)
-              </label>
-              <input
-                type="number"
-                value={formData.maxPayloadKg ?? ''}
-                onChange={e => setFormData({ ...formData, maxPayloadKg: parseFloat(e.target.value) || null })}
-                placeholder="Ej: 6063"
-                className="w-full px-3 py-2 rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-mono font-semibold focus:outline-none focus:border-[var(--color-accent)]"
-              />
-            </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
+                    Presión Prueba (bar)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.testPressureBar || 375}
+                    onChange={e => setFormData({ ...formData, testPressureBar: parseFloat(e.target.value) || 375 })}
+                    className="w-full px-3 py-2 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-mono font-semibold focus:outline-none focus:border-[var(--color-accent)]"
+                  />
+                </div>
 
-            {/* Norma de Fabricación */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
-                Norma Técnica
-              </label>
-              <input
-                type="text"
-                value={formData.manufacturingStandard ?? ''}
-                onChange={e => setFormData({ ...formData, manufacturingStandard: e.target.value })}
-                placeholder="Ej: ISO 11120:2015"
-                className="w-full px-3 py-2 rounded-md bg-[var(--color-canvas)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-semibold focus:outline-none focus:border-[var(--color-accent)]"
-              />
-            </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
+                    Tara Vacío (kg)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.tareWeightKg ?? ''}
+                    onChange={e => setFormData({ ...formData, tareWeightKg: parseFloat(e.target.value) || null })}
+                    placeholder="Ej: 32200"
+                    className="w-full px-3 py-2 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-mono font-semibold focus:outline-none focus:border-[var(--color-accent)]"
+                  />
+                </div>
 
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
+                    Carga Máx. GNV (kg)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.maxPayloadKg ?? ''}
+                    onChange={e => setFormData({ ...formData, maxPayloadKg: parseFloat(e.target.value) || null })}
+                    placeholder="Ej: 6063"
+                    className="w-full px-3 py-2 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-mono font-semibold focus:outline-none focus:border-[var(--color-accent)]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
+                    Material del Tubo
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.tubeMaterial ?? ''}
+                    onChange={e => setFormData({ ...formData, tubeMaterial: e.target.value })}
+                    placeholder="Ej: 4130X o 34CrMo4"
+                    className="w-full px-3 py-2 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-semibold focus:outline-none focus:border-[var(--color-accent)]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase">
+                    Norma Técnica
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.manufacturingStandard ?? ''}
+                    onChange={e => setFormData({ ...formData, manufacturingStandard: e.target.value })}
+                    placeholder="Ej: ISO 11120:2015"
+                    className="w-full px-3 py-2 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] font-semibold focus:outline-none focus:border-[var(--color-accent)]"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Resumen Calculado */}
           <div className="p-3 bg-[var(--color-canvas)] border border-[var(--color-border)] rounded-md flex flex-wrap items-center justify-between text-xs font-mono">
             <span className="text-[var(--color-text-secondary)]">
-              Capacidad Geométrica Estimada: <strong className="text-[var(--color-text-primary)]">{calculatedTotalLiters.toLocaleString()} Litros</strong> ({(calculatedTotalLiters / 1000).toFixed(2)} m³)
+              Capacidad Estimada: <strong className="text-[var(--color-text-primary)]">{calculatedTotalLiters.toLocaleString()} Litros</strong> ({(calculatedTotalLiters / 1000).toFixed(2)} m³)
             </span>
             <div className="flex items-center gap-2 mt-2 sm:mt-0">
               <button
@@ -505,7 +539,7 @@ export default function StorageModulesModule() {
 
       </div>
 
-      {/* 4. Tablas con Ficha Técnica Expandible */}
+      {/* 4. Tablas Esenciales y Limpias (Clic en fila abre Ficha Técnica Completa) */}
       <div className="space-y-4">
         {loading ? (
           <div className="py-24 text-center text-[var(--color-text-secondary)] text-xs font-mono animate-pulse border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)]">
@@ -560,18 +594,17 @@ export default function StorageModulesModule() {
                       </div>
                     </button>
 
-                    {/* Tabla de Módulos */}
+                    {/* Tabla Esencial: Clic en cualquier fila abre la información completa */}
                     {isExpanded && (
                       <div className="w-full overflow-x-auto">
                         <table className="w-full text-left border-collapse text-xs font-sans">
                           <thead>
                             <tr className="bg-[var(--color-canvas)] border-b border-[var(--color-border)] text-[10px] font-mono uppercase tracking-wider text-[var(--color-text-secondary)]">
-                              <th className="py-2.5 px-4 font-bold">Identificación del Equipo</th>
-                              <th className="py-2.5 px-3 font-bold text-center">N° Tubos</th>
-                              <th className="py-2.5 px-3 font-bold text-center">P. Trabajo</th>
-                              <th className="py-2.5 px-4 font-bold text-right">Capacidad Total</th>
-                              <th className="py-2.5 px-4 font-bold text-right">Volumen</th>
-                              <th className="py-2.5 px-4 font-bold text-center w-28">Acciones</th>
+                              <th className="py-2.5 px-5 font-bold">Identificación del Equipo</th>
+                              <th className="py-2.5 px-4 font-bold text-center">N° Tubos</th>
+                              <th className="py-2.5 px-4 font-bold text-right">Capacidad Total (L)</th>
+                              <th className="py-2.5 px-4 font-bold text-right">Volumen (m³)</th>
+                              <th className="py-2.5 px-5 font-bold text-center w-24">Acciones</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-[var(--color-border)] font-mono">
@@ -580,57 +613,51 @@ export default function StorageModulesModule() {
                               return (
                                 <tr 
                                   key={mod.id} 
-                                  className="hover:bg-[var(--color-surface-hover)] transition-colors"
+                                  onClick={() => setSelectedModuleForDetail(mod)}
+                                  className="hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer group"
+                                  title="Haga clic para ver la información técnica completa"
                                 >
-                                  <td className="py-3 px-4 font-sans">
-                                    <button
-                                      type="button"
-                                      onClick={() => setSelectedModuleForDetail(mod)}
-                                      className="font-semibold text-sm text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors text-left flex items-center gap-2 cursor-pointer"
-                                    >
+                                  {/* Nombre con feedback visual de enlace al modal */}
+                                  <td className="py-3 px-5 font-sans font-semibold text-sm text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors">
+                                    <div className="flex items-center gap-2">
                                       <span>{mod.name}</span>
-                                      {mod.manufacturingStandard && (
-                                        <span className="hidden lg:inline text-[9px] font-mono px-1.5 py-0.2 rounded border bg-[var(--color-canvas)] text-[var(--color-text-secondary)]">
-                                          {mod.manufacturingStandard}
-                                        </span>
-                                      )}
-                                    </button>
+                                    </div>
                                   </td>
 
-                                  <td className="py-3 px-3 text-center font-bold text-[var(--color-text-primary)]">
+                                  {/* Conteo de tubos */}
+                                  <td className="py-3 px-4 text-center font-bold text-[var(--color-text-primary)]">
                                     {mod.cylinderCount} <span className="text-[10px] text-[var(--color-text-secondary)] font-normal">cil.</span>
                                   </td>
 
-                                  <td className="py-3 px-3 text-center font-bold text-[var(--color-accent)]">
-                                    {mod.workingPressureBar || 250} bar
-                                  </td>
-
+                                  {/* Capacidad Total en Litros */}
                                   <td className="py-3 px-4 text-right font-bold text-[var(--color-text-primary)] text-sm">
                                     {mod.totalCapacityLiters.toLocaleString()} L
                                   </td>
 
-                                  <td className="py-3 px-4 text-right font-mono font-bold text-[var(--color-text-primary)] text-xs">
+                                  {/* Volumen en m³ */}
+                                  <td className="py-3 px-4 text-right font-mono font-bold text-[var(--color-accent)] text-xs">
                                     {volumeM3} m³
                                   </td>
 
-                                  <td className="py-3 px-4 text-center">
-                                    <div className="flex items-center justify-center gap-1">
+                                  {/* Acciones */}
+                                  <td className="py-3 px-5 text-center" onClick={e => e.stopPropagation()}>
+                                    <div className="flex items-center justify-center gap-1.5">
                                       <button
                                         onClick={() => setSelectedModuleForDetail(mod)}
-                                        className="p-1.5 rounded text-[var(--color-accent)] hover:bg-[var(--color-accent-subtle)] transition-colors cursor-pointer"
-                                        title="Ver Ficha Técnica"
+                                        className="p-1.5 rounded text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] hover:bg-[var(--color-canvas)] transition-colors cursor-pointer"
+                                        title="Ver Información Completa"
                                       >
                                         <Eye className="w-3.5 h-3.5" />
                                       </button>
                                       <button
-                                        onClick={() => handleOpenEdit(mod)}
+                                        onClick={(e) => handleOpenEdit(mod, e)}
                                         className="p-1.5 rounded text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-canvas)] transition-colors cursor-pointer"
                                         title="Editar"
                                       >
                                         <Edit2 className="w-3.5 h-3.5" />
                                       </button>
                                       <button
-                                        onClick={() => handleDeleteModule(mod.id, mod.name)}
+                                        onClick={(e) => handleDeleteModule(mod.id, mod.name, e)}
                                         className="p-1.5 rounded text-[var(--color-alert-red-text)] hover:bg-[var(--color-alert-red-bg)] transition-colors cursor-pointer"
                                         title="Eliminar"
                                       >
@@ -682,20 +709,17 @@ export default function StorageModulesModule() {
                   </div>
                 </button>
 
-                {/* Tabla de Tráilers con Datos Logísticos de Báscula */}
+                {/* Tabla Esencial: Clic en fila abre la ficha técnica completa */}
                 {!!expandedGroups['transporte'] && (
                   <div className="w-full overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs font-sans">
                       <thead>
                         <tr className="bg-[var(--color-canvas)] border-b border-[var(--color-border)] text-[10px] font-mono uppercase tracking-wider text-[var(--color-text-secondary)]">
-                          <th className="py-2.5 px-4 font-bold">Tráiler / Módulo de Transporte</th>
-                          <th className="py-2.5 px-3 font-bold text-center">Tubos Jumbo</th>
-                          <th className="py-2.5 px-3 font-bold text-center">P. Trabajo</th>
-                          <th className="py-2.5 px-3 font-bold text-right">Tara Vacío</th>
-                          <th className="py-2.5 px-3 font-bold text-right">Carga Máx. GNV</th>
-                          <th className="py-2.5 px-4 font-bold text-right">Capacidad</th>
-                          <th className="py-2.5 px-3 font-bold text-right">Volumen</th>
-                          <th className="py-2.5 px-4 font-bold text-center w-28">Acciones</th>
+                          <th className="py-2.5 px-5 font-bold">Tráiler / Módulo de Transporte</th>
+                          <th className="py-2.5 px-4 font-bold text-center">N° Tubos Jumbo</th>
+                          <th className="py-2.5 px-4 font-bold text-right">Capacidad Total (L)</th>
+                          <th className="py-2.5 px-4 font-bold text-right">Volumen (m³)</th>
+                          <th className="py-2.5 px-5 font-bold text-center w-24">Acciones</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[var(--color-border)] font-mono">
@@ -710,63 +734,44 @@ export default function StorageModulesModule() {
                             return (
                               <tr 
                                 key={mod.id} 
-                                className="hover:bg-[var(--color-surface-hover)] transition-colors"
+                                onClick={() => setSelectedModuleForDetail(mod)}
+                                className="hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer group"
+                                title="Haga clic para ver la información técnica completa"
                               >
-                                <td className="py-3 px-4 font-sans">
-                                  <button
-                                    type="button"
-                                    onClick={() => setSelectedModuleForDetail(mod)}
-                                    className="font-semibold text-sm text-[var(--color-text-primary)] hover:text-[var(--color-accent)] transition-colors text-left block cursor-pointer"
-                                  >
-                                    <span>{mod.name.replace(/\s*\(\d+(\.\d+)?\s*m³\)/i, '').trim()}</span>
-                                    <span className="block text-[10px] font-mono text-[var(--color-text-secondary)] font-normal">
-                                      {mod.chassisType || 'Triple eje'} • {mod.tubeMaterial || 'Acero 4130X'}
-                                    </span>
-                                  </button>
+                                <td className="py-3 px-5 font-sans font-semibold text-sm text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors">
+                                  {mod.name.replace(/\s*\(\d+(\.\d+)?\s*m³\)/i, '').trim()}
                                 </td>
 
-                                <td className="py-3 px-3 text-center font-bold text-[var(--color-text-primary)]">
+                                <td className="py-3 px-4 text-center font-bold text-[var(--color-text-primary)]">
                                   {mod.cylinderCount} <span className="text-[10px] text-[var(--color-text-secondary)] font-normal">tubos</span>
-                                </td>
-
-                                <td className="py-3 px-3 text-center font-bold text-[var(--color-accent)]">
-                                  {mod.workingPressureBar || 250} bar
-                                </td>
-
-                                <td className="py-3 px-3 text-right font-medium text-[var(--color-text-secondary)]">
-                                  {mod.tareWeightKg ? `${mod.tareWeightKg.toLocaleString()} kg` : '-'}
-                                </td>
-
-                                <td className="py-3 px-3 text-right font-bold text-[var(--color-text-primary)]">
-                                  {mod.maxPayloadKg ? `${mod.maxPayloadKg.toLocaleString()} kg` : '-'}
                                 </td>
 
                                 <td className="py-3 px-4 text-right font-bold text-[var(--color-text-primary)] text-sm">
                                   {mod.totalCapacityLiters.toLocaleString()} L
                                 </td>
 
-                                <td className="py-3 px-3 text-right font-mono font-bold text-[var(--color-accent)] text-xs">
+                                <td className="py-3 px-4 text-right font-mono font-bold text-[var(--color-accent)] text-xs">
                                   {volumeM3} m³
                                 </td>
 
-                                <td className="py-3 px-4 text-center">
-                                  <div className="flex items-center justify-center gap-1">
+                                <td className="py-3 px-5 text-center" onClick={e => e.stopPropagation()}>
+                                  <div className="flex items-center justify-center gap-1.5">
                                     <button
                                       onClick={() => setSelectedModuleForDetail(mod)}
-                                      className="p-1.5 rounded text-[var(--color-accent)] hover:bg-[var(--color-accent-subtle)] transition-colors cursor-pointer"
-                                      title="Ver Ficha Técnica"
+                                      className="p-1.5 rounded text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] hover:bg-[var(--color-canvas)] transition-colors cursor-pointer"
+                                      title="Ver Información Completa"
                                     >
                                       <Eye className="w-3.5 h-3.5" />
                                     </button>
                                     <button
-                                      onClick={() => handleOpenEdit(mod)}
+                                      onClick={(e) => handleOpenEdit(mod, e)}
                                       className="p-1.5 rounded text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-canvas)] transition-colors cursor-pointer"
                                       title="Editar"
                                     >
                                       <Edit2 className="w-3.5 h-3.5" />
                                     </button>
                                     <button
-                                      onClick={() => handleDeleteModule(mod.id, mod.name)}
+                                      onClick={(e) => handleDeleteModule(mod.id, mod.name, e)}
                                       className="p-1.5 rounded text-[var(--color-alert-red-text)] hover:bg-[var(--color-alert-red-bg)] transition-colors cursor-pointer"
                                       title="Eliminar"
                                     >
@@ -787,7 +792,7 @@ export default function StorageModulesModule() {
         )}
       </div>
 
-      {/* 5. Modal de Ficha Técnica Detallada */}
+      {/* 5. Modal de Ficha Técnica Completa (Al hacer clic en cualquier fila o botón) */}
       <StorageDetailModal
         module={selectedModuleForDetail}
         onClose={() => setSelectedModuleForDetail(null)}

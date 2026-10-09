@@ -21,14 +21,11 @@ interface ReconciliationLedgerProps {
   onSelectDetailRecord?: (record: ReconciliationRecord) => void;
 }
 
-type FilterType = 'ALL' | 'RACKS' | 'INDIVIDUAL' | 'PENDING';
-
 export default function ReconciliationLedger({ 
   records, 
   onAddSale,
   onSelectDetailRecord
 }: ReconciliationLedgerProps) {
-  const [filter, setFilter] = useState<FilterType>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [editingSaleId, setEditingSaleId] = useState<string | null>(null);
   const [saleInputVal, setSaleInputVal] = useState<string>('');
@@ -41,25 +38,14 @@ export default function ReconciliationLedger({
   };
 
   const filteredRecords = useMemo(() => {
+    if (!searchTerm.trim()) return records;
+    const query = searchTerm.toLowerCase();
     return records.filter(record => {
-      const isRack = record.recordType === 'RACK_PARENT' || record.recordType === 'MANIFOLD_PARENT';
-      const saleVol = getSaleVolume(record);
-      const isPending = saleVol === null;
-
-      if (filter === 'RACKS' && !isRack) return false;
-      if (filter === 'INDIVIDUAL' && isRack) return false;
-      if (filter === 'PENDING' && !isPending) return false;
-
-      if (searchTerm.trim()) {
-        const query = searchTerm.toLowerCase();
-        const idMatch = record.id.toLowerCase().includes(query);
-        const modMatch = record.moduleIdentifier?.toLowerCase().includes(query) ?? false;
-        if (!idMatch && !modMatch) return false;
-      }
-
-      return true;
+      const idMatch = record.id.toLowerCase().includes(query);
+      const modMatch = record.moduleIdentifier?.toLowerCase().includes(query) ?? false;
+      return idMatch || modMatch;
     });
-  }, [records, filter, searchTerm]);
+  }, [records, searchTerm]);
 
   const pendingCount = useMemo(() => {
     return records.filter(r => getSaleVolume(r) === null).length;
@@ -177,54 +163,6 @@ export default function ReconciliationLedger({
             <span className="text-xs font-mono px-2 py-0.5 rounded-sm bg-[var(--color-canvas)] text-[var(--color-text-secondary)] border border-[var(--color-border)] font-bold">
               {records.length}
             </span>
-          </div>
-
-          {/* Filtros de Pestaña (Adaptables en móvil y escritorio) */}
-          <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 md:ml-4 md:pl-4 md:border-l md:border-[var(--color-border)] text-xs font-medium">
-            <button
-              type="button"
-              onClick={() => setFilter('ALL')}
-              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-sm transition-colors cursor-pointer ${
-                filter === 'ALL'
-                  ? 'bg-[var(--color-accent-subtle)] text-[var(--color-accent)] font-bold border border-[var(--color-accent-border)]'
-                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'
-              }`}
-            >
-              Todos
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilter('RACKS')}
-              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-sm transition-colors cursor-pointer ${
-                filter === 'RACKS'
-                  ? 'bg-[var(--color-accent-subtle)] text-[var(--color-accent)] font-bold border border-[var(--color-accent-border)]'
-                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'
-              }`}
-            >
-              Racks
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilter('INDIVIDUAL')}
-              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-sm transition-colors cursor-pointer ${
-                filter === 'INDIVIDUAL'
-                  ? 'bg-[var(--color-accent-subtle)] text-[var(--color-accent)] font-bold border border-[var(--color-accent-border)]'
-                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'
-              }`}
-            >
-              Individuales
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilter('PENDING')}
-              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-sm transition-colors cursor-pointer ${
-                filter === 'PENDING'
-                  ? 'bg-[var(--color-alert-yellow-bg)] text-[var(--color-alert-yellow-text)] font-bold border border-[var(--color-alert-yellow-border)]'
-                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'
-              }`}
-            >
-              Pendientes {pendingCount > 0 && `(${pendingCount})`}
-            </button>
           </div>
         </div>
 
